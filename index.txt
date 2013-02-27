@@ -136,32 +136,32 @@ Internet-Draft                  HTTP/2.0                   February 2013
        3.7.6.  PING  . . . . . . . . . . . . . . . . . . . . . . . .  22
        3.7.7.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . .  23
        3.7.8.  HEADERS . . . . . . . . . . . . . . . . . . . . . . .  24
-       3.7.9.  WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . .  25
-       3.7.10. Name/Value Header Block . . . . . . . . . . . . . . .  27
-   4.  HTTP Layering over HTTP/2.0 . . . . . . . . . . . . . . . . .  33
-     4.1.  Connection Management . . . . . . . . . . . . . . . . . .  33
-       4.1.1.  Use of GOAWAY . . . . . . . . . . . . . . . . . . . .  33
-     4.2.  HTTP Request/Response . . . . . . . . . . . . . . . . . .  34
-       4.2.1.  Request . . . . . . . . . . . . . . . . . . . . . . .  34
-       4.2.2.  Response  . . . . . . . . . . . . . . . . . . . . . .  36
-       4.2.3.  Authentication  . . . . . . . . . . . . . . . . . . .  36
-     4.3.  Server Push Transactions  . . . . . . . . . . . . . . . .  37
-       4.3.1.  Server implementation . . . . . . . . . . . . . . . .  38
-       4.3.2.  Client implementation . . . . . . . . . . . . . . . .  39
-   5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  40
-     5.1.  Separation of Framing Layer and Application Layer . . . .  41
-     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  41
-     5.3.  One Connection Per Domain . . . . . . . . . . . . . . . .  41
-     5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  42
-     5.5.  Compression Context(s)  . . . . . . . . . . . . . . . . .  42
-     5.6.  Unidirectional streams  . . . . . . . . . . . . . . . . .  42
-     5.7.  Data Compression  . . . . . . . . . . . . . . . . . . . .  43
-     5.8.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  43
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  43
-     6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  43
-     6.2.  HTTP Headers and HTTP/2.0 Headers . . . . . . . . . . . .  43
-     6.3.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  44
-     6.4.  Cacheability of Pushed Resources  . . . . . . . . . . . .  44
+       3.7.9.  WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . .  24
+       3.7.10. Header Block  . . . . . . . . . . . . . . . . . . . .  27
+   4.  HTTP Layering over HTTP/2.0 . . . . . . . . . . . . . . . . .  27
+     4.1.  Connection Management . . . . . . . . . . . . . . . . . .  28
+       4.1.1.  Use of GOAWAY . . . . . . . . . . . . . . . . . . . .  28
+     4.2.  HTTP Request/Response . . . . . . . . . . . . . . . . . .  29
+       4.2.1.  Request . . . . . . . . . . . . . . . . . . . . . . .  29
+       4.2.2.  Response  . . . . . . . . . . . . . . . . . . . . . .  30
+       4.2.3.  Authentication  . . . . . . . . . . . . . . . . . . .  31
+     4.3.  Server Push Transactions  . . . . . . . . . . . . . . . .  32
+       4.3.1.  Server implementation . . . . . . . . . . . . . . . .  33
+       4.3.2.  Client implementation . . . . . . . . . . . . . . . .  34
+   5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  35
+     5.1.  Separation of Framing Layer and Application Layer . . . .  35
+     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  35
+     5.3.  One Connection Per Domain . . . . . . . . . . . . . . . .  35
+     5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  36
+     5.5.  Unidirectional streams  . . . . . . . . . . . . . . . . .  36
+     5.6.  Data Compression  . . . . . . . . . . . . . . . . . . . .  37
+     5.7.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  37
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  37
+     6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  37
+     6.2.  HTTP Headers and HTTP/2.0 Headers . . . . . . . . . . . .  37
+     6.3.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  38
+     6.4.  Cacheability of Pushed Resources  . . . . . . . . . . . .  38
+   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  38
 
 
 
@@ -170,19 +170,18 @@ Belshe, et al.          Expires August 31, 2013                 [Page 3]
 Internet-Draft                  HTTP/2.0                   February 2013
 
 
-   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  44
-     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  44
-     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  45
-   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  45
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  45
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  45
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  46
+     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  38
+     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  38
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  39
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  39
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  39
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  40
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  47
-     A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  47
-     A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  47
-     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  47
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  48
+                publication) . . . . . . . . . . . . . . . . . . . .  40
+     A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  40
+     A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  41
+     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  41
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  41
 
 1.  Introduction
 
@@ -218,6 +217,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    lived connections are also more able to take better advantage of the
    available network capacity, rather than operating in the slow start
    phase of TCP.
+
 
 
 
@@ -544,7 +544,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
    o  Streams can be created by either the client or server.
 
-   o  Streams optionally carry a set of name/value header pairs.
+   o  Streams optionally carry a set of name-value header pairs.
 
    o  Streams can concurrently send data interleaved with other streams.
 
@@ -636,9 +636,9 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 3.4.4.  Stream headers
 
-   Streams carry optional sets of name/value pair headers which carry
-   metadata about the stream.  After the stream has been created, and as
-   long as the sender is not closed (Section 3.4.7) or half-closed
+   Streams carry optional sets of pair headers which carry metadata
+   about the stream.  After the stream has been created, and as long as
+   the sender is not closed (Section 3.4.7) or half-closed
    (Section 3.4.6), each side may send HEADERS frame(s) containing the
    header data.  Header data can be sent in multiple HEADERS frames, and
    HEADERS frames may be interleaved with data frames.
@@ -913,12 +913,10 @@ Internet-Draft                  HTTP/2.0                   February 2013
       use application level compression rather than HTTP/2.0 stream
       level compression.
 
-      Each HTTP/2.0 stream sending compressed frames creates its own
-      zlib context for that stream, and these compression contexts MUST
-      be distinct from the compression contexts used with SYN_STREAM/
-      SYN_REPLY/HEADER compression.  (Thus, if both endpoints of a
-      stream are compressing data on the stream, there will be two zlib
-      contexts, one for sending and one for receiving).
+      Each HTTP/2.0 stream sending compressed frames creates a separate
+      zlib context for the data streams on that stream.  Thus, if both
+      endpoints of a stream are compressing data on the stream, there
+      will be two zlib contexts, one for sending and one for receiving.
 
 3.7.2.  SYN_STREAM
 
@@ -933,7 +931,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    +-+-------------------------------------------------------------+
    |X|                   Priority (31)                             |
    +-+-------------------------------------------------------------+
-   |                  Name/Value Block (*)                       ...
+   |                    Header Block (*)                         ...
    +---------------------------------------------------------------+
 
 
@@ -944,6 +942,8 @@ Internet-Draft                  HTTP/2.0                   February 2013
    FINAL (0x1):  Bit 1 (the least significant bit) being set marks this
       frame as the last frame to be transmitted on this stream and puts
       the sender in the half-closed (Section 3.4.6) state.
+
+
 
 
 
@@ -973,8 +973,8 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
       Priority: A 31-bit priority (Section 3.4.3) field.
 
-      Name/Value Header Block: A set of name/value pairs carried as part
-      of the SYN_STREAM.  see Name/Value Header Block (Section 3.7.10).
+      Headers Block: A set of name-value pairs carried as part of the
+      SYN_STREAM.  See Header Block (Section 3.7.10).
 
 3.7.3.  SYN_REPLY
 
@@ -995,13 +995,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
    stream ID, it MUST issue a stream error (Section 3.5.2) with the
    error code STREAM_IN_USE.
 
-   The body of a SYN_REPLY contains a Name/Value Header Block, which is
-   the set of name/value pairs carried as part of the SYN_REPLY.  see
-   Name/Value Header Block (Section 3.7.10).
+   The body of a SYN_REPLY contains a Header Block.  see Header Block
+   (Section 3.7.10).
 
 3.7.4.  RST_STREAM
 
-
+   The RST_STREAM frame (type=3) allows for abnormal termination of a
+   stream.  When sent by the creator of a stream, it indicates the
 
 
 
@@ -1010,8 +1010,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 18]
 Internet-Draft                  HTTP/2.0                   February 2013
 
 
-   The RST_STREAM frame (type=3) allows for abnormal termination of a
-   stream.  When sent by the creator of a stream, it indicates the
    creator wishes to cancel the stream.  When sent by the recipient of a
    stream, it indicates an error or that the recipient did not want to
    accept the stream, so the stream should be closed.
@@ -1033,31 +1031,33 @@ Internet-Draft                  HTTP/2.0                   February 2013
    code indicates why the stream is being terminated.  The following
    error codes are defined:
 
-   PROTOCOL_ERROR (1):  This is a generic error, and should only be used
-      if a more specific error is not available.  [[ED: Doesn't sound so
-      generic.  Someone committed a protocol violation.  Might need to
-      change the name.]]
+      This is a generic error, and should only be used if a more
+      specific error is not available.  [[ED: Doesn't sound so generic.
+      Someone committed a protocol violation.  Might need to change the
+      name.]]
 
-   INVALID_STREAM (2):  This is returned when a frame is received for a
-      stream which is not active.
+      This is returned when a frame is received for a stream which is
+      not active.
 
-   REFUSED_STREAM (3):  Indicates that the stream was refused before any
-      processing has been done on the stream.
+      Indicates that the stream was refused before any processing has
+      been done on the stream.
 
-   CANCEL (5):  Used by the creator of a stream to indicate that the
-      stream is no longer needed.
+      Used by the creator of a stream to indicate that the stream is no
+      longer needed.
 
-   INTERNAL_ERROR (6):  This is a generic error which can be used when
-      the implementation has internally failed, not due to anything in
-      the protocol.
+      This is a generic error which can be used when the implementation
+      has internally failed, not due to anything in the protocol.
 
-   FLOW_CONTROL_ERROR (7):  The endpoint detected that its peer violated
-      the flow control protocol.
+      The endpoint detected that its peer violated the flow control
+      protocol.
 
-   STREAM_IN_USE (8):  The endpoint received a SYN_REPLY for a stream
-      already open.
+      The endpoint received a SYN_REPLY for a stream already open.
 
+      The endpoint received a data or SYN_REPLY frame for a stream which
+      is half closed.
 
+      The endpoint received a frame that was larger than the maximum
+      size that it supports.
 
 
 
@@ -1065,16 +1065,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 19]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   STREAM_ALREADY_CLOSED (9):  The endpoint received a data or SYN_REPLY
-      frame for a stream which is half closed.
-
-   FRAME_TOO_LARGE (11):  The endpoint received a frame which this
-      implementation could not support.  If FRAME_TOO_LARGE is sent for
-      a SYN_STREAM, HEADERS, or SYN_REPLY frame without fully processing
-      the compressed portion of those frames, then the compression state
-      will be out-of-sync with the other endpoint.  In this case,
-      senders of FRAME_TOO_LARGE MUST close the session.
 
    After receiving a RST_STREAM on a stream, the recipient must not send
    additional frames for that stream, and the stream moves into the
@@ -1111,6 +1101,16 @@ Internet-Draft                  HTTP/2.0                   February 2013
       indicates a request to clear any previously persisted settings
       before processing the settings.  Clients MUST NOT set this flag.
 
+   SETTINGS frames always apply to a session, never a single stream.
+   The identifier field in the frame header carries a count of the
+   number of settings contained in the payload.  [[ED: this seems
+   totally unnecessary.]]
+
+
+
+
+
+
 
 
 
@@ -1121,11 +1121,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 20]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   SETTINGS frames always apply to a session, never a single stream.
-   The identifier field in the frame header carries a count of the
-   number of settings contained in the payload.  [[ED: this seems
-   totally unnecessary.]]
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1170,6 +1165,11 @@ Internet-Draft                  HTTP/2.0                   February 2013
    SETTINGS_DOWNLOAD_BANDWIDTH (2):  allows the sender to send its
       expected download bandwidth on this channel.  This number is an
       estimate.  The value should be the integral number of kilobytes
+      per second that the sender predicts as an expected maximum
+      download channel capacity.
+
+   SETTINGS_ROUND_TRIP_TIME (3):  allows the sender to send its expected
+      round-trip-time on this channel.  The round trip time is defined
 
 
 
@@ -1178,11 +1178,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 21]
 Internet-Draft                  HTTP/2.0                   February 2013
 
 
-      per second that the sender predicts as an expected maximum
-      download channel capacity.
-
-   SETTINGS_ROUND_TRIP_TIME (3):  allows the sender to send its expected
-      round-trip-time on this channel.  The round trip time is defined
       as the minimum amount of time to send a control frame from this
       client to the remote and receive a response.  The value is
       represented in milliseconds.
@@ -1226,6 +1221,11 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 3.7.6.  PING
 
+   The PING frame (type=6) is a mechanism for measuring a minimal round-
+   trip time from the sender.  PING frames can be sent from the client
+   or the server.
+
+
 
 
 
@@ -1233,10 +1233,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 22]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   The PING frame (type=6) is a mechanism for measuring a minimal round-
-   trip time from the sender.  PING frames can be sent from the client
-   or the server.
 
    Recipients of a PING frame send an identical frame to the sender as
    soon as possible.  PING should take highest priority if there is
@@ -1282,6 +1278,10 @@ Internet-Draft                  HTTP/2.0                   February 2013
    partially processed or not.  (For example, if an HTTP client sends a
    POST at the same time that a server closes a connection, the client
    cannot know if the server started to process that POST request if the
+   server does not send a GOAWAY frame to indicate where it stopped
+   working).
+
+
 
 
 
@@ -1289,9 +1289,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 23]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   server does not send a GOAWAY frame to indicate where it stopped
-   working).
 
    After sending a GOAWAY message, the sender must ignore all SYN_STREAM
    frames for new streams.
@@ -1323,8 +1320,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    The HEADERS frame (type=8) augments a stream with additional headers.
    It may be optionally sent on an existing stream at any time.
    Specific application of the headers in this frame is application-
-   dependent.  The name/value header block within this frame is
-   compressed.
+   dependent.
 
    Valid flags for the HEADERS frame are:
 
@@ -1336,8 +1332,12 @@ Internet-Draft                  HTTP/2.0                   February 2013
    The identifier field in the HEADERS frame header MUST contain a
    stream identifier for an open stream.
 
-   The body of a HEADERS frame contains a Name/Value Header Block
+   The body of a HEADERS frame contains a Headers Block
    (Section 3.7.10).
+
+3.7.9.  WINDOW_UPDATE
+
+
 
 
 
@@ -1345,8 +1345,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 24]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-3.7.9.  WINDOW_UPDATE
 
    The WINDOW_UPDATE frame (type=9) is used to implement flow control in
    HTTP/2.0.
@@ -1388,11 +1386,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
    permitted to transmit.  The flow control window size is a measure of
    the buffering capability of the recipient.
 
-
-
-
-
-
+   Two flow control windows apply to the sending of every message: the
+   stream flow control window and the session flow control window.  The
+   sender MUST NOT send a flow controlled frame with a length that
+   exceeds the space available in either of the flow control windows
+   advertised by the receiver.  Frames with zero length that also end a
+   stream (for example, a data frame with the FINAL flag set) MAY be
+   sent if there is no available space in either flow control window.
 
 
 
@@ -1401,14 +1401,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 25]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   Two flow control windows apply to the sending of every message: the
-   stream flow control window and the session flow control window.  The
-   sender MUST NOT send a flow controlled frame with a length that
-   exceeds the space available in either of the flow control windows
-   advertised by the receiver.  Frames with zero length that also end a
-   stream (for example, a data frame with the FINAL flag set) MAY be
-   sent if there is no available space in either flow control window.
 
    For flow control calculations, the 8 byte frame header is not
    counted.
@@ -1450,14 +1442,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 3.7.9.3.  Reducing the Stream Initial Window Size
 
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 26]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    A server that wishes to use a smaller flow control window than the
    default MUST be prepared to receive the entire amount for the default
    initial window size, since the client could immediately send the full
@@ -1466,6 +1450,14 @@ Internet-Draft                  HTTP/2.0                   February 2013
    by the client can become negative.  A client MUST allow the available
    window to become negative, refraining from sending new flow
    controlled frames until it receives a WINDOW_UPDATE.  The server has
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 26]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
    two options for handling any streams that might have already exceeded
    this lower limit:
 
@@ -1496,16 +1488,24 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
    [[TBD: text on disabling flow control.]]
 
-3.7.10.  Name/Value Header Block
+3.7.10.  Header Block
 
-   The Name/Value Header Block is found in the SYN_STREAM, SYN_REPLY and
-   HEADERS frames, and shares a common format:
+   The Header Block is found in the SYN_STREAM, SYN_REPLY and HEADERS
+   frames.  Headers consist of a set of name-value pairs.  Headers are
+   compressed using TBD.
 
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                Number of Name/Value Pairs (32)                |
-   +---------------------------------------------------------------+
+   Compression of headers is a work in progress, as is the format of
+   this block.
+
+4.  HTTP Layering over HTTP/2.0
+
+
+
+
+
+
+
+
 
 
 
@@ -1513,310 +1513,6 @@ Belshe, et al.          Expires August 31, 2013                [Page 27]
 
 Internet-Draft                  HTTP/2.0                   February 2013
 
-
-   |                      Name/Value Pairs (*)                   ...
-   +---------------------------------------------------------------+
-
-                     Format of Name/Value Header Block
-
-   Number of Name/Value pairs: The number of repeating name/value pairs
-   following this field.  [[ED: this field is not necessary]]
-
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Length of Name (32)                     |
-   +---------------------------------------------------------------+
-   |                            Name (*)                         ...
-   +---------------------------------------------------------------+
-   |                       Length of Value (32)                    |
-   +---------------------------------------------------------------+
-   |                            Value (*)                        ...
-   +---------------------------------------------------------------+
-
-                          Name/Value Pair Format
-
-   Each Name/Value pair consists of:
-
-      Length of Name: a 32-bit value containing the number of octets in
-      the name field.  Note that in practice, this length must not
-      exceed 2^24, as that is the maximum size of a HTTP/2.0 frame.
-
-      Name: 0 or more octets, 8-bit sequences of data, excluding 0.
-
-      Length of Value: a 32-bit value containing the number of octets in
-      the value field.  Note that in practice, this length must not
-      exceed 2^24, as that is the maximum size of a HTTP/2.0 frame.
-
-      Value: 0 or more octets, 8-bit sequences of data, excluding 0.
-
-   Each header name must have at least one value.  Header names are
-   encoded using the US-ASCII character set [ASCII] and must be all
-   lower case.  The length of each name must be greater than zero.  A
-   recipient of a zero-length name MUST issue a stream error
-   (Section 3.5.2) with the error code PROTOCOL_ERROR for the stream-id.
-
-   Duplicate header names are not allowed.  To send two identically
-   named headers, send a header with two values, where the values are
-   separated by a single NUL (0) byte.  A header value can either be
-   empty (e.g.  the length is zero) or it can contain multiple, NUL-
-   separated values, each with length greater than zero.  The value
-   never starts nor ends with a NUL character.  Recipients of illegal
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 28]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
-   value fields MUST issue a stream error (Section 3.5.2) with the error
-   code PROTOCOL_ERROR for the stream-id.
-
-3.7.10.1.  Compression
-
-   The Name/Value Header Block is a section of the SYN_STREAM,
-   SYN_REPLY, and HEADERS frames used to carry header meta-data.  This
-   block is always compressed using zlib compression.  Within this
-   specification, any reference to 'zlib' is referring to the ZLIB
-   Compressed Data Format Specification Version 3.3 as part of RFC1950.
-   [ZLIB]
-
-   For each HEADERS compression instance, the initial state is
-   initialized using the following dictionary [UDELCOMPRESSION]:
-
-   <CODE BEGINS>
-
-   const unsigned char http2_dictionary_txt[] = {
-     0x00, 0x00, 0x00, 0x07, 0x6f, 0x70, 0x74, 0x69,  \\ - - - - o p t i
-     0x6f, 0x6e, 0x73, 0x00, 0x00, 0x00, 0x04, 0x68,  \\ o n s - - - - h
-     0x65, 0x61, 0x64, 0x00, 0x00, 0x00, 0x04, 0x70,  \\ e a d - - - - p
-     0x6f, 0x73, 0x74, 0x00, 0x00, 0x00, 0x03, 0x70,  \\ o s t - - - - p
-     0x75, 0x74, 0x00, 0x00, 0x00, 0x06, 0x64, 0x65,  \\ u t - - - - d e
-     0x6c, 0x65, 0x74, 0x65, 0x00, 0x00, 0x00, 0x05,  \\ l e t e - - - -
-     0x74, 0x72, 0x61, 0x63, 0x65, 0x00, 0x00, 0x00,  \\ t r a c e - - -
-     0x06, 0x61, 0x63, 0x63, 0x65, 0x70, 0x74, 0x00,  \\ - a c c e p t -
-     0x00, 0x00, 0x0e, 0x61, 0x63, 0x63, 0x65, 0x70,  \\ - - - a c c e p
-     0x74, 0x2d, 0x63, 0x68, 0x61, 0x72, 0x73, 0x65,  \\ t - c h a r s e
-     0x74, 0x00, 0x00, 0x00, 0x0f, 0x61, 0x63, 0x63,  \\ t - - - - a c c
-     0x65, 0x70, 0x74, 0x2d, 0x65, 0x6e, 0x63, 0x6f,  \\ e p t - e n c o
-     0x64, 0x69, 0x6e, 0x67, 0x00, 0x00, 0x00, 0x0f,  \\ d i n g - - - -
-     0x61, 0x63, 0x63, 0x65, 0x70, 0x74, 0x2d, 0x6c,  \\ a c c e p t - l
-     0x61, 0x6e, 0x67, 0x75, 0x61, 0x67, 0x65, 0x00,  \\ a n g u a g e -
-     0x00, 0x00, 0x0d, 0x61, 0x63, 0x63, 0x65, 0x70,  \\ - - - a c c e p
-     0x74, 0x2d, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73,  \\ t - r a n g e s
-     0x00, 0x00, 0x00, 0x03, 0x61, 0x67, 0x65, 0x00,  \\ - - - - a g e -
-     0x00, 0x00, 0x05, 0x61, 0x6c, 0x6c, 0x6f, 0x77,  \\ - - - a l l o w
-     0x00, 0x00, 0x00, 0x0d, 0x61, 0x75, 0x74, 0x68,  \\ - - - - a u t h
-     0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f,  \\ o r i z a t i o
-     0x6e, 0x00, 0x00, 0x00, 0x0d, 0x63, 0x61, 0x63,  \\ n - - - - c a c
-     0x68, 0x65, 0x2d, 0x63, 0x6f, 0x6e, 0x74, 0x72,  \\ h e - c o n t r
-     0x6f, 0x6c, 0x00, 0x00, 0x00, 0x0a, 0x63, 0x6f,  \\ o l - - - - c o
-     0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,  \\ n n e c t i o n
-     0x00, 0x00, 0x00, 0x0c, 0x63, 0x6f, 0x6e, 0x74,  \\ - - - - c o n t
-     0x65, 0x6e, 0x74, 0x2d, 0x62, 0x61, 0x73, 0x65,  \\ e n t - b a s e
-     0x00, 0x00, 0x00, 0x10, 0x63, 0x6f, 0x6e, 0x74,  \\ - - - - c o n t
-     0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e, 0x63, 0x6f,  \\ e n t - e n c o
-     0x64, 0x69, 0x6e, 0x67, 0x00, 0x00, 0x00, 0x10,  \\ d i n g - - - -
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 29]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
-     0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d,  \\ c o n t e n t -
-     0x6c, 0x61, 0x6e, 0x67, 0x75, 0x61, 0x67, 0x65,  \\ l a n g u a g e
-     0x00, 0x00, 0x00, 0x0e, 0x63, 0x6f, 0x6e, 0x74,  \\ - - - - c o n t
-     0x65, 0x6e, 0x74, 0x2d, 0x6c, 0x65, 0x6e, 0x67,  \\ e n t - l e n g
-     0x74, 0x68, 0x00, 0x00, 0x00, 0x10, 0x63, 0x6f,  \\ t h - - - - c o
-     0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x6c, 0x6f,  \\ n t e n t - l o
-     0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00, 0x00,  \\ c a t i o n - -
-     0x00, 0x0b, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e,  \\ - - c o n t e n
-     0x74, 0x2d, 0x6d, 0x64, 0x35, 0x00, 0x00, 0x00,  \\ t - m d 5 - - -
-     0x0d, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,  \\ - c o n t e n t
-     0x2d, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x00, 0x00,  \\ - r a n g e - -
-     0x00, 0x0c, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e,  \\ - - c o n t e n
-     0x74, 0x2d, 0x74, 0x79, 0x70, 0x65, 0x00, 0x00,  \\ t - t y p e - -
-     0x00, 0x04, 0x64, 0x61, 0x74, 0x65, 0x00, 0x00,  \\ - - d a t e - -
-     0x00, 0x04, 0x65, 0x74, 0x61, 0x67, 0x00, 0x00,  \\ - - e t a g - -
-     0x00, 0x06, 0x65, 0x78, 0x70, 0x65, 0x63, 0x74,  \\ - - e x p e c t
-     0x00, 0x00, 0x00, 0x07, 0x65, 0x78, 0x70, 0x69,  \\ - - - - e x p i
-     0x72, 0x65, 0x73, 0x00, 0x00, 0x00, 0x04, 0x66,  \\ r e s - - - - f
-     0x72, 0x6f, 0x6d, 0x00, 0x00, 0x00, 0x04, 0x68,  \\ r o m - - - - h
-     0x6f, 0x73, 0x74, 0x00, 0x00, 0x00, 0x08, 0x69,  \\ o s t - - - - i
-     0x66, 0x2d, 0x6d, 0x61, 0x74, 0x63, 0x68, 0x00,  \\ f - m a t c h -
-     0x00, 0x00, 0x11, 0x69, 0x66, 0x2d, 0x6d, 0x6f,  \\ - - - i f - m o
-     0x64, 0x69, 0x66, 0x69, 0x65, 0x64, 0x2d, 0x73,  \\ d i f i e d - s
-     0x69, 0x6e, 0x63, 0x65, 0x00, 0x00, 0x00, 0x0d,  \\ i n c e - - - -
-     0x69, 0x66, 0x2d, 0x6e, 0x6f, 0x6e, 0x65, 0x2d,  \\ i f - n o n e -
-     0x6d, 0x61, 0x74, 0x63, 0x68, 0x00, 0x00, 0x00,  \\ m a t c h - - -
-     0x08, 0x69, 0x66, 0x2d, 0x72, 0x61, 0x6e, 0x67,  \\ - i f - r a n g
-     0x65, 0x00, 0x00, 0x00, 0x13, 0x69, 0x66, 0x2d,  \\ e - - - - i f -
-     0x75, 0x6e, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69,  \\ u n m o d i f i
-     0x65, 0x64, 0x2d, 0x73, 0x69, 0x6e, 0x63, 0x65,  \\ e d - s i n c e
-     0x00, 0x00, 0x00, 0x0d, 0x6c, 0x61, 0x73, 0x74,  \\ - - - - l a s t
-     0x2d, 0x6d, 0x6f, 0x64, 0x69, 0x66, 0x69, 0x65,  \\ - m o d i f i e
-     0x64, 0x00, 0x00, 0x00, 0x08, 0x6c, 0x6f, 0x63,  \\ d - - - - l o c
-     0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00, 0x00, 0x00,  \\ a t i o n - - -
-     0x0c, 0x6d, 0x61, 0x78, 0x2d, 0x66, 0x6f, 0x72,  \\ - m a x - f o r
-     0x77, 0x61, 0x72, 0x64, 0x73, 0x00, 0x00, 0x00,  \\ w a r d s - - -
-     0x06, 0x70, 0x72, 0x61, 0x67, 0x6d, 0x61, 0x00,  \\ - p r a g m a -
-     0x00, 0x00, 0x12, 0x70, 0x72, 0x6f, 0x78, 0x79,  \\ - - - p r o x y
-     0x2d, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74,  \\ - a u t h e n t
-     0x69, 0x63, 0x61, 0x74, 0x65, 0x00, 0x00, 0x00,  \\ i c a t e - - -
-     0x13, 0x70, 0x72, 0x6f, 0x78, 0x79, 0x2d, 0x61,  \\ - p r o x y - a
-     0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61,  \\ u t h o r i z a
-     0x74, 0x69, 0x6f, 0x6e, 0x00, 0x00, 0x00, 0x05,  \\ t i o n - - - -
-     0x72, 0x61, 0x6e, 0x67, 0x65, 0x00, 0x00, 0x00,  \\ r a n g e - - -
-     0x07, 0x72, 0x65, 0x66, 0x65, 0x72, 0x65, 0x72,  \\ - r e f e r e r
-     0x00, 0x00, 0x00, 0x0b, 0x72, 0x65, 0x74, 0x72,  \\ - - - - r e t r
-     0x79, 0x2d, 0x61, 0x66, 0x74, 0x65, 0x72, 0x00,  \\ y - a f t e r -
-     0x00, 0x00, 0x06, 0x73, 0x65, 0x72, 0x76, 0x65,  \\ - - - s e r v e
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 30]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
-     0x72, 0x00, 0x00, 0x00, 0x02, 0x74, 0x65, 0x00,  \\ r - - - - t e -
-     0x00, 0x00, 0x07, 0x74, 0x72, 0x61, 0x69, 0x6c,  \\ - - - t r a i l
-     0x65, 0x72, 0x00, 0x00, 0x00, 0x11, 0x74, 0x72,  \\ e r - - - - t r
-     0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x2d, 0x65,  \\ a n s f e r - e
-     0x6e, 0x63, 0x6f, 0x64, 0x69, 0x6e, 0x67, 0x00,  \\ n c o d i n g -
-     0x00, 0x00, 0x07, 0x75, 0x70, 0x67, 0x72, 0x61,  \\ - - - u p g r a
-     0x64, 0x65, 0x00, 0x00, 0x00, 0x0a, 0x75, 0x73,  \\ d e - - - - u s
-     0x65, 0x72, 0x2d, 0x61, 0x67, 0x65, 0x6e, 0x74,  \\ e r - a g e n t
-     0x00, 0x00, 0x00, 0x04, 0x76, 0x61, 0x72, 0x79,  \\ - - - - v a r y
-     0x00, 0x00, 0x00, 0x03, 0x76, 0x69, 0x61, 0x00,  \\ - - - - v i a -
-     0x00, 0x00, 0x07, 0x77, 0x61, 0x72, 0x6e, 0x69,  \\ - - - w a r n i
-     0x6e, 0x67, 0x00, 0x00, 0x00, 0x10, 0x77, 0x77,  \\ n g - - - - w w
-     0x77, 0x2d, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e,  \\ w - a u t h e n
-     0x74, 0x69, 0x63, 0x61, 0x74, 0x65, 0x00, 0x00,  \\ t i c a t e - -
-     0x00, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64,  \\ - - m e t h o d
-     0x00, 0x00, 0x00, 0x03, 0x67, 0x65, 0x74, 0x00,  \\ - - - - g e t -
-     0x00, 0x00, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75,  \\ - - - s t a t u
-     0x73, 0x00, 0x00, 0x00, 0x06, 0x32, 0x30, 0x30,  \\ s - - - - 2 0 0
-     0x20, 0x4f, 0x4b, 0x00, 0x00, 0x00, 0x07, 0x76,  \\ - O K - - - - v
-     0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x00, 0x00,  \\ e r s i o n - -
-     0x00, 0x08, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x31,  \\ - - H T T P - 1
-     0x2e, 0x31, 0x00, 0x00, 0x00, 0x03, 0x75, 0x72,  \\ - 1 - - - - u r
-     0x6c, 0x00, 0x00, 0x00, 0x06, 0x70, 0x75, 0x62,  \\ l - - - - p u b
-     0x6c, 0x69, 0x63, 0x00, 0x00, 0x00, 0x0a, 0x73,  \\ l i c - - - - s
-     0x65, 0x74, 0x2d, 0x63, 0x6f, 0x6f, 0x6b, 0x69,  \\ e t - c o o k i
-     0x65, 0x00, 0x00, 0x00, 0x0a, 0x6b, 0x65, 0x65,  \\ e - - - - k e e
-     0x70, 0x2d, 0x61, 0x6c, 0x69, 0x76, 0x65, 0x00,  \\ p - a l i v e -
-     0x00, 0x00, 0x06, 0x6f, 0x72, 0x69, 0x67, 0x69,  \\ - - - o r i g i
-     0x6e, 0x31, 0x30, 0x30, 0x31, 0x30, 0x31, 0x32,  \\ n 1 0 0 1 0 1 2
-     0x30, 0x31, 0x32, 0x30, 0x32, 0x32, 0x30, 0x35,  \\ 0 1 2 0 2 2 0 5
-     0x32, 0x30, 0x36, 0x33, 0x30, 0x30, 0x33, 0x30,  \\ 2 0 6 3 0 0 3 0
-     0x32, 0x33, 0x30, 0x33, 0x33, 0x30, 0x34, 0x33,  \\ 2 3 0 3 3 0 4 3
-     0x30, 0x35, 0x33, 0x30, 0x36, 0x33, 0x30, 0x37,  \\ 0 5 3 0 6 3 0 7
-     0x34, 0x30, 0x32, 0x34, 0x30, 0x35, 0x34, 0x30,  \\ 4 0 2 4 0 5 4 0
-     0x36, 0x34, 0x30, 0x37, 0x34, 0x30, 0x38, 0x34,  \\ 6 4 0 7 4 0 8 4
-     0x30, 0x39, 0x34, 0x31, 0x30, 0x34, 0x31, 0x31,  \\ 0 9 4 1 0 4 1 1
-     0x34, 0x31, 0x32, 0x34, 0x31, 0x33, 0x34, 0x31,  \\ 4 1 2 4 1 3 4 1
-     0x34, 0x34, 0x31, 0x35, 0x34, 0x31, 0x36, 0x34,  \\ 4 4 1 5 4 1 6 4
-     0x31, 0x37, 0x35, 0x30, 0x32, 0x35, 0x30, 0x34,  \\ 1 7 5 0 2 5 0 4
-     0x35, 0x30, 0x35, 0x32, 0x30, 0x33, 0x20, 0x4e,  \\ 5 0 5 2 0 3 - N
-     0x6f, 0x6e, 0x2d, 0x41, 0x75, 0x74, 0x68, 0x6f,  \\ o n - A u t h o
-     0x72, 0x69, 0x74, 0x61, 0x74, 0x69, 0x76, 0x65,  \\ r i t a t i v e
-     0x20, 0x49, 0x6e, 0x66, 0x6f, 0x72, 0x6d, 0x61,  \\ - I n f o r m a
-     0x74, 0x69, 0x6f, 0x6e, 0x32, 0x30, 0x34, 0x20,  \\ t i o n 2 0 4 -
-     0x4e, 0x6f, 0x20, 0x43, 0x6f, 0x6e, 0x74, 0x65,  \\ N o - C o n t e
-     0x6e, 0x74, 0x33, 0x30, 0x31, 0x20, 0x4d, 0x6f,  \\ n t 3 0 1 - M o
-     0x76, 0x65, 0x64, 0x20, 0x50, 0x65, 0x72, 0x6d,  \\ v e d - P e r m
-     0x61, 0x6e, 0x65, 0x6e, 0x74, 0x6c, 0x79, 0x34,  \\ a n e n t l y 4
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 31]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
-     0x30, 0x30, 0x20, 0x42, 0x61, 0x64, 0x20, 0x52,  \\ 0 0 - B a d - R
-     0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x34, 0x30,  \\ e q u e s t 4 0
-     0x31, 0x20, 0x55, 0x6e, 0x61, 0x75, 0x74, 0x68,  \\ 1 - U n a u t h
-     0x6f, 0x72, 0x69, 0x7a, 0x65, 0x64, 0x34, 0x30,  \\ o r i z e d 4 0
-     0x33, 0x20, 0x46, 0x6f, 0x72, 0x62, 0x69, 0x64,  \\ 3 - F o r b i d
-     0x64, 0x65, 0x6e, 0x34, 0x30, 0x34, 0x20, 0x4e,  \\ d e n 4 0 4 - N
-     0x6f, 0x74, 0x20, 0x46, 0x6f, 0x75, 0x6e, 0x64,  \\ o t - F o u n d
-     0x35, 0x30, 0x30, 0x20, 0x49, 0x6e, 0x74, 0x65,  \\ 5 0 0 - I n t e
-     0x72, 0x6e, 0x61, 0x6c, 0x20, 0x53, 0x65, 0x72,  \\ r n a l - S e r
-     0x76, 0x65, 0x72, 0x20, 0x45, 0x72, 0x72, 0x6f,  \\ v e r - E r r o
-     0x72, 0x35, 0x30, 0x31, 0x20, 0x4e, 0x6f, 0x74,  \\ r 5 0 1 - N o t
-     0x20, 0x49, 0x6d, 0x70, 0x6c, 0x65, 0x6d, 0x65,  \\ - I m p l e m e
-     0x6e, 0x74, 0x65, 0x64, 0x35, 0x30, 0x33, 0x20,  \\ n t e d 5 0 3 -
-     0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x20,  \\ S e r v i c e -
-     0x55, 0x6e, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61,  \\ U n a v a i l a
-     0x62, 0x6c, 0x65, 0x4a, 0x61, 0x6e, 0x20, 0x46,  \\ b l e J a n - F
-     0x65, 0x62, 0x20, 0x4d, 0x61, 0x72, 0x20, 0x41,  \\ e b - M a r - A
-     0x70, 0x72, 0x20, 0x4d, 0x61, 0x79, 0x20, 0x4a,  \\ p r - M a y - J
-     0x75, 0x6e, 0x20, 0x4a, 0x75, 0x6c, 0x20, 0x41,  \\ u n - J u l - A
-     0x75, 0x67, 0x20, 0x53, 0x65, 0x70, 0x74, 0x20,  \\ u g - S e p t -
-     0x4f, 0x63, 0x74, 0x20, 0x4e, 0x6f, 0x76, 0x20,  \\ O c t - N o v -
-     0x44, 0x65, 0x63, 0x20, 0x30, 0x30, 0x3a, 0x30,  \\ D e c - 0 0 - 0
-     0x30, 0x3a, 0x30, 0x30, 0x20, 0x4d, 0x6f, 0x6e,  \\ 0 - 0 0 - M o n
-     0x2c, 0x20, 0x54, 0x75, 0x65, 0x2c, 0x20, 0x57,  \\ - - T u e - - W
-     0x65, 0x64, 0x2c, 0x20, 0x54, 0x68, 0x75, 0x2c,  \\ e d - - T h u -
-     0x20, 0x46, 0x72, 0x69, 0x2c, 0x20, 0x53, 0x61,  \\ - F r i - - S a
-     0x74, 0x2c, 0x20, 0x53, 0x75, 0x6e, 0x2c, 0x20,  \\ t - - S u n - -
-     0x47, 0x4d, 0x54, 0x63, 0x68, 0x75, 0x6e, 0x6b,  \\ G M T c h u n k
-     0x65, 0x64, 0x2c, 0x74, 0x65, 0x78, 0x74, 0x2f,  \\ e d - t e x t -
-     0x68, 0x74, 0x6d, 0x6c, 0x2c, 0x69, 0x6d, 0x61,  \\ h t m l - i m a
-     0x67, 0x65, 0x2f, 0x70, 0x6e, 0x67, 0x2c, 0x69,  \\ g e - p n g - i
-     0x6d, 0x61, 0x67, 0x65, 0x2f, 0x6a, 0x70, 0x67,  \\ m a g e - j p g
-     0x2c, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x2f, 0x67,  \\ - i m a g e - g
-     0x69, 0x66, 0x2c, 0x61, 0x70, 0x70, 0x6c, 0x69,  \\ i f - a p p l i
-     0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x78,  \\ c a t i o n - x
-     0x6d, 0x6c, 0x2c, 0x61, 0x70, 0x70, 0x6c, 0x69,  \\ m l - a p p l i
-     0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x78,  \\ c a t i o n - x
-     0x68, 0x74, 0x6d, 0x6c, 0x2b, 0x78, 0x6d, 0x6c,  \\ h t m l - x m l
-     0x2c, 0x74, 0x65, 0x78, 0x74, 0x2f, 0x70, 0x6c,  \\ - t e x t - p l
-     0x61, 0x69, 0x6e, 0x2c, 0x74, 0x65, 0x78, 0x74,  \\ a i n - t e x t
-     0x2f, 0x6a, 0x61, 0x76, 0x61, 0x73, 0x63, 0x72,  \\ - j a v a s c r
-     0x69, 0x70, 0x74, 0x2c, 0x70, 0x75, 0x62, 0x6c,  \\ i p t - p u b l
-     0x69, 0x63, 0x70, 0x72, 0x69, 0x76, 0x61, 0x74,  \\ i c p r i v a t
-     0x65, 0x6d, 0x61, 0x78, 0x2d, 0x61, 0x67, 0x65,  \\ e m a x - a g e
-     0x3d, 0x67, 0x7a, 0x69, 0x70, 0x2c, 0x64, 0x65,  \\ - g z i p - d e
-     0x66, 0x6c, 0x61, 0x74, 0x65, 0x2c, 0x73, 0x64,  \\ f l a t e - s d
-     0x63, 0x68, 0x63, 0x68, 0x61, 0x72, 0x73, 0x65,  \\ c h c h a r s e
-     0x74, 0x3d, 0x75, 0x74, 0x66, 0x2d, 0x38, 0x63,  \\ t - u t f - 8 c
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 32]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
-     0x68, 0x61, 0x72, 0x73, 0x65, 0x74, 0x3d, 0x69,  \\ h a r s e t - i
-     0x73, 0x6f, 0x2d, 0x38, 0x38, 0x35, 0x39, 0x2d,  \\ s o - 8 8 5 9 -
-     0x31, 0x2c, 0x75, 0x74, 0x66, 0x2d, 0x2c, 0x2a,  \\ 1 - u t f - - -
-     0x2c, 0x65, 0x6e, 0x71, 0x3d, 0x30, 0x2e         \\ - e n q - 0 -
-   };
-
-   <CODE ENDS>
-
-
-   The entire contents of the name/value header block is compressed
-   using zlib.  There is a single zlib stream for all name value pairs
-   in one direction on a connection.  HTTP/2.0 uses a SYNC_FLUSH between
-   each compressed frame.
-
-   Implementation notes: the compression engine can be tuned to favor
-   speed or size.  Optimizing for size increases memory use and CPU
-   consumption.  Because header blocks are generally small, implementors
-   may want to reduce the window-size of the compression engine from the
-   default 15bits (a 32KB window) to more like 11bits (a 2KB window).
-   The exact setting is chosen by the compressor, the decompressor will
-   work with any setting.
-
-4.  HTTP Layering over HTTP/2.0
 
    HTTP/2.0 is intended to be as compatible as possible with current
    web-based applications.  This means that, from the perspective of the
@@ -1842,14 +1538,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    connection from either the client or server.  Without a server GOAWAY
    message, HTTP has a race condition where the client sends a request
    (a new SYN_STREAM) just as the server is closing the connection, and
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 33]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    the client cannot know if the server received the stream or not.  By
    using the last-stream-id in the GOAWAY, servers can indicate to the
    client if a request was processed or not.
@@ -1875,6 +1563,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
    SYN_STREAMs from the remote, the GOAWAY will contain a last-stream-id
    of 0.
 
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 28]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
 4.2.  HTTP Request/Response
 
 4.2.1.  Request
@@ -1887,24 +1582,16 @@ Internet-Draft                  HTTP/2.0                   February 2013
    the SYN_STREAM in a series of DATA frames.  The last DATA frame will
    set the FLAG_FIN to indicate the end of the body.
 
-   The SYN_STREAM Name/Value section will contain all of the HTTP
-   headers which are associated with an HTTP request.  The header block
-   in HTTP/2.0 is mostly unchanged from today's HTTP header block, with
-   the following differences:
+   The SYN_STREAM headers block will contain all of the HTTP headers
+   which are associated with an HTTP request.  The header block in HTTP/
+   2.0 is mostly unchanged from today's HTTP header block, with the
+   following differences:
 
-      The first line of the request is unfolded into name/value pairs
+      The first line of the request is unfolded into name-value pairs
       like other HTTP headers and MUST be present:
 
          ":method" - the HTTP method for this request (e.g.  "GET",
          "POST", "HEAD", etc)
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 34]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
 
          ":path" - the url-path for this url with "/" prefixed.  (see
          [URI]).  For example, for "http://www.google.com/search?q=dogs"
@@ -1913,7 +1600,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
          ":version" - the HTTP version of this request (e.g.  "HTTP/
          1.1")
 
-      In addition, the following two name/value pairs must also be
+      In addition, the following two name-value pairs must also be
       present in every request:
 
          ":host" - the hostport (see [URI]) portion of the URL for this
@@ -1931,6 +1618,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
       User-agents MUST support gzip compression.  Regardless of the
       Accept-Encoding sent by the user-agent, the server may always send
       content encoded with gzip or deflate encoding.
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 29]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
 
       If a server receives a request where the sum of the data frame
       payload lengths does not equal the size of the Content-Length
@@ -1952,16 +1646,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    should attempt to raise the priority of that resource.  Resources
    such as images, SHOULD generally use the lowest priority.
 
-
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 35]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    If a client sends a SYN_STREAM without all of the method, host, path,
    scheme, and version headers, the server MUST reply with a HTTP 400
    Bad Request reply.
@@ -1976,7 +1660,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    SYN_REPLY frame may contain the FLAG_FIN flag to indicate no further
    data will be sent on the stream.
 
-      The response status line is unfolded into name/value pairs like
+      The response status line is unfolded into name-value pairs like
       other HTTP headers and must be present:
 
          ":status" - The HTTP response status code (e.g.  "200" or "200
@@ -1988,6 +1672,15 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
       The Connection, Keep-Alive, Proxy-Connection, and Transfer-
       Encoding headers are not valid and MUST not be sent.
+
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 30]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
 
       Responses MAY be accompanied by a Content-Length header for
       advisory purposes.  (e.g.  for UI progress meters)
@@ -2008,15 +1701,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    defines the authentication scheme to be used.  The client then
    retries the request with an Authorization header appropriate to the
    specified authentication scheme.
-
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 36]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
 
    There are four options for proxy authentication, Basic, Digest, NTLM
    and Negotiate (SPNEGO).  The first two options were defined in
@@ -2045,6 +1729,15 @@ Internet-Draft                  HTTP/2.0                   February 2013
    To deal with this case, HTTP/2.0 servers using Stateful
    Authentication MUST implement one of two changes:
 
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 31]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
       Servers can add a "realm=<desired realm>" header so that the two
       authentication requests can be disambiguated and run concurrently.
       Unfortunately, given how these mechanisms work, this is probably
@@ -2066,14 +1759,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    server knows that it will need to send multiple resources in response
    to a single request.  Without server push features, the client must
    first download the primary resource, then discover the secondary
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 37]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    resource(s), and request them.  Pushing of resources avoids the
    round-trip delay, but also creates a potential race where a server
    can be pushing content which a user-agent is in the process of
@@ -2101,6 +1786,14 @@ Internet-Draft                  HTTP/2.0                   February 2013
    streams contain an "associated-stream-id" which indicates the
    requested stream for which the pushed stream is related.  The pushed
    stream inherits all of the headers from the associated-stream-id with
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 32]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
    the exception of ":host", ":scheme", and ":path", which are provided
    as part of the pushed response stream headers.  The browser MUST
    store these inherited and implied request headers with the cached
@@ -2122,14 +1815,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    purpose of the association is so that the user-agent can
    differentiate which request induced the pushed stream; without it, if
    the user-agent had two tabs open to the same page, each pushing
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 38]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    unique content under a fixed URL, the user-agent would not be able to
    differentiate the requests.
 
@@ -2154,16 +1839,24 @@ Internet-Draft                  HTTP/2.0                   February 2013
    The server MUST only push resources which would have been returned
    from a GET request.
 
-   Note: If the server does not have all of the Name/Value Response
-   headers available at the time it issues the HEADERS frame for the
-   pushed resource, it may later use an additional HEADERS frame to
-   augment the name/value pairs to be associated with the pushed stream.
-   The subsequent HEADERS frame(s) must not contain a header for
-   ':host', ':scheme', or ':path' (e.g.  the server can't change the
-   identity of the resource to be pushed).  The HEADERS frame must not
-   contain duplicate headers with a previously sent HEADERS frame.  The
-   server must send a HEADERS frame including the scheme/host/port
-   headers before sending any data frames on the stream.
+   Note: If the server does not have all of the Response headers
+   available at the time it issues the HEADERS frame for the pushed
+   resource, it may later use an additional HEADERS frame to augment the
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 33]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
+   name-value pairs to be associated with the pushed stream.  The
+   subsequent HEADERS frame(s) must not contain a header for ':host',
+   ':scheme', or ':path' (e.g.  the server can't change the identity of
+   the resource to be pushed).  The HEADERS frame must not contain
+   duplicate headers with a previously sent HEADERS frame.  The server
+   must send a HEADERS frame including the scheme/host/port headers
+   before sending any data frames on the stream.
 
 4.3.2.  Client implementation
 
@@ -2175,17 +1868,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
       the resource is being pushed, and the data has started to arrive
 
-
-
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 39]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    When a SYN_STREAM and HEADERS frame which contains an Associated-To-
    Stream-ID is received, the client must not issue GET requests for the
    resource in the pushed stream, and instead wait for the pushed stream
@@ -2196,8 +1878,8 @@ Internet-Draft                  HTTP/2.0                   February 2013
    PROTOCOL_ERROR.
 
    When a client receives a SYN_STREAM from the server without a the
-   ':host', ':scheme', and ':path' headers in the Name/Value section, it
-   MUST reply with a RST_STREAM with error code HTTP_PROTOCOL_ERROR.
+   ':host', ':scheme', and ':path' headers, it MUST reply with a
+   RST_STREAM with error code HTTP_PROTOCOL_ERROR.
 
    To cancel individual server push streams, the client can issue a
    stream error (Section 3.5.2) with error code CANCEL.  Upon receipt,
@@ -2216,6 +1898,14 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
    If the server sends a HEADERS frame after sending a data frame for
    the same stream, the client MAY ignore the HEADERS frame.  Ignoring
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 34]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
    the HEADERS frame after a data frame prevents handling of HTTP's
    trailing headers (http://www.w3.org/Protocols/rfc2616/
    rfc2616-sec14.html#sec14.40).
@@ -2229,26 +1919,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
    how to resolve protocol ambiguities or how to evolve the protocol
    going forward.  They may be removed before the final draft.
 
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 40]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
 5.1.  Separation of Framing Layer and Application Layer
 
    Readers may note that this specification sometimes blends the framing
    layer (Section 3) with requirements of a specific application - HTTP
    (Section 4).  This is reflected in the request/response nature of the
-   streams, the definition of the HEADERS and compression contexts which
-   are very similar to HTTP, and other areas as well.
+   streams and the definition of the HEADERS which are very similar to
+   HTTP, and other areas as well.
 
    This blending is intentional - the primary goal of this protocol is
    to create a low-latency protocol for use with HTTP.  Isolating the
@@ -2273,6 +1950,18 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 5.3.  One Connection Per Domain
 
+
+
+
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 35]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
    HTTP/2.0 attempts to use fewer connections than other protocols have
    traditionally used.  The rationale for this behavior is because it is
    very difficult to provide a consistent level of service (e.g.  TCP
@@ -2290,14 +1979,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
    single stream, it creates a potential for head-of-line blocking
    problems at the transport level.  In tests so far, the negative
    effects of head-of-line blocking (especially in the presence of
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 41]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    packet loss) is outweighed by the benefits of compression and
    prioritization.
 
@@ -2321,38 +2002,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    be induced.  However, by addressing other aspects of HTTP/2.0 and TCP
    interactions, we believe this is completely mitigated.
 
-5.5.  Compression Context(s)
-
-   When isolating the compression contexts used for communicating with
-   multiple origins, we had a few choices to make.  We could have
-   maintained a map (or list) of compression contexts usable for each
-   origin.  The basic case is easy - each HEADERS frame would need to
-   identify the context to use for that frame.  However, compression
-   contexts are not cheap, so the lifecycle of each context would need
-   to be bounded.  For proxy servers, where we could churn through many
-   contexts, this would be a concern.  We considered using a static set
-   of contexts, say 16 of them, which would bound the memory use.  We
-   also considered dynamic contexts, which could be created on the fly,
-   and would need to be subsequently destroyed.  All of these are
-   complicated, and ultimately we decided that such a mechanism creates
-   too many problems to solve.
-
-   Alternatively, we've chosen the simple approach, which is to simply
-   provide a flag for resetting the compression context.  For the common
-   case (no proxy), this fine because most requests are to the same
-   origin and we never need to reset the context.  For cases where we
-   are using two different origins over a single HTTP/2.0 session, we
-   simply reset the compression state between each transition.
-
-5.6.  Unidirectional streams
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 42]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
+5.5.  Unidirectional streams
 
    Many readers notice that unidirectional streams are both a bit
    confusing in concept and also somewhat redundant.  If the recipient
@@ -2360,12 +2010,20 @@ Internet-Draft                  HTTP/2.0                   February 2013
    send a SYN_REPLY with the FLAG_FIN bit set.  The FLAG_UNIDIRECTIONAL
    is, therefore, not necessary.
 
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 36]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
    It is true that we don't need the UNIDIRECTIONAL markings.  It is
    added because it avoids the recipient of pushed streams from needing
    to send a set of empty frames (e.g.  the SYN_STREAM w/ FLAG_FIN)
    which otherwise serve no purpose.
 
-5.7.  Data Compression
+5.6.  Data Compression
 
    Generic compression of data portion of the streams (as opposed to
    compression of the headers) without knowing the content of the stream
@@ -2381,7 +2039,7 @@ Internet-Draft                  HTTP/2.0                   February 2013
    redundant, it is unclear if it is useful at all.  We will likely
    remove it from the specification.
 
-5.8.  Server Push
+5.7.  Server Push
 
    A subtle but important point is that server push streams must be
    declared before the associated stream is closed.  The reason for this
@@ -2400,21 +2058,21 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 6.2.  HTTP Headers and HTTP/2.0 Headers
 
-   At the application level, HTTP uses name/value pairs in its headers.
+   At the application level, HTTP uses name-value pairs in its headers.
    Because HTTP/2.0 merges the existing HTTP headers with HTTP/2.0
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 43]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    headers, there is a possibility that some HTTP applications already
    use a particular header name.  To avoid any conflicts, all headers
    introduced for layering HTTP over HTTP/2.0 are prefixed with ":".
    ":" is not a valid sequence in HTTP header naming, preventing any
    possible conflict.  [[ED: Not a security consideration.]]
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 37]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
 
 6.3.  Cross-Protocol Attacks
 
@@ -2458,19 +2116,19 @@ Internet-Draft                  HTTP/2.0                   February 2013
    The maintenance of these connections over time could be used to
    expose private information.  For example, a user using a browser
    hours after the previous user stopped using that browser may be able
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 44]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
    to learn about what the previous user was doing.  This is a problem
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
 7.2.  SETTINGS frame
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 38]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
 
    The HTTP/2.0 SETTINGS frame allows servers to store out-of-band
    transmitted information about the communication between client and
@@ -2505,26 +2163,13 @@ Internet-Draft                  HTTP/2.0                   February 2013
 
 9.1.  Normative References
 
-   [ASCII]    , "US-ASCII. Coded Character Set - 7-Bit American Standard
-              Code for Information Interchange. Standard ANSI X3.4-1986,
-              ANSI, 1986.", .
-
    [HTTP-p1]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
               (HTTP/1.1): Message Syntax and Routing", draft-ietf-
-              httpbis-p1-messaging-21 (work in progress), October 2012.
-
-
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 45]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
+              httpbis-p1-messaging-22 (work in progress), February 2013.
 
    [HTTP-p2]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
               (HTTP/1.1): Semantics and Content", draft-ietf-
-              httpbis-p2-semantics-21 (work in progress), October 2012.
+              httpbis-p2-semantics-22 (work in progress), February 2013.
 
    [HTTP11]   Fielding, R., Gettys, J., Mogul, J., Frystyk, H.,
               Masinter, L., Leach, P., and T. Berners-Lee, "Hypertext
@@ -2533,6 +2178,14 @@ Internet-Draft                  HTTP/2.0                   February 2013
    [HTTPAUTHN]
               Franks, J., Hallam-Baker, P.M., Hostetler, J.L., Lawrence,
               S.D., Leach, P.J., Luotonen, A., and L. Stewart, "HTTP
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 39]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
+
               Authentication: Basic and Digest Access Authentication",
               RFC 2617, June 1999.
 
@@ -2553,12 +2206,6 @@ Internet-Draft                  HTTP/2.0                   February 2013
               Negotiation Extension", draft-agl-tls-nextprotoneg-04
               (work in progress), May 2012.
 
-   [UDELCOMPRESSION]
-              Yang, F., Amer, P., and J. Leighton, "A Methodology to
-              Derive SPDY's Initial Dictionary for Zlib Compression", ,
-              <http://www.eecis.udel.edu/~amer/PEL/poc/pdf/SPDY-
-              Fan.pdf>.
-
    [URI]      Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66, RFC
               3986, January 2005.
@@ -2571,16 +2218,11 @@ Internet-Draft                  HTTP/2.0                   February 2013
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance", RFC 1323, May 1992.
 
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 46]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-01
+
+   Removed zlib-based header compression mechanism.
 
    Updated references.
 
@@ -2591,6 +2233,14 @@ A.1.  Since draft-ietf-httpbis-http2-01
    Added advice against naive implementation of flow control.
 
    Added session header section.
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 40]
+
+Internet-Draft                  HTTP/2.0                   February 2013
+
 
    Restructured frame header.  Removed distinction between data and
    control frames.
@@ -2626,14 +2276,6 @@ A.3.  Since draft-mbelshe-httpbis-spdy-00
 
    Added status note.
 
-
-
-
-Belshe, et al.          Expires August 31, 2013                [Page 47]
-
-Internet-Draft                  HTTP/2.0                   February 2013
-
-
 Authors' Addresses
 
    Mike Belshe
@@ -2646,6 +2288,14 @@ Authors' Addresses
    Google, Inc
 
    EMail: fenix@google.com
+
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 41]
+
+Internet-Draft                  HTTP/2.0                   February 2013
 
 
    Martin Thomson (editor)
@@ -2684,4 +2334,18 @@ Authors' Addresses
 
 
 
-Belshe, et al.          Expires August 31, 2013                [Page 48]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires August 31, 2013                [Page 42]
