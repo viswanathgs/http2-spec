@@ -30,33 +30,13 @@ Abstract
 
 Editorial Note (To be removed by RFC Editor)
 
-   This draft is a work-in-progress, and does not yet reflect Working
-   Group consensus.
-
-   This draft contains features from the SPDY Protocol as a starting
-   point, as per the Working Group's charter.  Future drafts will add,
-   remove and change text, based upon the Working Group's decisions.
-
    Discussion of this draft takes place on the HTTPBIS working group
    mailing list (ietf-http-wg@w3.org), which is archived at [1].
 
-   Related documents, such as source code and issues list can be found
-   at [2].
+   Working Group information and related documents can be found at [2]
+   (Wiki) and [3] (source code and issues tracker).
 
    The changes in this draft are summarized in Appendix A.1.
-
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 1]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
 Status of This Memo
 
@@ -70,6 +50,14 @@ Status of This Memo
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 1]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
@@ -93,12 +81,12 @@ Copyright Notice
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-     1.1.  Document Organization . . . . . . . . . . . . . . . . . .   5
+     1.1.  Document Organization . . . . . . . . . . . . . . . . . .   4
      1.2.  Conventions and Terminology . . . . . . . . . . . . . . .   5
    2.  Starting HTTP/2.0 . . . . . . . . . . . . . . . . . . . . . .   6
      2.1.  HTTP/2.0 Version Identification . . . . . . . . . . . . .   6
-     2.2.  Starting HTTP/2.0 for "http:" URIs  . . . . . . . . . . .   7
-     2.3.  Starting HTTP/2.0 for "https:" URIs . . . . . . . . . . .   8
+     2.2.  Starting HTTP/2.0 for "http:" URIs  . . . . . . . . . . .   6
+     2.3.  Starting HTTP/2.0 for "https:" URIs . . . . . . . . . . .   7
      2.4.  Starting HTTP/2.0 with Prior Knowledge  . . . . . . . . .   8
    3.  HTTP/2.0 Framing Layer  . . . . . . . . . . . . . . . . . . .   8
      3.1.  Session . . . . . . . . . . . . . . . . . . . . . . . . .   8
@@ -106,16 +94,8 @@ Table of Contents
      3.3.  Framing . . . . . . . . . . . . . . . . . . . . . . . . .   9
        3.3.1.  Frame Header  . . . . . . . . . . . . . . . . . . . .   9
        3.3.2.  Frame Processing  . . . . . . . . . . . . . . . . . .  10
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 2]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
      3.4.  Streams . . . . . . . . . . . . . . . . . . . . . . . . .  10
-       3.4.1.  Stream Creation . . . . . . . . . . . . . . . . . . .  11
+       3.4.1.  Stream Creation . . . . . . . . . . . . . . . . . . .  10
        3.4.2.  Stream priority . . . . . . . . . . . . . . . . . . .  11
        3.4.3.  Stream headers  . . . . . . . . . . . . . . . . . . .  11
        3.4.4.  Stream data exchange  . . . . . . . . . . . . . . . .  12
@@ -126,6 +106,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
        3.5.2.  Stream Error Handling . . . . . . . . . . . . . . . .  13
      3.6.  Stream Flow Control . . . . . . . . . . . . . . . . . . .  14
        3.6.1.  Flow Control Principles . . . . . . . . . . . . . . .  14
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 2]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
        3.6.2.  Appropriate Use of Flow Control . . . . . . . . . . .  15
      3.7.  Frame Types . . . . . . . . . . . . . . . . . . . . . . .  16
        3.7.1.  Data Frames . . . . . . . . . . . . . . . . . . . . .  16
@@ -162,14 +150,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  37
      7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  37
      7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  38
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 3]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  38
    9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  38
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .  38
@@ -180,6 +160,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
      A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  40
      A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  40
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  41
+
+
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 3]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
 1.  Introduction
 
@@ -218,14 +207,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    The HTTP/2.0 encapsulation also enables more efficient processing of
    messages by providing efficient message framing.  Processing of
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 4]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    headers in HTTP/2.0 messages is more efficient (for entities that
    process many messages).
 
@@ -237,6 +218,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
    independent, length-prefixed frames; and an HTTP layer (Section 4),
    which specifies the mechanism for overlaying HTTP request/response
    pairs on top of the framing layer.  While some of the framing layer
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 4]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    concepts are isolated from the HTTP layer, building a generic framing
    layer has not been a goal.  The framing layer is tailored to the
    needs of the HTTP protocol and server push.
@@ -275,17 +264,23 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    session error:  An error on the HTTP/2.0 session.
 
+   stream:  A bi-directional flow of bytes across a virtual channel
+      within a HTTP/2.0 session.
+
+   stream error:  An error on an individual HTTP/2.0 stream.
+
+
+
+
+
+
+
 
 
 Belshe, et al.         Expires September 04, 2013               [Page 5]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
-
-   stream:  A bi-directional flow of bytes across a virtual channel
-      within a HTTP/2.0 session.
-
-   stream error:  An error on an individual HTTP/2.0 stream.
 
 2.  Starting HTTP/2.0
 
@@ -323,21 +318,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
    identified using the string "HTTP-draft-03/2.0".
 
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 6]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    Non-compatible experiments that are based on these draft versions
    MUST instead replace the string "draft" with a different identifier.
    For example, an experimental implementation of packet mood-based
@@ -348,6 +328,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
    wg@w3.org mailing list.
 
 2.2.  Starting HTTP/2.0 for "http:" URIs
+
+
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 6]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    A client that makes a request to an "http:" URI without prior
    knowledge about support for HTTP/2.0 uses the HTTP Upgrade mechanism
@@ -387,13 +376,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    Once the server returns the 101 response, both the client and the
    server send a session header (Section 3.2).
 
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 7]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
 2.3.  Starting HTTP/2.0 for "https:" URIs
 
    A client that makes a request to an "https:" URI without prior
@@ -402,6 +384,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    Once TLS negotiation is complete, both the client and the server send
    a session header (Section 3.2).
+
+
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 7]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
 2.4.  Starting HTTP/2.0 with Prior Knowledge
 
@@ -441,15 +432,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    Upgrade or TLS handshake, the client sends the client session header.
    The server replies with a server session header.
 
-
-
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 8]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    The session header provides a final confirmation that both peers
    agree to use the HTTP/2.0 protocol.  The SETTINGS frame ensures that
    client or server configuration is known as quickly as possible.
@@ -458,6 +440,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
    followed by a SETTINGS frame (Section 3.7.4).  The client sends the
    client session header immediately after receiving an HTTP/1.1
    Upgrade, or after receiving a TLS Finished message from the server.
+
+
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 8]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    The server session header is the 8 byte sequence 0x736c6f770d0a0d0a
    followed by a SETTINGS frame (Section 3.7.4).  The server sends the
@@ -499,19 +490,21 @@ Internet-Draft                  HTTP/2.0                      March 2013
    Length:  The 16-bit length of the frame payload in bytes.  The length
       of the frame header is not included in this sum.
 
-
-
-Belshe, et al.         Expires September 04, 2013               [Page 9]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    Type:  The 8-bit type of the frame.  The frame type determines how
       the remainder of the frame header and payload are interpreted.
 
    Flags:  An 8-bit field reserved for flags.  The semantics of each bit
       in flags depends on the frame type.  Bits that have undefined
       semantics are reserved.
+
+
+
+
+
+Belshe, et al.         Expires September 04, 2013               [Page 9]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    R: A reserved 1-bit field.  The semantics of this bit are not
       defined.
@@ -555,18 +548,19 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    o  Streams can concurrently send data interleaved with other streams.
 
+   o  Streams can be established and used unilaterally.
+
+   o  Streams can be cancelled.
+
+3.4.1.  Stream Creation
+
+
 
 
 Belshe, et al.         Expires September 04, 2013              [Page 10]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
-
-   o  Streams can be established and used unilaterally.
-
-   o  Streams can be cancelled.
-
-3.4.1.  Stream Creation
 
    Use of streams does not require negotiation.  A stream is not
    created, streams are used by sending a frame on the stream.
@@ -610,6 +604,12 @@ Internet-Draft                  HTTP/2.0                      March 2013
    (Section 3.4.5), each side may send HEADERS frame(s) containing the
    header data.  Header data can be sent in multiple HEADERS frames, and
    HEADERS frames may be interleaved with data frames.
+
+
+
+
+
+
 
 
 
@@ -2218,7 +2218,7 @@ A.2.  Since draft-ietf-httpbis-http2-00
 
    Removed section on Incompatibilities with SPDY draft#2.
 
-   Changed INTERNAL_ERROR on GOAWAY to have a value of 2 [3].
+   Changed INTERNAL_ERROR on GOAWAY to have a value of 2 [4].
 
    Replaced abstract and introduction.
 
@@ -2226,7 +2226,7 @@ A.2.  Since draft-ietf-httpbis-http2-00
 
    Removed unused references.
 
-   Added flow control principles (Section 3.6.1) based on [4].
+   Added flow control principles (Section 3.6.1) based on [5].
 
 A.3.  Since draft-mbelshe-httpbis-spdy-00
 
