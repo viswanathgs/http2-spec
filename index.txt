@@ -137,19 +137,19 @@ Internet-Draft                  HTTP/2.0                      March 2013
        4.3.2.  Client implementation . . . . . . . . . . . . . . . .  33
    5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  34
      5.1.  Separation of Framing Layer and Application Layer . . . .  34
-     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  35
+     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  34
      5.3.  One Connection Per Domain . . . . . . . . . . . . . . . .  35
      5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  35
-     5.5.  Data Compression  . . . . . . . . . . . . . . . . . . . .  36
+     5.5.  Data Compression  . . . . . . . . . . . . . . . . . . . .  35
      5.6.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  36
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .  36
      6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  36
      6.2.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . . . .  36
-     6.3.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  37
-     6.4.  Cacheability of Pushed Resources  . . . . . . . . . . . .  37
+     6.3.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  36
+     6.4.  Cacheability of Pushed Resources  . . . . . . . . . . . .  36
    7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  37
      7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  37
-     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  38
+     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  37
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  38
    9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  38
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .  38
@@ -533,7 +533,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
    (Section 3.7.3) containing FRAME_TOO_LARGE error code if the frame
    size limit is exceeded.
 
-   [[ISSUE https://github.com/http2/http2-spec/issues/28: Need a way to
+   [[<https://github.com/http2/http2-spec/issues/28>: Need a way to
    signal the maximum frame size; no way to RST_STREAM on non-stream-
    related frames.]]
 
@@ -674,9 +674,9 @@ Belshe, et al.         Expires September 05, 2013              [Page 12]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-      RST_STREAM is received.  See Stream Error Handling (Section 3.5.2)
-      [[ED: confusing: streams are bidirectional, and both peers might
-      be sending concurrently]]
+      RST_STREAM is received.  See Stream Error Handling
+      (Section 3.5.2).  [[ED: confusing: streams are bidirectional, and
+      both peers might be sending concurrently]]
 
       TCP connection teardown: If the TCP connection is torn down while
       un-closed streams exist, then the endpoint must assume that the
@@ -1554,7 +1554,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
          ":host" - the hostport (see [URI]) portion of the URL for this
          request (e.g.  "www.google.com:1234").  This header is the same
-         as the HTTP 'Host' header.  [[ED: why not "host" ?]]
+         as the HTTP 'Host' header.  [[ED: why not "host"?]]
 
          ":scheme" - the scheme portion of the URL for this request
          (e.g.  "https"))
@@ -1639,7 +1639,8 @@ Internet-Draft                  HTTP/2.0                      March 2013
       If a client receives a response where the sum of the data frame
       payload length does not equal the size of the Content-Length
       header field, the client MUST ignore the content length header
-      field.  [[Ed: See issue #46]]
+      field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
+      46>.]]
 
    If a client receives a response without a status or without a version
    header, the client must reply with a RST_STREAM frame indicating a
@@ -1669,11 +1670,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
    similar to how two HTTP connections would independently authenticate
    to a proxy server.
 
+4.2.3.2.  Stateful Authentication
 
-
-
-
-
+   Unfortunately, the stateful authentication mechanisms were
+   implemented and defined in a such a way that directly violates
 
 
 
@@ -1682,10 +1682,6 @@ Belshe, et al.         Expires September 05, 2013              [Page 30]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-4.2.3.2.  Stateful Authentication
-
-   Unfortunately, the stateful authentication mechanisms were
-   implemented and defined in a such a way that directly violates
    RFC2617 - they do not include a "realm" as part of the request.  This
    is problematic in HTTP/2.0 because it makes it impossible for a
    client to disambiguate two concurrent server authentication
@@ -1727,9 +1723,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
    This prevents servers from creating the streams necessary to push
    resources.
 
+   Browsers receiving a pushed response MUST validate that the server is
+   authorized to push the resource using the browser same-origin
+   [ORIGIN] policy.  For example, a HTTP/2.0 connection to "example.com"
+   is generally not permitted to push a response for "www.example.org".
 
-
-
+   If the browser accepts a pushed response (e.g.  it does not send a
+   RST_STREAM), the browser MUST attempt to cache the pushed response in
 
 
 
@@ -1738,16 +1738,10 @@ Belshe, et al.         Expires September 05, 2013              [Page 31]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   Browsers receiving a pushed response MUST validate that the server is
-   authorized to push the resource using the browser same-origin
-   [ORIGIN] policy.  For example, a HTTP/2.0 connection to "example.com"
-   is generally not permitted to push a response for "www.example.org".
-
-   If the browser accepts a pushed response (e.g.  it does not send a
-   RST_STREAM), the browser MUST attempt to cache the pushed response in
    same way that it would cache any other response.  This means
    validating the response headers and inserting into the disk cache.
-   [[ED: browser this, browser that Issue #27]]
+   [[ED: browser this, browser that; <https://github.com/http2/
+   http2-spec/issues/27>]]
 
    Because pushed responses have no request, they have no request
    headers associated with them.  At the framing layer, HTTP/2.0 pushed
@@ -1777,23 +1771,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    each pushing unique content under a fixed URL, the user-agent would
    not be able to differentiate the requests.
 
-
-
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 32]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    The Associated-To-Stream-ID must be the ID of an existing, open
    stream.  The reason for this restriction is to have a clear endpoint
    for pushed content.  If the user-agent requested a resource on stream
@@ -1809,6 +1786,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
    the pushed resources MUST be sent prior to sending any content which
    could allow the client to discover the pushed resource and request
    it.
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 32]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    The server MUST only push resources that could have been returned
    from a GET request.
@@ -1840,16 +1824,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    0.  Clients MUST treat this as a session error (Section 3.5.1) and
    send a GOAWAY frame of type PROTOCOL_ERROR.
 
-
-
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 33]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    When a client receives a HEADERS+PRIORITY frame from the server
    without a the ':host', ':scheme', and ':path' headers, it MUST reply
    with a RST_STREAM with error code HTTP_PROTOCOL_ERROR.
@@ -1864,6 +1838,17 @@ Internet-Draft                  HTTP/2.0                      March 2013
    the associated-stream-id.  By cancelling that stream, the server MUST
    immediately stop sending frames for any streams with in-association-
    to for the original stream.
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 33]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    If the server sends a HEADERS frame containing headers that duplicate
    values on a previous HEADERS frame for the same stream, the client
@@ -1899,13 +1884,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    relates to existing HTTP implementations.  However, the ability to
    reuse the HTTP/2.0 framing layer is a non goal.
 
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 34]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
 5.2.  Error handling - Framing Layer
 
    Error handling at the HTTP/2.0 layer splits errors into two groups:
@@ -1920,6 +1898,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
    For errors occurring outside of a single stream context, HTTP/2.0
    assumes the entire session is hosed.  In this case, the endpoint
    detecting the error should initiate a connection close.
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 34]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
 5.3.  One Connection Per Domain
 
@@ -1954,14 +1939,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    overhead of HTTP/2.0 frames is generally quite low.  Each data frame
    is only an 8 byte overhead for a 1452 byte payload (~0.6%).  At the
    time of this writing, bandwidth is already plentiful, and there is a
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 35]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    strong trend indicating that bandwidth will continue to increase.
    With an average worldwide bandwidth of 1Mbps, and assuming that a
    variable length encoding could reduce the overhead by 50%, the
@@ -1977,6 +1954,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
    compression of the headers) without knowing the content of the stream
    is redundant.  There is no value in compressing a stream which is
    already compressed.  Because of this, HTTP/2.0 does allow data
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 35]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    compression to be optional.  We included it because study of existing
    websites shows that many sites are not using compression as they
    should, and users suffer because of it.  We wanted a mechanism where,
@@ -2010,14 +1995,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    fields.  Because HTTP/2.0 merges the existing HTTP header fields with
    HTTP/2.0 headers, there is a possibility that some HTTP applications
    already use a particular header field name.  To avoid any conflicts,
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 36]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    all headers introduced for layering HTTP over HTTP/2.0 are prefixed
    with ":".  ":" is not a valid sequence in HTTP header field naming,
    preventing any possible conflict.  [[ED: Not a security
@@ -2032,6 +2009,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
    [[Issue: This is no longer true]]
 
 6.4.  Cacheability of Pushed Resources
+
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 36]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    Pushed resources do not have an associated request.  In order for
    existing HTTP cache control validations (such as the Vary header
@@ -2066,14 +2051,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    expose private information.  For example, a user using a browser
    hours after the previous user stopped using that browser may be able
    to learn about what the previous user was doing.  This is a problem
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 37]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
@@ -2087,6 +2064,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    Clients implementing privacy modes can disable client-persisted
    SETTINGS storage.
+
+
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 37]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    Clients MUST clear persisted SETTINGS information when clearing the
    cookies.
@@ -2120,16 +2106,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
               (HTTP/1.1): Semantics and Content", draft-ietf-
               httpbis-p2-semantics-22 (work in progress), February 2013.
 
-
-
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 38]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    [HTTP11]   Fielding, R., Gettys, J., Mogul, J., Frystyk, H.,
               Masinter, L., Leach, P., and T. Berners-Lee, "Hypertext
               Transfer Protocol -- HTTP/1.1", RFC 2616, June 1999.
@@ -2145,6 +2121,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 38]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    [SPNEGO]   Jaganathan, K., Zhu, L., and J. Brezak, "SPNEGO-based
               Kerberos and NTLM HTTP Authentication in Microsoft
@@ -2179,13 +2163,6 @@ A.1.  Since draft-ietf-httpbis-http2-01
 
    Clarified stream identifier reuse.
 
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 39]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    Removed CREDENTIALS frame and associated mechanisms.
 
    Added advice against naive implementation of flow control.
@@ -2201,6 +2178,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
    servers.
 
    Changed protocol label form based on discussions.
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 39]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
 A.2.  Since draft-ietf-httpbis-http2-00
 
@@ -2234,14 +2218,6 @@ Authors' Addresses
    EMail: mbelshe@chromium.org
 
 
-
-
-
-Belshe, et al.         Expires September 05, 2013              [Page 40]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    Roberto Peon
    Google, Inc
 
@@ -2257,6 +2233,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
    EMail: martin.thomson@skype.net
 
 
+
+
+
+
+Belshe, et al.         Expires September 05, 2013              [Page 40]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    Alexey Melnikov (editor)
    Isode Ltd
    5 Castle Business Village
@@ -2265,6 +2250,21 @@ Internet-Draft                  HTTP/2.0                      March 2013
    UK
 
    EMail: Alexey.Melnikov@isode.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
