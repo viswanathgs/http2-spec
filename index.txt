@@ -153,12 +153,12 @@ Internet-Draft                  HTTP/2.0                      March 2013
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  38
    9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  38
      9.1.  Normative References  . . . . . . . . . . . . . . . . . .  38
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  40
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  39
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  40
      A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  40
      A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  40
-     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  41
+     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  40
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  41
 
 
@@ -1668,10 +1668,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    When a client sends a request to an origin server that requires
    authentication, the server can reply with a "401 Unauthorized"
-   response, and include a WWW-Authenticate challenge header that
+   response, and include a WWW-Authenticate challenge header field that
    defines the authentication scheme to be used.  The client then
    retries the request with an Authorization header field appropriate to
-   the specified authentication scheme.
+   the specified authentication scheme ([HTTP-p7]).
 
 
 
@@ -1684,18 +1684,17 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    There are four options for proxy authentication, Basic, Digest, NTLM
    and Negotiate (SPNEGO).  The first two options were defined in
-   RFC2617 [HTTPAUTHN], and are stateless.  The second two options were
-   developed by Microsoft and specified in RFC4559 [SPNEGO], and are
-   stateful; otherwise known as multi-round authentication, or
-   connection authentication.
+   [RFC2617], and are stateless.  The second two options were developed
+   by Microsoft and specified in [RFC4559], and are stateful; otherwise
+   known as multi-round authentication, or connection authentication.
 
 4.2.3.1.  Stateless Authentication
 
    Stateless Authentication over HTTP/2.0 is identical to how it is
-   performed over HTTP.  If multiple HTTP/2.0 streams are concurrently
-   sent to a single server, each will authenticate independently,
-   similar to how two HTTP connections would independently authenticate
-   to a proxy server.
+   performed over HTTP/1.1.  If multiple HTTP/2.0 streams are
+   concurrently sent to a single server, each will authenticate
+   independently, similar to how two HTTP connections would
+   independently authenticate to a proxy server.
 
 4.2.3.2.  Stateful Authentication
 
@@ -1730,6 +1729,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
    server knows that it will need to send multiple resources in response
    to a single request.  Without server push features, the client must
    first download the primary resource, then discover the secondary
+   resource(s), and request them.  Pushing of resources avoids the
 
 
 
@@ -1738,7 +1738,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 31]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   resource(s), and request them.  Pushing of resources avoids the
    round-trip delay, but also creates a potential race where a server
    can be pushing content which a user-agent is in the process of
    requesting.  The following mechanics attempt to prevent the race
@@ -1786,6 +1785,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
    the URL for the resource being pushed.  Subsequent headers may follow
    in HEADERS frames.  The purpose of the association is so that the
    user-agent can differentiate which request induced the pushed stream;
+   without it, if the user-agent had two tabs open to the same page,
 
 
 
@@ -1794,7 +1794,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 32]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   without it, if the user-agent had two tabs open to the same page,
    each pushing unique content under a fixed URL, the user-agent would
    not be able to differentiate the requests.
 
@@ -1840,8 +1839,9 @@ Internet-Draft                  HTTP/2.0                      March 2013
    resource in the pushed stream, and instead wait for the pushed stream
    to arrive.
 
-
-
+   A server MUST NOT push a resource with the Associated-To-Stream-ID of
+   0.  Clients MUST treat this as a session error (Section 3.5.1) and
+   send a GOAWAY frame of type PROTOCOL_ERROR.
 
 
 
@@ -1849,10 +1849,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 33]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
-
-   A server MUST NOT push a resource with the Associated-To-Stream-ID of
-   0.  Clients MUST treat this as a session error (Section 3.5.1) and
-   send a GOAWAY frame of type PROTOCOL_ERROR.
 
    When a client receives a HEADERS+PRIORITY frame from the server
    without a the ':host', ':scheme', and ':path' headers, it MUST reply
@@ -1898,6 +1894,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    This blending is intentional - the primary goal of this protocol is
    to create a low-latency protocol for use with HTTP.  Isolating the
+   two layers is convenient for description of the protocol and how it
+   relates to existing HTTP implementations.  However, the ability to
+   reuse the HTTP/2.0 framing layer is a non goal.
+
 
 
 
@@ -1905,10 +1905,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 34]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
-
-   two layers is convenient for description of the protocol and how it
-   relates to existing HTTP implementations.  However, the ability to
-   reuse the HTTP/2.0 framing layer is a non goal.
 
 5.2.  Error handling - Framing Layer
 
@@ -1954,6 +1950,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
    this seems like a tragic waste of bandwidth.  HTTP/2.0 chooses the
    simple encoding for speed and simplicity.
 
+   The goal of HTTP/2.0 is to reduce latency on the network.  The
+   overhead of HTTP/2.0 frames is generally quite low.  Each data frame
+   is only an 8 byte overhead for a 1452 byte payload (~0.6%).  At the
+   time of this writing, bandwidth is already plentiful, and there is a
 
 
 
@@ -1962,10 +1962,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 35]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   The goal of HTTP/2.0 is to reduce latency on the network.  The
-   overhead of HTTP/2.0 frames is generally quite low.  Each data frame
-   is only an 8 byte overhead for a 1452 byte payload (~0.6%).  At the
-   time of this writing, bandwidth is already plentiful, and there is a
    strong trend indicating that bandwidth will continue to increase.
    With an average worldwide bandwidth of 1Mbps, and assuming that a
    variable length encoding could reduce the overhead by 50%, the
@@ -2010,6 +2006,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 6.2.  HTTP Header Fields and HTTP/2.0 Headers
 
+   At the application level, HTTP uses name-value pairs in its header
+   fields.  Because HTTP/2.0 merges the existing HTTP header fields with
+   HTTP/2.0 headers, there is a possibility that some HTTP applications
+   already use a particular header field name.  To avoid any conflicts,
 
 
 
@@ -2018,10 +2018,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 36]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   At the application level, HTTP uses name-value pairs in its header
-   fields.  Because HTTP/2.0 merges the existing HTTP header fields with
-   HTTP/2.0 headers, there is a possibility that some HTTP applications
-   already use a particular header field name.  To avoid any conflicts,
    all headers introduced for layering HTTP over HTTP/2.0 are prefixed
    with ":".  ":" is not a valid sequence in HTTP header field naming,
    preventing any possible conflict.  [[ED: Not a security
@@ -2066,6 +2062,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    HTTP/2.0 aims to keep connections open longer between clients and
    servers in order to reduce the latency when a user makes a request.
+   The maintenance of these connections over time could be used to
+   expose private information.  For example, a user using a browser
+   hours after the previous user stopped using that browser may be able
+   to learn about what the previous user was doing.  This is a problem
 
 
 
@@ -2074,10 +2074,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 37]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   The maintenance of these connections over time could be used to
-   expose private information.  For example, a user using a browser
-   hours after the previous user stopped using that browser may be able
-   to learn about what the previous user was doing.  This is a problem
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
@@ -2120,8 +2116,12 @@ Internet-Draft                  HTTP/2.0                      March 2013
               (HTTP/1.1): Message Syntax and Routing", draft-ietf-
               httpbis-p1-messaging-22 (work in progress), February 2013.
 
+   [HTTP-p2]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
+              (HTTP/1.1): Semantics and Content", draft-ietf-
+              httpbis-p2-semantics-22 (work in progress), February 2013.
 
-
+   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
+              Transfer Protocol (HTTP/1.1): Conditional Requests",
 
 
 
@@ -2130,12 +2130,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 38]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   [HTTP-p2]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
-              (HTTP/1.1): Semantics and Content", draft-ietf-
-              httpbis-p2-semantics-22 (work in progress), February 2013.
-
-   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
-              Transfer Protocol (HTTP/1.1): Conditional Requests",
               draft-ietf-httpbis-p4-conditional-22 (work in progress),
               February 2013.
 
@@ -2153,19 +2147,18 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
               httpbis-p7-auth-22 (work in progress), February 2013.
 
-   [HTTPAUTHN]
-              Franks, J., Hallam-Baker, P.M., Hostetler, J.L., Lawrence,
-              S.D., Leach, P.J., Luotonen, A., and L. Stewart, "HTTP
-              Authentication: Basic and Digest Access Authentication",
-              RFC 2617, June 1999.
-
    [ORIGIN]   Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
 
-   [SPNEGO]   Jaganathan, K., Zhu, L., and J. Brezak, "SPNEGO-based
+   [RFC2617]  Franks, J., Hallam-Baker, P.M., Hostetler, J.L., Lawrence,
+              S.D., Leach, P.J., Luotonen, A., and L. Stewart, "HTTP
+              Authentication: Basic and Digest Access Authentication",
+              RFC 2617, June 1999.
+
+   [RFC4559]  Jaganathan, K., Zhu, L., and J. Brezak, "SPNEGO-based
               Kerberos and NTLM HTTP Authentication in Microsoft
               Windows", RFC 4559, June 2006.
 
@@ -2176,16 +2169,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Negotiation Extension", draft-agl-tls-nextprotoneg-04
               (work in progress), May 2012.
 
-
-
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 39]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    [URI]      Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66, RFC
               3986, January 2005.
@@ -2194,6 +2177,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Format Specification version 3.3", RFC 1950, May 1996.
 
 9.2.  Informative References
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 39]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance", RFC 1323, May 1992.
@@ -2234,14 +2225,6 @@ A.2.  Since draft-ietf-httpbis-http2-00
 
    Replaced abstract and introduction.
 
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 40]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    Added section on starting HTTP/2.0, including upgrade mechanism.
 
    Removed unused references.
@@ -2251,6 +2234,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
 A.3.  Since draft-mbelshe-httpbis-spdy-00
 
    Adopted as base for draft-ietf-httpbis-http2.
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 40]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
    Updated authors/editors list.
 
@@ -2287,6 +2277,16 @@ Authors' Addresses
    UK
 
    EMail: Alexey.Melnikov@isode.com
+
+
+
+
+
+
+
+
+
+
 
 
 
