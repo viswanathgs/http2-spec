@@ -898,26 +898,35 @@ Upgrade: HTTP/2.0
          frames.
       </p>
       <h3 id="rfc.section.3.4.6"><a href="#rfc.section.3.4.6">3.4.6</a>&nbsp;<a id="StreamClose" href="#StreamClose">Stream close</a></h3>
-      <p id="rfc.section.3.4.6.p.1">Streams can be terminated in the following ways: </p>
+      <p id="rfc.section.3.4.6.p.1">Streams can be terminated in the following ways:</p>
+      <p id="rfc.section.3.4.6.p.2">Normal termination: </p>
       <ul class="empty">
-         <li>Normal termination: Normal stream termination occurs when both sender and recipient have half-closed the stream by sending
-            a frame containing a FINAL flag.
-         </li>
-         <li>Half-close on unidirectional stream: A stream that only has frames sent in one direction can be tentatively considered to
-            be closed once a frame containing a FINAL flag is sent. The active sender on the stream MUST be prepared to receive frames
-            after closing the stream.
-         </li>
-         <li>Abrupt termination: Either the client or server can send a RST_STREAM control frame at any time. A RST_STREAM contains an
-            error code to indicate the reason for failure. When a RST_STREAM is sent from the stream originator, it indicates a failure
-            to complete the stream and that no further data will be sent on the stream. When a RST_STREAM is sent from the stream recipient,
-            the sender, upon receipt, should stop sending any data on the stream. The stream recipient should be aware that there is a
-            race between data already in transit from the sender and the time the RST_STREAM is received. See Stream Error Handling (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>). <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: ED: confusing: streams are bidirectional, and both peers might be sending concurrently]</span> 
-         </li>
-         <li>TCP connection teardown: If the TCP connection is torn down while un-closed streams exist, then the endpoint must assume that
-            the stream was abnormally interrupted and may be incomplete.
+         <li>Normal stream termination occurs when both sender and recipient have half-closed the stream by sending a frame containing
+            a FINAL flag.
          </li>
       </ul>
-      <p id="rfc.section.3.4.6.p.2">If an endpoint receives a data frame after the stream is closed, it must send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
+      <p id="rfc.section.3.4.6.p.3">Half-close on unidirectional stream: </p>
+      <ul class="empty">
+         <li>A stream that only has frames sent in one direction can be tentatively considered to be closed once a frame containing a FINAL
+            flag is sent. The active sender on the stream MUST be prepared to receive frames after closing the stream.
+         </li>
+      </ul>
+      <p id="rfc.section.3.4.6.p.4">Abrupt termination: </p>
+      <ul class="empty">
+         <li>Either the client or server can send a RST_STREAM control frame at any time. A RST_STREAM contains an error code to indicate
+            the reason for failure. When a RST_STREAM is sent from the stream originator, it indicates a failure to complete the stream
+            and that no further data will be sent on the stream. When a RST_STREAM is sent from the stream recipient, the sender, upon
+            receipt, should stop sending any data on the stream. The stream recipient should be aware that there is a race between data
+            already in transit from the sender and the time the RST_STREAM is received. See Stream Error Handling (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>). <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: ED: confusing: streams are bidirectional, and both peers might be sending concurrently]</span> 
+         </li>
+      </ul>
+      <p id="rfc.section.3.4.6.p.5">TCP connection teardown: </p>
+      <ul class="empty">
+         <li>If the TCP connection is torn down while un-closed streams exist, then the endpoint must assume that the stream was abnormally
+            interrupted and may be incomplete.
+         </li>
+      </ul>
+      <p id="rfc.section.3.4.6.p.6">If an endpoint receives a data frame after the stream is closed, it must send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
       <h2 id="rfc.section.3.5"><a href="#rfc.section.3.5">3.5</a>&nbsp;Error Handling
       </h2>
       <p id="rfc.section.3.5.p.1">The HTTP/2.0 framing layer has only two types of errors, and they are always handled consistently. Any reference in this specification
@@ -1017,7 +1026,7 @@ Upgrade: HTTP/2.0
       </dl>
       <p id="rfc.section.3.7.1.p.3">The identifier field in the data frame header MUST contain a stream identifier for an open stream.</p>
       <p id="rfc.section.3.7.1.p.4">Data frame processing requirements: </p>
-      <ul class="empty">
+      <ul>
          <li>If an endpoint receives a data frame for a stream-id which is not open and the endpoint has not sent a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.7.6</a>) frame, it MUST send issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) with the error code INVALID_STREAM for the stream-id.
          </li>
          <li>If the endpoint that created the stream receives a data frame before receiving a HEADERS frame on that stream, it is a protocol
@@ -1149,32 +1158,51 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.7.4.p.9">The following settings are defined: </p>
       <dl>
          <dt>SETTINGS_UPLOAD_BANDWIDTH (1):</dt>
-         <dd>allows the sender to send its expected upload bandwidth on this channel. This number is an estimate. The value should be the
-            integral number of kilobytes per second that the sender predicts as an expected maximum upload channel capacity.
+         <dd>
+            <p>allows the sender to send its expected upload bandwidth on this channel. This number is an estimate. The value should be the
+               integral number of kilobytes per second that the sender predicts as an expected maximum upload channel capacity.
+            </p>
          </dd>
          <dt>SETTINGS_DOWNLOAD_BANDWIDTH (2):</dt>
-         <dd>allows the sender to send its expected download bandwidth on this channel. This number is an estimate. The value should be
-            the integral number of kilobytes per second that the sender predicts as an expected maximum download channel capacity.
+         <dd>
+            <p>allows the sender to send its expected download bandwidth on this channel. This number is an estimate. The value should be
+               the integral number of kilobytes per second that the sender predicts as an expected maximum download channel capacity.
+            </p>
          </dd>
          <dt>SETTINGS_ROUND_TRIP_TIME (3):</dt>
-         <dd>allows the sender to send its expected round-trip-time on this channel. The round trip time is defined as the minimum amount
-            of time to send a control frame from this client to the remote and receive a response. The value is represented in milliseconds.
+         <dd>
+            <p>allows the sender to send its expected round-trip-time on this channel. The round trip time is defined as the minimum amount
+               of time to send a control frame from this client to the remote and receive a response. The value is represented in milliseconds.
+            </p>
          </dd>
          <dt>SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
-         <dd>allows the sender to inform the remote endpoint the maximum number of concurrent streams which it will allow. This limit is
-            directional: it applies to the number of streams that the sender permits the receiver to create. By default there is no limit.
-            For implementers it is recommended that this value be no smaller than 100, so as to not unnecessarily limit parallelism.
+         <dd>
+            <p>allows the sender to inform the remote endpoint the maximum number of concurrent streams which it will allow. This limit is
+               directional: it applies to the number of streams that the sender permits the receiver to create. By default there is no limit.
+               For implementers it is recommended that this value be no smaller than 100, so as to not unnecessarily limit parallelism.
+            </p>
          </dd>
          <dt>SETTINGS_CURRENT_CWND (5):</dt>
-         <dd>allows the sender to inform the remote endpoint of the current TCP CWND value.</dd>
+         <dd>
+            <p>allows the sender to inform the remote endpoint of the current TCP CWND value.</p>
+         </dd>
          <dt>SETTINGS_DOWNLOAD_RETRANS_RATE (6):</dt>
-         <dd>allows the sender to inform the remote endpoint the retransmission rate (bytes retransmitted / total bytes transmitted).</dd>
+         <dd>
+            <p>allows the sender to inform the remote endpoint the retransmission rate (bytes retransmitted / total bytes transmitted).</p>
+         </dd>
          <dt>SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
-         <dd>allows the sender to inform the remote endpoint the initial window size (in bytes) for new streams.</dd>
+         <dd>
+            <p>allows the sender to inform the remote endpoint the initial window size (in bytes) for new streams.</p>
+         </dd>
          <dt>SETTINGS_FLOW_CONTROL_OPTIONS (10):</dt>
-         <dd>This setting allows an endpoint to indicate that streams directed to them will not be subject to flow control. The least significant
-            bit (0x1) is set to indicate that new streams are not flow controlled. Bit 2 (0x2) is set to indicate that the session is
-            not flow controlled. All other bits are reserved. <br><br> This setting applies to all streams, including existing streams. <br><br> These bits cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;3.7.8.4</a>.
+         <dd>
+            <p>This setting allows an endpoint to indicate that streams directed to them will not be subject to flow control. The least significant
+               bit (0x1) is set to indicate that new streams are not flow controlled. Bit 2 (0x2) is set to indicate that the session is
+               not flow controlled. All other bits are reserved.
+            </p>
+            <p>This setting applies to all streams, including existing streams.</p>
+            <p>These bits cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;3.7.8.4</a>.
+            </p>
          </dd>
       </dl>
       <p id="rfc.section.3.7.4.p.10">The message is intentionally extensible for future information which may improve client-server communications. The sender
@@ -1568,11 +1596,11 @@ Upgrade: HTTP/2.0
       <h3 id="rfc.section.4.3.2"><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;Client implementation
       </h3>
       <p id="rfc.section.4.3.2.p.1">When fetching a resource the client has 3 possibilities: </p>
-      <ul class="empty">
+      <ol>
          <li>the resource is not being pushed</li>
          <li>the resource is being pushed, but the data has not yet arrived</li>
          <li>the resource is being pushed, and the data has started to arrive</li>
-      </ul>
+      </ol>
       <p id="rfc.section.4.3.2.p.2">When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-ID is received, the client MUST NOT issue GET requests
          for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
       </p>
