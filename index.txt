@@ -130,35 +130,35 @@ Internet-Draft                  HTTP/2.0                      March 2013
        4.1.1.  Use of GOAWAY . . . . . . . . . . . . . . . . . . . .  27
      4.2.  HTTP Request/Response . . . . . . . . . . . . . . . . . .  28
        4.2.1.  Request . . . . . . . . . . . . . . . . . . . . . . .  28
-       4.2.2.  Response  . . . . . . . . . . . . . . . . . . . . . .  30
+       4.2.2.  Response  . . . . . . . . . . . . . . . . . . . . . .  29
        4.2.3.  Authentication  . . . . . . . . . . . . . . . . . . .  30
      4.3.  Server Push Transactions  . . . . . . . . . . . . . . . .  31
        4.3.1.  Server implementation . . . . . . . . . . . . . . . .  32
        4.3.2.  Client implementation . . . . . . . . . . . . . . . .  33
    5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  34
-     5.1.  Separation of Framing Layer and Application Layer . . . .  34
+     5.1.  Separation of Framing Layer and Application Layer . . . .  35
      5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  35
      5.3.  One Connection Per Domain . . . . . . . . . . . . . . . .  35
-     5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  35
+     5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  36
      5.5.  Data Compression  . . . . . . . . . . . . . . . . . . . .  36
      5.6.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  36
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  36
-     6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  36
-     6.2.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . . . .  36
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  37
+     6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  37
+     6.2.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . . . .  37
      6.3.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  37
      6.4.  Cacheability of Pushed Resources  . . . . . . . . . . . .  37
-   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  37
-     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  37
+   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  38
+     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  38
      7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  38
    8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  38
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  38
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  38
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  39
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  39
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  39
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  40
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  40
      A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  40
      A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  40
-     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  40
+     A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  41
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  41
 
 
@@ -1548,20 +1548,20 @@ Internet-Draft                  HTTP/2.0                      March 2013
    block, with the following differences:
 
       The following fields that are carried in the request line in HTTP/
-      1.1 are defined as special-valued name-value pairs:
+      1.1 ([HTTP-p1], Section 3.1.1) are defined as special-valued name-
+      value pairs:
 
          ":method" - the HTTP method for this request (e.g.  "GET",
-         "POST", "HEAD", etc)
+         "POST", "HEAD", etc) ([HTTP-p2], Section 4)
 
-         ":path" - the url-path for this url with "/" prefixed.  (see
-         [URI]).  For example, for "http://www.google.com/search?q=dogs"
-         the path would be "/search?q=dogs".
+         ":path" - the request-target for this URI with "/" prefixed
+         (see [HTTP-p1], Section 3.1.1).  For example, for "http://
+         www.google.com/search?q=dogs" the path would be "/
+         search?q=dogs".  [[what forms of the HTTPbis request-target are
+         allowed here?]]
 
          ":version" - the HTTP version of this request (e.g.  "HTTP/
          1.1") [[ED: strange]]
-
-      These header fields MUST be present in HTTP requests.
-
 
 
 
@@ -1570,15 +1570,18 @@ Belshe, et al.         Expires September 06, 2013              [Page 28]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
+      These header fields MUST be present in HTTP requests.
+
       In addition, the following two name-value pairs MUST be present in
       every request:
 
-         ":host" - the hostport (see [URI]) portion of the URL for this
-         request (e.g.  "www.google.com:1234").  This header is the same
-         as the HTTP 'Host' header.  [[ED: why not "host"?]]
+         ":host" - the host and options port portions (see [RFC3986],
+         Section 3.2) of the URI for this request (e.g.
+         "www.google.com:1234").  This header field is the same as the
+         HTTP 'Host' header field ([HTTP-p1], Section 5.4).
 
-         ":scheme" - the scheme portion of the URL for this request
-         (e.g.  "https"))
+         ":scheme" - the scheme portion of the URI for this request
+         (e.g.  "https")
 
       Header field names are all lowercase.
 
@@ -1613,10 +1616,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
    If a client sends a HEADERS+PRIORITY frame that omits a mandatory
    header, the server MUST reply with a HTTP 400 Bad Request reply.
 
-
-
-
-
+4.2.2.  Response
 
 
 
@@ -1625,8 +1625,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 29]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
-
-4.2.2.  Response
 
    The server responds to a client request with a HEADERS frame.
    Symmetric to the client's upload stream, server will send any
@@ -1673,7 +1671,9 @@ Internet-Draft                  HTTP/2.0                      March 2013
    retries the request with an Authorization header field appropriate to
    the specified authentication scheme ([HTTP-p7]).
 
-
+   There are four options for proxy authentication, Basic, Digest, NTLM
+   and Negotiate (SPNEGO).  The first two options were defined in
+   [RFC2617], and are stateless.  The second two options were developed
 
 
 
@@ -1682,9 +1682,6 @@ Belshe, et al.         Expires September 06, 2013              [Page 30]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   There are four options for proxy authentication, Basic, Digest, NTLM
-   and Negotiate (SPNEGO).  The first two options were defined in
-   [RFC2617], and are stateless.  The second two options were developed
    by Microsoft and specified in [RFC4559], and are stateful; otherwise
    known as multi-round authentication, or connection authentication.
 
@@ -1724,12 +1721,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 4.3.  Server Push Transactions
 
-   HTTP/2.0 enables a server to send multiple replies to a client for a
-   single request.  The rationale for this feature is that sometimes a
-   server knows that it will need to send multiple resources in response
-   to a single request.  Without server push features, the client must
-   first download the primary resource, then discover the secondary
-   resource(s), and request them.  Pushing of resources avoids the
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1738,6 +1738,12 @@ Belshe, et al.         Expires September 06, 2013              [Page 31]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
+   HTTP/2.0 enables a server to send multiple replies to a client for a
+   single request.  The rationale for this feature is that sometimes a
+   server knows that it will need to send multiple resources in response
+   to a single request.  Without server push features, the client must
+   first download the primary resource, then discover the secondary
+   resource(s), and request them.  Pushing of resources avoids the
    round-trip delay, but also creates a potential race where a server
    can be pushing content which a user-agent is in the process of
    requesting.  The following mechanics attempt to prevent the race
@@ -1779,13 +1785,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 4.3.1.  Server implementation
 
-   When the server intends to push a resource to the user-agent, it
-   opens a new stream by sending a HEADERS+PRIORITY frame.  The frame
-   MUST include headers for ":scheme", ":host", ":path", which represent
-   the URL for the resource being pushed.  Subsequent headers may follow
-   in HEADERS frames.  The purpose of the association is so that the
-   user-agent can differentiate which request induced the pushed stream;
-   without it, if the user-agent had two tabs open to the same page,
+
 
 
 
@@ -1794,7 +1794,14 @@ Belshe, et al.         Expires September 06, 2013              [Page 32]
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   each pushing unique content under a fixed URL, the user-agent would
+   When the server intends to push a resource to the user-agent, it
+   opens a new stream by sending a HEADERS+PRIORITY frame.  The frame
+   MUST include headers for ":scheme", ":host", ":path", which represent
+   the URI for the resource being pushed.  Subsequent headers may follow
+   in HEADERS frames.  The purpose of the association is so that the
+   user-agent can differentiate which request induced the pushed stream;
+   without it, if the user-agent had two tabs open to the same page,
+   each pushing unique content under a fixed URI, the user-agent would
    not be able to differentiate the requests.
 
    The Associated-To-Stream-ID must be the ID of an existing, open
@@ -1834,6 +1841,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
       the resource is being pushed, and the data has started to arrive
 
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 33]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-
    ID is received, the client MUST NOT issue GET requests for the
    resource in the pushed stream, and instead wait for the pushed stream
@@ -1842,13 +1858,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    A server MUST NOT push a resource with the Associated-To-Stream-ID of
    0.  Clients MUST treat this as a session error (Section 3.5.1) and
    send a GOAWAY frame of type PROTOCOL_ERROR.
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 33]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
    When a client receives a HEADERS+PRIORITY frame from the server
    without a the ':host', ':scheme', and ':path' headers, it MUST reply
@@ -1884,6 +1893,19 @@ Internet-Draft                  HTTP/2.0                      March 2013
    how to resolve protocol ambiguities or how to evolve the protocol
    going forward.  They may be removed before the final draft.
 
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 34]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
 5.1.  Separation of Framing Layer and Application Layer
 
    Readers may note that this specification sometimes blends the framing
@@ -1897,14 +1919,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    two layers is convenient for description of the protocol and how it
    relates to existing HTTP implementations.  However, the ability to
    reuse the HTTP/2.0 framing layer is a non goal.
-
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 34]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
 5.2.  Error handling - Framing Layer
 
@@ -1940,6 +1954,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
    single stream, it creates a potential for head-of-line blocking
    problems at the transport level.  In tests so far, the negative
    effects of head-of-line blocking (especially in the presence of
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 35]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    packet loss) is outweighed by the benefits of compression and
    prioritization.
 
@@ -1954,14 +1976,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    overhead of HTTP/2.0 frames is generally quite low.  Each data frame
    is only an 8 byte overhead for a 1452 byte payload (~0.6%).  At the
    time of this writing, bandwidth is already plentiful, and there is a
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 35]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    strong trend indicating that bandwidth will continue to increase.
    With an average worldwide bandwidth of 1Mbps, and assuming that a
    variable length encoding could reduce the overhead by 50%, the
@@ -1997,6 +2011,13 @@ Internet-Draft                  HTTP/2.0                      March 2013
    not have a specific lifecycle for when they could disavow knowledge
    of the streams which went before.
 
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 36]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
 6.  Security Considerations
 
 6.1.  Use of Same-origin constraints
@@ -2010,14 +2031,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    fields.  Because HTTP/2.0 merges the existing HTTP header fields with
    HTTP/2.0 headers, there is a possibility that some HTTP applications
    already use a particular header field name.  To avoid any conflicts,
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 36]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    all headers introduced for layering HTTP over HTTP/2.0 are prefixed
    with ":".  ":" is not a valid sequence in HTTP header field naming,
    preventing any possible conflict.  [[ED: Not a security
@@ -2053,6 +2066,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
    served out of cache, overriding the actual representation that the
    authoritative tenant provides.
 
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 37]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    Pushed resources for which an origin server is not authoritative are
    never cached or used.
 
@@ -2066,14 +2087,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
    expose private information.  For example, a user using a browser
    hours after the previous user stopped using that browser may be able
    to learn about what the previous user was doing.  This is a problem
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 37]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
@@ -2108,6 +2121,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    o  Mark Nottingham and Julian Reschke
 
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 38]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
 9.  References
 
 9.1.  Normative References
@@ -2122,14 +2144,6 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Conditional Requests",
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 38]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
-
               draft-ietf-httpbis-p4-conditional-22 (work in progress),
               February 2013.
 
@@ -2158,6 +2172,20 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Authentication: Basic and Digest Access Authentication",
               RFC 2617, June 1999.
 
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66, RFC
+              3986, January 2005.
+
+
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 39]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    [RFC4559]  Jaganathan, K., Zhu, L., and J. Brezak, "SPNEGO-based
               Kerberos and NTLM HTTP Authentication in Microsoft
               Windows", RFC 4559, June 2006.
@@ -2169,22 +2197,10 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Negotiation Extension", draft-agl-tls-nextprotoneg-04
               (work in progress), May 2012.
 
-   [URI]      Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
-              Resource Identifier (URI): Generic Syntax", STD 66, RFC
-              3986, January 2005.
-
    [ZLIB]     Deutsch, L.P. and J.-L. Gailly, "ZLIB Compressed Data
               Format Specification version 3.3", RFC 1950, May 1996.
 
 9.2.  Informative References
-
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 39]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance", RFC 1323, May 1992.
@@ -2219,6 +2235,13 @@ A.2.  Since draft-ietf-httpbis-http2-00
 
    Changed title throughout.
 
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 40]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    Removed section on Incompatibilities with SPDY draft#2.
 
    Changed INTERNAL_ERROR on GOAWAY to have a value of 2 [4].
@@ -2234,13 +2257,6 @@ A.2.  Since draft-ietf-httpbis-http2-00
 A.3.  Since draft-mbelshe-httpbis-spdy-00
 
    Adopted as base for draft-ietf-httpbis-http2.
-
-
-
-Belshe, et al.         Expires September 06, 2013              [Page 40]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
    Updated authors/editors list.
 
@@ -2269,6 +2285,19 @@ Authors' Addresses
    EMail: martin.thomson@skype.net
 
 
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 41]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
    Alexey Melnikov (editor)
    Isode Ltd
    5 Castle Business Village
@@ -2292,4 +2321,31 @@ Authors' Addresses
 
 
 
-Belshe, et al.         Expires September 06, 2013              [Page 41]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 06, 2013              [Page 42]

@@ -1413,20 +1413,22 @@ Upgrade: HTTP/2.0
          request. The header block in HTTP/2.0 is mostly unchanged from today's HTTP header block, with the following differences: 
       </p>
       <ul class="empty">
-         <li>The following fields that are carried in the request line in HTTP/1.1 are defined as special-valued name-value pairs: 
+         <li>The following fields that are carried in the request line in HTTP/1.1 (<a href="#HTTP-p1" id="rfc.xref.HTTP-p1.5"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>) are defined as special-valued name-value pairs: 
             <ul class="empty">
-               <li>":method" - the HTTP method for this request (e.g. "GET", "POST", "HEAD", etc)</li>
-               <li>":path" - the url-path for this url with "/" prefixed. (see <a href="#URI" id="rfc.xref.URI.1"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[URI]</cite></a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs".
+               <li>":method" - the HTTP method for this request (e.g. "GET", "POST", "HEAD", etc) (<a href="#HTTP-p2" id="rfc.xref.HTTP-p2.2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p2-semantics.html#methods" title="Request Methods">Section 4</a>)
                </li>
-               <li>":version" - the HTTP version of this request (e.g. "HTTP/1.1") <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: ED: strange]</span> 
+               <li>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1" id="rfc.xref.HTTP-p1.6"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
+               </li>
+               <li>":version" - the HTTP version of this request (e.g. "HTTP/1.1") <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: ED: strange]</span> 
                </li>
             </ul> These header fields MUST be present in HTTP requests.
          </li>
          <li>In addition, the following two name-value pairs MUST be present in every request: 
             <ul class="empty">
-               <li>":host" - the hostport (see <a href="#URI" id="rfc.xref.URI.2"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[URI]</cite></a>) portion of the URL for this request (e.g. "www.google.com:1234"). This header is the same as the HTTP 'Host' header. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: ED: why not "host"?]</span> 
+               <li>":host" - the host and options port portions (see <a href="#RFC3986" id="rfc.xref.RFC3986.1"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>) of the URI for this request (e.g. "www.google.com:1234"). This header field is the same as the HTTP 'Host' header field
+                  (<a href="#HTTP-p1" id="rfc.xref.HTTP-p1.7"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#header.host" title="Host">Section 5.4</a>).
                </li>
-               <li>":scheme" - the scheme portion of the URL for this request (e.g. "https"))</li>
+               <li>":scheme" - the scheme portion of the URI for this request (e.g. "https")</li>
             </ul> 
          </li>
          <li>Header field names are all lowercase.</li>
@@ -1541,10 +1543,10 @@ Upgrade: HTTP/2.0
       <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;Server implementation
       </h3>
       <p id="rfc.section.4.3.1.p.1">When the server intends to push a resource to the user-agent, it opens a new stream by sending a HEADERS+PRIORITY frame. The
-         frame MUST include headers for ":scheme", ":host", ":path", which represent the URL for the resource being pushed. Subsequent
+         frame MUST include headers for ":scheme", ":host", ":path", which represent the URI for the resource being pushed. Subsequent
          headers may follow in HEADERS frames. The purpose of the association is so that the user-agent can differentiate which request
          induced the pushed stream; without it, if the user-agent had two tabs open to the same page, each pushing unique content under
-         a fixed URL, the user-agent would not be able to differentiate the requests.
+         a fixed URI, the user-agent would not be able to differentiate the requests.
       </p>
       <p id="rfc.section.4.3.1.p.2">The Associated-To-Stream-ID must be the ID of an existing, open stream. The reason for this restriction is to have a clear
          endpoint for pushed content. If the user-agent requested a resource on stream 11, the server replies on stream 11. It can
@@ -1587,7 +1589,7 @@ Upgrade: HTTP/2.0
          the client must issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) with error code PROTOCOL ERROR.
       </p>
       <p id="rfc.section.4.3.2.p.8">If the server sends a HEADERS frame after sending a data frame for the same stream, the client MAY ignore the HEADERS frame.
-         Ignoring the HEADERS frame after a data frame prevents handling of HTTP's trailing header fields (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#header.trailer" title="Trailer">Section 4.1.1</a> of <a href="#HTTP-p1" id="rfc.xref.HTTP-p1.5"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>).
+         Ignoring the HEADERS frame after a data frame prevents handling of HTTP's trailing header fields (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#header.trailer" title="Trailer">Section 4.1.1</a> of <a href="#HTTP-p1" id="rfc.xref.HTTP-p1.8"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>).
       </p>
       <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a>&nbsp;Design Rationale and Notes
       </h1>
@@ -1776,6 +1778,11 @@ Upgrade: HTTP/2.0
             </td>
          </tr>
          <tr>
+            <td class="reference"><b id="RFC3986">[RFC3986]</b></td>
+            <td class="top">Berners-Lee, T., Fielding, R., and L. Masinter, “<a href="http://tools.ietf.org/html/rfc3986">Uniform Resource Identifier (URI): Generic Syntax</a>”, STD&nbsp;66, RFC&nbsp;3986, January&nbsp;2005.
+            </td>
+         </tr>
+         <tr>
             <td class="reference"><b id="RFC4559">[RFC4559]</b></td>
             <td class="top">Jaganathan, K., Zhu, L., and J. Brezak, “<a href="http://tools.ietf.org/html/rfc4559">SPNEGO-based Kerberos and NTLM HTTP Authentication in Microsoft Windows</a>”, RFC&nbsp;4559, June&nbsp;2006.
             </td>
@@ -1788,11 +1795,6 @@ Upgrade: HTTP/2.0
          <tr>
             <td class="reference"><b id="TLSNPN">[TLSNPN]</b></td>
             <td class="top">Langley, A., “<a href="http://tools.ietf.org/html/draft-agl-tls-nextprotoneg-04">Transport Layer Security (TLS) Next Protocol Negotiation Extension</a>”, Internet-Draft&nbsp;draft-agl-tls-nextprotoneg-04 (work in progress), May&nbsp;2012.
-            </td>
-         </tr>
-         <tr>
-            <td class="reference"><b id="URI">[URI]</b></td>
-            <td class="top">Berners-Lee, T., Fielding, R., and L. Masinter, “<a href="http://tools.ietf.org/html/rfc3986">Uniform Resource Identifier (URI): Generic Syntax</a>”, STD&nbsp;66, RFC&nbsp;3986, January&nbsp;2005.
             </td>
          </tr>
          <tr>
@@ -1848,18 +1850,23 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.A.3.p.2">Updated authors/editors list.</p>
       <p id="rfc.section.A.3.p.3">Added status note.</p>
       <h1 id="rfc.index"><a href="#rfc.index">Index</a></h1>
-      <p class="noprint"><a href="#rfc.index.H">H</a> <a href="#rfc.index.O">O</a> <a href="#rfc.index.R">R</a> <a href="#rfc.index.T">T</a> <a href="#rfc.index.U">U</a> <a href="#rfc.index.Z">Z</a> 
+      <p class="noprint"><a href="#rfc.index.H">H</a> <a href="#rfc.index.O">O</a> <a href="#rfc.index.R">R</a> <a href="#rfc.index.T">T</a> <a href="#rfc.index.Z">Z</a> 
       </p>
       <div class="print2col">
          <ul class="ind">
             <li><a id="rfc.index.H" href="#rfc.index.H"><b>H</b></a><ul>
-                  <li><em>HTTP-p1</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.1">1</a>, <a href="#rfc.xref.HTTP-p1.2">2.1</a>, <a href="#rfc.xref.HTTP-p1.3">2.2</a>, <a href="#rfc.xref.HTTP-p1.4">4</a>, <a href="#rfc.xref.HTTP-p1.5">4.3.2</a>, <a href="#HTTP-p1"><b>9.1</b></a><ul>
+                  <li><em>HTTP-p1</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.1">1</a>, <a href="#rfc.xref.HTTP-p1.2">2.1</a>, <a href="#rfc.xref.HTTP-p1.3">2.2</a>, <a href="#rfc.xref.HTTP-p1.4">4</a>, <a href="#rfc.xref.HTTP-p1.5">4.2.1</a>, <a href="#rfc.xref.HTTP-p1.6">4.2.1</a>, <a href="#rfc.xref.HTTP-p1.7">4.2.1</a>, <a href="#rfc.xref.HTTP-p1.8">4.3.2</a>, <a href="#HTTP-p1"><b>9.1</b></a><ul>
+                        <li><em>Section 3.1.1</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.5">4.2.1</a>, <a href="#rfc.xref.HTTP-p1.6">4.2.1</a></li>
                         <li><em>Section 3.2.6</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.2">2.1</a></li>
-                        <li><em>Section 4.1.1</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.5">4.3.2</a></li>
+                        <li><em>Section 4.1.1</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.8">4.3.2</a></li>
+                        <li><em>Section 5.4</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.7">4.2.1</a></li>
                         <li><em>Section 6.7</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p1.3">2.2</a></li>
                      </ul>
                   </li>
-                  <li><em>HTTP-p2</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p2.1">4</a>, <a href="#HTTP-p2"><b>9.1</b></a></li>
+                  <li><em>HTTP-p2</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p2.1">4</a>, <a href="#rfc.xref.HTTP-p2.2">4.2.1</a>, <a href="#HTTP-p2"><b>9.1</b></a><ul>
+                        <li><em>Section 4</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p2.2">4.2.1</a></li>
+                     </ul>
+                  </li>
                   <li><em>HTTP-p4</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p4.1">4</a>, <a href="#HTTP-p4"><b>9.1</b></a></li>
                   <li><em>HTTP-p5</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p5.1">4</a>, <a href="#HTTP-p5"><b>9.1</b></a></li>
                   <li><em>HTTP-p6</em>&nbsp;&nbsp;<a href="#rfc.xref.HTTP-p6.1">4</a>, <a href="#HTTP-p6"><b>9.1</b></a></li>
@@ -1874,16 +1881,16 @@ Upgrade: HTTP/2.0
                   <li><em>RFC1323</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC1323.1">3.6.2</a>, <a href="#RFC1323"><b>9.2</b></a></li>
                   <li><em>RFC2119</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC2119.1">1.2</a>, <a href="#RFC2119"><b>9.1</b></a></li>
                   <li><em>RFC2617</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC2617.1">4.2.3</a>, <a href="#RFC2617"><b>9.1</b></a></li>
+                  <li><em>RFC3986</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC3986.1">4.2.1</a>, <a href="#RFC3986"><b>9.1</b></a><ul>
+                        <li><em>Section 3.2</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC3986.1">4.2.1</a></li>
+                     </ul>
+                  </li>
                   <li><em>RFC4559</em>&nbsp;&nbsp;<a href="#rfc.xref.RFC4559.1">4.2.3</a>, <a href="#RFC4559"><b>9.1</b></a></li>
                </ul>
             </li>
             <li><a id="rfc.index.T" href="#rfc.index.T"><b>T</b></a><ul>
                   <li><em>TCP</em>&nbsp;&nbsp;<a href="#rfc.xref.TCP.1">3.1</a>, <a href="#TCP"><b>9.1</b></a></li>
                   <li><em>TLSNPN</em>&nbsp;&nbsp;<a href="#rfc.xref.TLSNPN.1">2.1</a>, <a href="#rfc.xref.TLSNPN.2">2.3</a>, <a href="#rfc.xref.TLSNPN.3">2.4</a>, <a href="#TLSNPN"><b>9.1</b></a></li>
-               </ul>
-            </li>
-            <li><a id="rfc.index.U" href="#rfc.index.U"><b>U</b></a><ul>
-                  <li><em>URI</em>&nbsp;&nbsp;<a href="#rfc.xref.URI.1">4.2.1</a>, <a href="#rfc.xref.URI.2">4.2.1</a>, <a href="#URI"><b>9.1</b></a></li>
                </ul>
             </li>
             <li><a id="rfc.index.Z" href="#rfc.index.Z"><b>Z</b></a><ul>
