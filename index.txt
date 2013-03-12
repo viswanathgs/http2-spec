@@ -5,12 +5,12 @@
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: September 11, 2013                                  Google, Inc
+Expires: September 13, 2013                                  Google, Inc
                                                          M. Thomson, Ed.
                                                                Microsoft
                                                         A. Melnikov, Ed.
                                                                Isode Ltd
-                                                          March 10, 2013
+                                                          March 12, 2013
 
 
                 Hypertext Transfer Protocol version 2.0
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 1]
+Belshe, et al.         Expires September 13, 2013               [Page 1]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -63,7 +63,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 11, 2013.
+   This Internet-Draft will expire on September 13, 2013.
 
 Copyright Notice
 
@@ -97,7 +97,7 @@ Table of Contents
        3.3.1.  Frame Header  . . . . . . . . . . . . . . . . . . . .   9
        3.3.2.  Frame Processing  . . . . . . . . . . . . . . . . . .  10
      3.4.  Streams . . . . . . . . . . . . . . . . . . . . . . . . .  10
-       3.4.1.  Stream Creation . . . . . . . . . . . . . . . . . . .  10
+       3.4.1.  Stream Creation . . . . . . . . . . . . . . . . . . .  11
        3.4.2.  Stream priority . . . . . . . . . . . . . . . . . . .  11
        3.4.3.  Stream headers  . . . . . . . . . . . . . . . . . . .  11
        3.4.4.  Stream data exchange  . . . . . . . . . . . . . . . .  12
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 2]
+Belshe, et al.         Expires September 13, 2013               [Page 2]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -158,14 +158,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
      9.2.  Informative References  . . . . . . . . . . . . . . . . .  40
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  40
-     A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  40
+     A.1.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  41
      A.2.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  41
      A.3.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  41
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  41
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  42
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 3]
+Belshe, et al.         Expires September 13, 2013               [Page 3]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -221,7 +221,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 4]
+Belshe, et al.         Expires September 13, 2013               [Page 4]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -277,7 +277,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 5]
+Belshe, et al.         Expires September 13, 2013               [Page 5]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -333,7 +333,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 6]
+Belshe, et al.         Expires September 13, 2013               [Page 6]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -381,15 +381,15 @@ Internet-Draft                  HTTP/2.0                      March 2013
 2.3.  Starting HTTP/2.0 for "https:" URIs
 
    A client that makes a request to an "https:" URI without prior
-   knowledge about support for HTTP/2.0 uses TLS with TLS-NPN [TLSNPN]
-   extension.  [[TBD, maybe ALPN]]
+   knowledge about support for HTTP/2.0 uses TLS [RFC5246] with TLS-NPN
+   [TLSNPN] extension.  [[TBD, maybe ALPN]]
 
    Once TLS negotiation is complete, both the client and the server send
    a session header (Section 3.2).
 
 
 
-Belshe, et al.         Expires September 11, 2013               [Page 7]
+Belshe, et al.         Expires September 13, 2013               [Page 7]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -436,30 +436,34 @@ Internet-Draft                  HTTP/2.0                      March 2013
    agree to use the HTTP/2.0 protocol.  The SETTINGS frame ensures that
    client or server configuration is known as quickly as possible.
 
-   The client session header is the 8 byte sequence 0x535044590d0a0d0a
-   followed by a SETTINGS frame (Section 3.7.4).  The client sends the
-   client session header immediately after receiving an HTTP/1.1
-   Upgrade, or after receiving a TLS Finished message from the server.
+   The client session header is the 25 byte sequence
+   0x464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a (the string "FOO
+   * HTTP/2.0\r\n\r\nBAR\r\n\r\n") followed by a SETTINGS frame
+   (Section 3.7.4).  The client sends the client session header
+   immediately after receiving an HTTP/1.1 Upgrade, or after receiving a
+   TLS Finished message from the server.
 
 
 
-
-
-Belshe, et al.         Expires September 11, 2013               [Page 8]
+Belshe, et al.         Expires September 13, 2013               [Page 8]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
 
-   The server session header is the 8 byte sequence 0x736c6f770d0a0d0a
-   followed by a SETTINGS frame (Section 3.7.4).  The server sends the
-   server session header immediately after receiving and validating the
-   client session header.
+      The client session header is selected so that a large proportion
+      of HTTP/1.1 or HTTP/1.0 servers and intermediaries do not attempt
+      to process further frames.  This doesn't address the concerns
+      raised in [TALKING].
+
+   The server session header is a SETTINGS frame (Section 3.7.4).  The
+   server sends the server session header immediately after receiving
+   and validating the client session header.
 
    The client sends requests immediately after sending the session
    header, without waiting to receive a server session header.  This
    ensures that confirming session headers does not add latency.
 
-   A client or server MUST close the connection if it does not begin
+   Both client and server MUST close the connection if it does not begin
    with a valid session header.  A GOAWAY frame (Section 3.7.6) MAY be
    omitted if it is clear that the peer is not using HTTP/2.0.
 
@@ -493,18 +497,18 @@ Internet-Draft                  HTTP/2.0                      March 2013
    Type:  The 8-bit type of the frame.  The frame type determines how
       the remainder of the frame header and payload are interpreted.
 
-   Flags:  An 8-bit field reserved for flags.  The semantics of each bit
-      in flags depends on the frame type.  Bits that have undefined
-      semantics are reserved.
 
 
 
 
-
-Belshe, et al.         Expires September 11, 2013               [Page 9]
+Belshe, et al.         Expires September 13, 2013               [Page 9]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
+
+   Flags:  An 8-bit field reserved for flags.  The semantics of each bit
+      in flags depends on the frame type.  Bits that have undefined
+      semantics are reserved.
 
    R: A reserved 1-bit field.  The semantics of this bit are not
       defined.
@@ -550,17 +554,17 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
    o  Streams can be established and used unilaterally.
 
-   o  Streams can be cancelled.
-
-3.4.1.  Stream Creation
 
 
 
-
-Belshe, et al.         Expires September 11, 2013              [Page 10]
+Belshe, et al.         Expires September 13, 2013              [Page 10]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
+
+   o  Streams can be cancelled.
+
+3.4.1.  Stream Creation
 
    Use of streams does not require negotiation.  A stream is not
    created, streams are used by sending a frame on the stream.
@@ -609,11 +613,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-
-
-
-
-Belshe, et al.         Expires September 11, 2013              [Page 11]
+Belshe, et al.         Expires September 13, 2013              [Page 11]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -669,7 +669,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 12]
+Belshe, et al.         Expires September 13, 2013              [Page 12]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -725,7 +725,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 13]
+Belshe, et al.         Expires September 13, 2013              [Page 13]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -781,7 +781,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 14]
+Belshe, et al.         Expires September 13, 2013              [Page 14]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 15]
+Belshe, et al.         Expires September 13, 2013              [Page 15]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -893,7 +893,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 16]
+Belshe, et al.         Expires September 13, 2013              [Page 16]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -949,7 +949,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 17]
+Belshe, et al.         Expires September 13, 2013              [Page 17]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1005,7 +1005,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 18]
+Belshe, et al.         Expires September 13, 2013              [Page 18]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1061,7 +1061,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 19]
+Belshe, et al.         Expires September 13, 2013              [Page 19]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1117,7 +1117,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 20]
+Belshe, et al.         Expires September 13, 2013              [Page 20]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 21]
+Belshe, et al.         Expires September 13, 2013              [Page 21]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 22]
+Belshe, et al.         Expires September 13, 2013              [Page 22]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 23]
+Belshe, et al.         Expires September 13, 2013              [Page 23]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 24]
+Belshe, et al.         Expires September 13, 2013              [Page 24]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 25]
+Belshe, et al.         Expires September 13, 2013              [Page 25]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1453,7 +1453,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 26]
+Belshe, et al.         Expires September 13, 2013              [Page 26]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 27]
+Belshe, et al.         Expires September 13, 2013              [Page 27]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 28]
+Belshe, et al.         Expires September 13, 2013              [Page 28]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1621,7 +1621,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 29]
+Belshe, et al.         Expires September 13, 2013              [Page 29]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1677,7 +1677,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 30]
+Belshe, et al.         Expires September 13, 2013              [Page 30]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1733,7 +1733,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 31]
+Belshe, et al.         Expires September 13, 2013              [Page 31]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1789,7 +1789,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 32]
+Belshe, et al.         Expires September 13, 2013              [Page 32]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1845,7 +1845,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 33]
+Belshe, et al.         Expires September 13, 2013              [Page 33]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1901,7 +1901,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 34]
+Belshe, et al.         Expires September 13, 2013              [Page 34]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -1957,7 +1957,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 35]
+Belshe, et al.         Expires September 13, 2013              [Page 35]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -2013,7 +2013,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 36]
+Belshe, et al.         Expires September 13, 2013              [Page 36]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -2069,7 +2069,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 37]
+Belshe, et al.         Expires September 13, 2013              [Page 37]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -2125,7 +2125,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 38]
+Belshe, et al.         Expires September 13, 2013              [Page 38]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -2181,7 +2181,7 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-Belshe, et al.         Expires September 11, 2013              [Page 39]
+Belshe, et al.         Expires September 13, 2013              [Page 39]
 
 Internet-Draft                  HTTP/2.0                      March 2013
 
@@ -2190,14 +2190,14 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
               httpbis-p7-auth-22 (work in progress), February 2013.
 
-   [RFC0793]  Postel, J., "Transmission Control Protocol", STD 7, RFC
+   [RFC0793]  Postel, J., "Transmission Control Protocol ", STD 7, RFC
               793, September 1981.
 
    [RFC1950]  Deutsch, L.P. and J.-L. Gailly, "ZLIB Compressed Data
-              Format Specification version 3.3", RFC 1950, May 1996.
+              Format Specification version 3.3 ", RFC 1950, May 1996.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, March 1997.
+              Requirement Levels ", BCP 14, RFC 2119, March 1997.
 
    [RFC2617]  Franks, J., Hallam-Baker, P.M., Hostetler, J.L., Lawrence,
               S.D., Leach, P.J., Luotonen, A., and L. Stewart, "HTTP
@@ -2212,6 +2212,9 @@ Internet-Draft                  HTTP/2.0                      March 2013
               Kerberos and NTLM HTTP Authentication in Microsoft
               Windows", RFC 4559, June 2006.
 
+   [RFC5246]  Dierks, T. and E. Rescorla, "The Transport Layer Security
+              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
+
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
@@ -2222,9 +2225,22 @@ Internet-Draft                  HTTP/2.0                      March 2013
 9.2.  Informative References
 
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
-              for High Performance", RFC 1323, May 1992.
+              for High Performance ", RFC 1323, May 1992.
+
+   [TALKING]  Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C.
+              Jackson, "Talking to Yourself for Fun and Profit ", 2011,
+              <http://w2spconf.com/2011/papers/websocket.pdf>.
 
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
+
+
+
+
+
+Belshe, et al.         Expires September 13, 2013              [Page 40]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
 
 A.1.  Since draft-ietf-httpbis-http2-01
 
@@ -2233,14 +2249,6 @@ A.1.  Since draft-ietf-httpbis-http2-01
    Updated references.
 
    Clarified stream identifier reuse.
-
-
-
-
-Belshe, et al.         Expires September 11, 2013              [Page 40]
-
-Internet-Draft                  HTTP/2.0                      March 2013
-
 
    Removed CREDENTIALS frame and associated mechanisms.
 
@@ -2282,20 +2290,20 @@ A.3.  Since draft-mbelshe-httpbis-spdy-00
 
    Added status note.
 
+
+
+
+Belshe, et al.         Expires September 13, 2013              [Page 41]
+
+Internet-Draft                  HTTP/2.0                      March 2013
+
+
 Authors' Addresses
 
    Mike Belshe
    Twist
 
    EMail: mbelshe@chromium.org
-
-
-
-
-
-Belshe, et al.         Expires September 11, 2013              [Page 41]
-
-Internet-Draft                  HTTP/2.0                      March 2013
 
 
    Roberto Peon
@@ -2340,12 +2348,4 @@ Internet-Draft                  HTTP/2.0                      March 2013
 
 
 
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 11, 2013              [Page 42]
+Belshe, et al.         Expires September 13, 2013              [Page 42]
