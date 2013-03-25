@@ -395,7 +395,7 @@ ul.ind li li {
        content: "Belshe, et al."; 
   } 
   @bottom-center {
-       content: "Expires September 23, 2013"; 
+       content: "Expires September 26, 2013"; 
   } 
   @bottom-right {
        content: "[Page " counter(page) "]"; 
@@ -435,7 +435,7 @@ ul.ind li li {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-03-22">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-03-25">
       <meta name="dct.abstract" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient transfer of representations by providing compressed header fields, simultaneous requests, and also introduces unsolicited push of representations from server to client. This document is an alternative to, but does not obsolete the HTTP message format. HTTP semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient transfer of representations by providing compressed header fields, simultaneous requests, and also introduces unsolicited push of representations from server to client. This document is an alternative to, but does not obsolete the HTTP message format. HTTP semantics remain unchanged.">
    </head>
@@ -455,7 +455,7 @@ ul.ind li li {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: September 23, 2013</td>
+               <td class="left">Expires: September 26, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -476,7 +476,7 @@ ul.ind li li {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">March 22, 2013</td>
+               <td class="right">March 25, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -503,7 +503,7 @@ ul.ind li li {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on September 23, 2013.</p>
+      <p>This Internet-Draft will expire on September 26, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -1271,10 +1271,10 @@ Upgrade: HTTP/2.0
          or maintenance), while still finishing processing of previously established streams.
       </p>
       <p id="rfc.section.3.7.7.p.2">There is an inherent race condition between an endpoint starting new streams and the remote sending a GOAWAY message. To deal
-         with this case, the GOAWAY contains a last-stream-id indicating the stream identifier of the last stream which was created
-         on the sending endpoint in this session. If the receiver of the GOAWAY used streams that are newer than the indicated last-stream-id,
-         they were not processed by the server and the receiver may treat the stream as though it had never been created at all (hence
-         the receiver may want to re-create the stream later on a new session).
+         with this case, the GOAWAY contains the stream identifier of the last stream which was processed on the sending endpoint in
+         this session. If the receiver of the GOAWAY used streams that are newer than the indicated stream identifier, they were not
+         processed by the sender and the receiver may treat the streams as though they had never been created at all (hence the receiver
+         may want to re-create the streams later on a new session).
       </p>
       <p id="rfc.section.3.7.7.p.3">Endpoints should always send a GOAWAY message before closing a connection so that the remote can know whether a stream has
          been partially processed or not. (For example, if an HTTP client sends a POST at the same time that a server closes a connection,
@@ -1358,11 +1358,12 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.7.9.1.p.5">The receiver of a message sends a WINDOW_UPDATE frame as it consumes data and frees up space in flow control windows. Separate
          WINDOW_UPDATE messages are sent for the stream and session level flow control windows.
       </p>
-      <p id="rfc.section.3.7.9.1.p.6">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup> - 1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
+      <p id="rfc.section.3.7.9.1.p.6">A sender that receives a WINDOW_UPDATE frame updates the corresponding window by the amount specified in the frame.</p>
+      <p id="rfc.section.3.7.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup> - 1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
          either the stream or the session, as appropriate. For streams, the sender sends a RST_STREAM with the error code of FLOW_CONTROL_ERROR
          code; for the session, a GOAWAY message with a FLOW_CONTROL_ERROR code.
       </p>
-      <p id="rfc.section.3.7.9.1.p.7">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
+      <p id="rfc.section.3.7.9.1.p.8">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
          to each other. This property allows a receiver to aggressively update the window size kept by the sender to prevent streams
          from stalling.
       </p>
