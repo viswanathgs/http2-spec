@@ -121,7 +121,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
      3.7.  Frame Types . . . . . . . . . . . . . . . . . . . . . . .  17
        3.7.1.  DATA Frames . . . . . . . . . . . . . . . . . . . . .  17
        3.7.2.  HEADERS+PRIORITY  . . . . . . . . . . . . . . . . . .  17
-       3.7.3.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . .  18
+       3.7.3.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . .  17
        3.7.4.  SETTINGS  . . . . . . . . . . . . . . . . . . . . . .  18
        3.7.5.  PUSH_PROMISE  . . . . . . . . . . . . . . . . . . . .  21
        3.7.6.  PING  . . . . . . . . . . . . . . . . . . . . . . . .  22
@@ -482,7 +482,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |         Length (16)           |   Type (8)    |   Flags (8)   |
    +-+-------------+---------------+-------------------------------+
-   |R|                   Identifier (31)                           |
+   |R|                 Stream Identifier (31)                      |
    +-+-------------------------------------------------------------+
    |                     Frame Data (0...)                       ...
    +---------------------------------------------------------------+
@@ -520,9 +520,9 @@ Internet-Draft                  HTTP/2.0                      April 2013
    R: A reserved 1-bit field.  The semantics of this bit are not
       defined.
 
-   Identifier:  A 31-bit identifier for the frame.  The frame type
-      determines how this identifier is interpreted.  For many frame
-      types, this field includes a stream number.
+   Stream Identifier:  A 31-bit stream identifier (see Section 3.4.1).
+      A value 0 is reserved for frames that are directed at the session
+      as a whole instead of a single stream.
 
    Frame Data:  Frames contain between 0 and 65535 bytes of data.
 
@@ -575,9 +575,10 @@ Internet-Draft                  HTTP/2.0                      April 2013
    Use of streams does not require negotiation.  A stream is not
    created, streams are used by sending a frame on the stream.
 
-   Streams initiated by a client use odd numbered stream identifiers.
-   Streams initiated by the server use odd numbered stream identifiers.
-   A stream identifier of zero MUST NOT be used to create a new stream.
+   Streams are identified by a 31-bit numeric identifier.  Streams
+   initiated by a client use odd numbered stream identifiers.  Streams
+   initiated by the server use odd numbered stream identifiers.  A
+   stream identifier of zero MUST NOT be used to create a new stream.
 
    The stream identifier of a new stream MUST be greater than all other
    streams from that endpoint, unless the stream identifier was
@@ -608,7 +609,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    useless "SHOULD": reword]]
 
 3.4.3.  Stream headers
-
 
 
 
@@ -918,9 +918,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    No frame-specific flags are defined for DATA frames.
 
-   The identifier field in the data frame header MUST contain a stream
-   identifier for an open stream.
-
 3.7.2.  HEADERS+PRIORITY
 
    The HEADERS+PRIORITY frame (type=1) allows the sender to set header
@@ -945,7 +942,10 @@ Internet-Draft                  HTTP/2.0                      April 2013
    priority indicates the priority for the stream, as assigned by the
    sender, see Section 3.4.2.
 
+3.7.3.  RST_STREAM
 
+   The RST_STREAM frame (type=3) allows for abnormal termination of a
+   stream.  When sent by the creator of a stream, it indicates the
 
 
 
@@ -954,10 +954,6 @@ Belshe, et al.          Expires October 04, 2013               [Page 17]
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
-3.7.3.  RST_STREAM
-
-   The RST_STREAM frame (type=3) allows for abnormal termination of a
-   stream.  When sent by the creator of a stream, it indicates the
    creator wishes to cancel the stream.  When sent by the recipient of a
    stream, it indicates an error or that the recipient did not want to
    accept the stream, so the stream should be closed.
@@ -971,9 +967,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
                          RST_STREAM Frame Payload
 
    The RST_STREAM frame does not define any valid flags.
-
-   The identifier field in the frame header MUST contain the stream
-   identifier for an open stream.
 
    The RST_STREAM frame contains a single 32-bit error code
    (Section 3.5.3).  The error code indicates why the stream is being
@@ -1002,14 +995,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    Clients persist settings on a per origin basis (see [RFC6454] for a
    definition of web origins).  That is, when a client connects to a
    server, and the server persists settings within the client, the
-
-
-
-Belshe, et al.          Expires October 04, 2013               [Page 18]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    client SHOULD return the persisted settings on future connections to
    the same origin AND IP address and TCP port.  Clients MUST NOT
    request servers to use the persistence features of the SETTINGS
@@ -1018,14 +1003,19 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Valid frame-specific flags for the SETTINGS frame are:
 
+
+
+Belshe, et al.          Expires October 04, 2013               [Page 18]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    CLEAR_PERSISTED (0x2):  Bit 2 being set indicates a request to clear
       any previously persisted settings before processing the settings.
       Clients MUST NOT set this flag.
 
    SETTINGS frames always apply to a session, never a single stream.
-   The identifier field in the frame header carries a count of the
-   number of settings contained in the payload.  [[ED: this seems
-   totally unnecessary.]]
+   The stream identifier for a settings frame MUST be zero.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1059,13 +1049,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Value:  A 32-bit value for the setting.
 
-
-
-Belshe, et al.          Expires October 04, 2013               [Page 19]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    The following settings are defined:
 
    SETTINGS_UPLOAD_BANDWIDTH (1):  allows the sender to send its
@@ -1073,6 +1056,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
       estimate.  The value should be the integral number of kilobytes
       per second that the sender predicts as an expected maximum upload
       channel capacity.
+
+
+
+
+
+Belshe, et al.          Expires October 04, 2013               [Page 19]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    SETTINGS_DOWNLOAD_BANDWIDTH (2):  allows the sender to send its
       expected download bandwidth on this channel.  This number is an
@@ -1114,14 +1106,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
       This setting applies to all streams, including existing streams.
 
-
-
-
-Belshe, et al.          Expires October 04, 2013               [Page 20]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
       These bits cannot be cleared once set, see Section 3.7.9.4.
 
    The message is intentionally extensible for future information which
@@ -1130,6 +1114,14 @@ Internet-Draft                  HTTP/2.0                      April 2013
    has accurate values to convey.  When multiple ID/value pairs are
    sent, they should be sent in order of lowest id to highest id.  A
    single SETTINGS frame MUST not contain multiple values for the same
+
+
+
+Belshe, et al.          Expires October 04, 2013               [Page 20]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    ID.  If the recipient of a SETTINGS frame discovers multiple values
    for the same ID, it MUST ignore all values except the first one.
 
@@ -1166,18 +1158,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    There are no frame-specific flags for the PUSH_PROMISE frame.
 
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 04, 2013               [Page 21]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    The body of a PUSH_PROMISE includes a "Promised-Stream-ID".  This
    31-bit identifier indicates the stream on which the resource will be
    pushed.  The promised stream identifier MUST be a valid choice for
@@ -1188,6 +1168,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
    are created in the order referenced.  The PUSH_PROMISE reserves
    stream identifiers for later use; these reserved identifiers can be
    used as prioritization needs dictate.
+
+
+
+
+
+Belshe, et al.          Expires October 04, 2013               [Page 21]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    The PUSH_PROMISE also includes a header block (Section 3.7.10), which
    describes the resource that will be pushed.
@@ -1202,15 +1191,11 @@ Internet-Draft                  HTTP/2.0                      April 2013
    soon as possible.  PING should take highest priority if there is
    other data waiting to be sent.
 
-   The PING frame does not define any valid flags.
+   The PING frame defines a frame-specific flag:
 
-   A client MUST populate the identifier field in the frame header of a
-   PING frame with an odd numbered value.  A server MUST populate the
-   identifier field in the frame header of a PING frame with an even
-   numbered value.  A client MUST reply to PING frames with even
-   numbered identifiers; a server MUST only reply to PING frames with
-   odd numbered identifiers.  These measures ensure that accidental
-   looping of PINGs cannot occur.
+   PONG (0x2):  Bit 2 being set indicates that this ping frame is a ping
+      response.  An endpoint MUST set this flag in ping responses.  An
+      endpoint MUST NOT respond to ping frames containing this flag.
 
    The payload of a PING frame contains any value.  A PING response MUST
    contain the contents of the PING request.
@@ -1227,13 +1212,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    accepting new streams (perhaps for a reboot or maintenance), while
    still finishing processing of previously established streams.
 
-
-
-Belshe, et al.          Expires October 04, 2013               [Page 22]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    There is an inherent race condition between an endpoint starting new
    streams and the remote sending a GOAWAY message.  To deal with this
    case, the GOAWAY contains the stream identifier of the last stream
@@ -1248,6 +1226,14 @@ Internet-Draft                  HTTP/2.0                      April 2013
    connection so that the remote can know whether a stream has been
    partially processed or not.  (For example, if an HTTP client sends a
    POST at the same time that a server closes a connection, the client
+
+
+
+Belshe, et al.          Expires October 04, 2013               [Page 22]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    cannot know if the server started to process that POST request if the
    server does not send a GOAWAY frame to indicate where it stopped
    working).
@@ -1259,16 +1245,30 @@ Internet-Draft                  HTTP/2.0                      April 2013
    messages cannot be ignored without the state in the two peers
    becoming unsynchronized.]]
 
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |X|                  Last-Stream-ID (31)                        |
+   +-+-------------------------------------------------------------+
+   |                      Error Code (32)                          |
+   +---------------------------------------------------------------+
+
+                           GOAWAY Payload Format
+
    The GOAWAY frame does not define any valid flags.
 
-   The GOAWAY message applies to the session, not a specific stream.
-   The identifier field of the frame header contains the identifier for
-   the last stream that the sender of the GOAWAY frame is prepared to
-   provide replies to.  If no streams were replied to, this value MUST
-   be 0.
+   The GOAWAY frame applies to the session, not a specific stream.  The
+   stream identifier MUST be zero.
 
-   The payload of a GOAWAY frame contains a 32-bit error code
-   (Section 3.5.3) that contains the reason for closing the session.
+   The GOAWAY frame contains an identifier of the last stream that the
+   sender of the GOAWAY is prepared to act upon, which can include
+   processing and replies.  This allows an endpoint to discover what
+   streams might have had some effect or what might be safe to
+   automatically retry.  If no streams were acted upon, the last stream
+   ID MUST be 0.
+
+   The GOAWAY frame contains a 32-bit error code (Section 3.5.3) that
+   contains the reason for closing the session.
 
 3.7.8.  HEADERS
 
@@ -1278,8 +1278,8 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    No frame-specific flags are defined for the HEADERS frame.
 
-   The identifier field in the HEADERS frame header MUST contain a
-   stream identifier for an open stream.
+   The body of a HEADERS frame contains a Headers Block
+   (Section 3.7.10).
 
 
 
@@ -1289,9 +1289,6 @@ Belshe, et al.          Expires October 04, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
-
-   The body of a HEADERS frame contains a Headers Block
-   (Section 3.7.10).
 
 3.7.9.  WINDOW_UPDATE
 
@@ -1320,10 +1317,10 @@ Internet-Draft                  HTTP/2.0                      April 2013
       for the identified stream or session is ended and subsequent
       frames do not need to be flow controlled.
 
-   The identifier field in the WINDOW_UPDATE frame header MUST contain a
-   stream identifier for an open stream, or the value 0.  A zero value
-   indicates that the WINDOW_UPDATE applies to the session level flow
-   control window.
+   The WINDOW_UPDATE frame can be stream related or session related.
+   The stream identifier in the WINDOW_UPDATE frame header identifies
+   the affected stream, or includes a value of 0 to indicate that the
+   session flow control window is updated.
 
    The payload of a WINDOW_UPDATE frame contains a 32-bit value.  This
    value is the additional number of bytes that the sender can transmit
@@ -1339,6 +1336,9 @@ Internet-Draft                  HTTP/2.0                      April 2013
    permitted to transmit.  The flow control window size is a measure of
    the buffering capability of the recipient.
 
+   Two flow control windows apply to the sending of every message: the
+   stream flow control window and the session flow control window.  The
+
 
 
 Belshe, et al.          Expires October 04, 2013               [Page 24]
@@ -1346,8 +1346,6 @@ Belshe, et al.          Expires October 04, 2013               [Page 24]
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
-   Two flow control windows apply to the sending of every message: the
-   stream flow control window and the session flow control window.  The
    sender MUST NOT send a flow controlled frame with a length that
    exceeds the space available in either of the flow control windows
    advertised by the receiver.  Frames with zero length with the FINAL
@@ -1394,6 +1392,8 @@ Internet-Draft                  HTTP/2.0                      April 2013
    initial window size when sending flow controlled frames.  Similarly,
    the session flow control window is set to the default initial window
    size until a WINDOW_UPDATE message is received.
+
+
 
 
 

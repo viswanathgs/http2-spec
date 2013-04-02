@@ -636,6 +636,7 @@ ul.ind li li {
                <li><a href="#rfc.figure.3">Figure 3: RST_STREAM Frame Payload</a></li>
                <li><a href="#rfc.figure.4">Figure 4: SETTINGS ID/Value Pair</a></li>
                <li><a href="#rfc.figure.5">Figure 5: PUSH_PROMISE Payload Format</a></li>
+               <li><a href="#rfc.figure.6">Figure 6: GOAWAY Payload Format</a></li>
             </ul>
          </li>
       </ul>
@@ -810,7 +811,7 @@ Upgrade: HTTP/2.0
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |         Length (16)           |   Type (8)    |   Flags (8)   |
 +-+-------------+---------------+-------------------------------+
-|R|                   Identifier (31)                           |
+|R|                 Stream Identifier (31)                      |
 +-+-------------------------------------------------------------+
 |                     Frame Data (0...)                       ...
 +---------------------------------------------------------------+
@@ -832,9 +833,8 @@ Upgrade: HTTP/2.0
          </dd>
          <dt>R:</dt>
          <dd>A reserved 1-bit field. The semantics of this bit are not defined.</dd>
-         <dt>Identifier:</dt>
-         <dd>A 31-bit identifier for the frame. The frame type determines how this identifier is interpreted. For many frame types, this
-            field includes a stream number.
+         <dt>Stream Identifier:</dt>
+         <dd>A 31-bit stream identifier (see <a href="#StreamCreation" title="Stream Creation">Section&nbsp;3.4.1</a>). A value 0 is reserved for frames that are directed at the session as a whole instead of a single stream.
          </dd>
          <dt>Frame Data:</dt>
          <dd>Frames contain between 0 and 65535 bytes of data.</dd>
@@ -864,8 +864,9 @@ Upgrade: HTTP/2.0
       </ul>
       <h3 id="rfc.section.3.4.1"><a href="#rfc.section.3.4.1">3.4.1</a>&nbsp;<a id="StreamCreation" href="#StreamCreation">Stream Creation</a></h3>
       <p id="rfc.section.3.4.1.p.1">Use of streams does not require negotiation. A stream is not created, streams are used by sending a frame on the stream.</p>
-      <p id="rfc.section.3.4.1.p.2">Streams initiated by a client use odd numbered stream identifiers. Streams initiated by the server use odd numbered stream
-         identifiers. A stream identifier of zero MUST NOT be used to create a new stream.
+      <p id="rfc.section.3.4.1.p.2">Streams are identified by a 31-bit numeric identifier. Streams initiated by a client use odd numbered stream identifiers.
+         Streams initiated by the server use odd numbered stream identifiers. A stream identifier of zero MUST NOT be used to create
+         a new stream.
       </p>
       <p id="rfc.section.3.4.1.p.3">The stream identifier of a new stream MUST be greater than all other streams from that endpoint, unless the stream identifier
          was previously reserved (such as the promised stream identifier in a PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;3.7.5</a>) frame). An endpoint that receives an unexpected stream identifier MUST treat this as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
@@ -1056,7 +1057,6 @@ Upgrade: HTTP/2.0
          body.
       </p>
       <p id="rfc.section.3.7.1.p.2">No frame-specific flags are defined for DATA frames.</p>
-      <p id="rfc.section.3.7.1.p.3">The identifier field in the data frame header MUST contain a stream identifier for an open stream.</p>
       <h3 id="rfc.section.3.7.2"><a href="#rfc.section.3.7.2">3.7.2</a>&nbsp;<a id="HEADERS_PRIORITY" href="#HEADERS_PRIORITY">HEADERS+PRIORITY</a></h3>
       <p id="rfc.section.3.7.2.p.1">The HEADERS+PRIORITY frame (type=1) allows the sender to set header fields and stream priority at the same time. This MUST
          be used for each stream that is created.
@@ -1086,10 +1086,9 @@ Upgrade: HTTP/2.0
 +---------------------------------------------------------------+
 </pre> <p class="figure">Figure 3: RST_STREAM Frame Payload</p>
       <p id="rfc.section.3.7.3.p.3">The RST_STREAM frame does not define any valid flags.</p>
-      <p id="rfc.section.3.7.3.p.4">The identifier field in the frame header MUST contain the stream identifier for an open stream.</p>
-      <p id="rfc.section.3.7.3.p.5">The RST_STREAM frame contains a single 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>). The error code indicates why the stream is being terminated.
+      <p id="rfc.section.3.7.3.p.4">The RST_STREAM frame contains a single 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>). The error code indicates why the stream is being terminated.
       </p>
-      <p id="rfc.section.3.7.3.p.6">After receiving a RST_STREAM on a stream, the recipient must not send additional frames for that stream, and the stream moves
+      <p id="rfc.section.3.7.3.p.5">After receiving a RST_STREAM on a stream, the recipient must not send additional frames for that stream, and the stream moves
          into the closed state.
       </p>
       <h3 id="rfc.section.3.7.4"><a href="#rfc.section.3.7.4">3.7.4</a>&nbsp;<a id="SETTINGS" href="#SETTINGS">SETTINGS</a></h3>
@@ -1114,9 +1113,7 @@ Upgrade: HTTP/2.0
             NOT set this flag.
          </dd>
       </dl>
-      <p id="rfc.section.3.7.4.p.6">SETTINGS frames always apply to a session, never a single stream. The identifier field in the frame header carries a count
-         of the number of settings contained in the payload. <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: ED: this seems totally unnecessary.]</span> 
-      </p>
+      <p id="rfc.section.3.7.4.p.6">SETTINGS frames always apply to a session, never a single stream. The stream identifier for a settings frame MUST be zero.</p>
       <div id="rfc.figure.4"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1237,13 +1234,14 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.7.6.p.2">Recipients of a PING frame send an identical frame to the sender as soon as possible. PING should take highest priority if
          there is other data waiting to be sent.
       </p>
-      <p id="rfc.section.3.7.6.p.3">The PING frame does not define any valid flags.</p>
-      <p id="rfc.section.3.7.6.p.4">A client MUST populate the identifier field in the frame header of a PING frame with an odd numbered value. A server MUST
-         populate the identifier field in the frame header of a PING frame with an even numbered value. A client MUST reply to PING
-         frames with even numbered identifiers; a server MUST only reply to PING frames with odd numbered identifiers. These measures
-         ensure that accidental looping of PINGs cannot occur.
-      </p>
-      <p id="rfc.section.3.7.6.p.5">The payload of a PING frame contains any value. A PING response MUST contain the contents of the PING request.</p>
+      <p id="rfc.section.3.7.6.p.3">The PING frame defines a frame-specific flag: </p>
+      <dl>
+         <dt>PONG (0x2):</dt>
+         <dd>Bit 2 being set indicates that this ping frame is a ping response. An endpoint MUST set this flag in ping responses. An endpoint
+            MUST NOT respond to ping frames containing this flag.
+         </dd>
+      </dl>
+      <p id="rfc.section.3.7.6.p.4">The payload of a PING frame contains any value. A PING response MUST contain the contents of the PING request.</p>
       <h3 id="rfc.section.3.7.7"><a href="#rfc.section.3.7.7">3.7.7</a>&nbsp;<a id="GOAWAY" href="#GOAWAY">GOAWAY</a></h3>
       <p id="rfc.section.3.7.7.p.1">The GOAWAY frame (type=7) informs the remote side of the connection to stop creating streams on this session. It can be sent
          from the client or the server. Once sent, the sender will ignore frames sent on new streams for the remainder of the session.
@@ -1263,23 +1261,31 @@ Upgrade: HTTP/2.0
          where it stopped working).
       </p>
       <p id="rfc.section.3.7.7.p.4">After sending a GOAWAY message, the sender can ignore frames for new streams.</p>
-      <p id="rfc.section.3.7.7.p.5"> <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Issue: session state that is established by those "ignored" messages cannot be ignored without the state in the two peers
+      <p id="rfc.section.3.7.7.p.5"> <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: Issue: session state that is established by those "ignored" messages cannot be ignored without the state in the two peers
             becoming unsynchronized.]</span> 
       </p>
-      <p id="rfc.section.3.7.7.p.6">The GOAWAY frame does not define any valid flags.</p>
-      <p id="rfc.section.3.7.7.p.7">The GOAWAY message applies to the session, not a specific stream. The identifier field of the frame header contains the identifier
-         for the last stream that the sender of the GOAWAY frame is prepared to provide replies to. If no streams were replied to,
-         this value MUST be 0.
+      <div id="rfc.figure.6"></div> <pre class="inline"> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|X|                  Last-Stream-ID (31)                        |
++-+-------------------------------------------------------------+
+|                      Error Code (32)                          |
++---------------------------------------------------------------+
+</pre> <p class="figure">Figure 6: GOAWAY Payload Format</p>
+      <p id="rfc.section.3.7.7.p.7">The GOAWAY frame does not define any valid flags.</p>
+      <p id="rfc.section.3.7.7.p.8">The GOAWAY frame applies to the session, not a specific stream. The stream identifier MUST be zero.</p>
+      <p id="rfc.section.3.7.7.p.9">The GOAWAY frame contains an identifier of the last stream that the sender of the GOAWAY is prepared to act upon, which can
+         include processing and replies. This allows an endpoint to discover what streams might have had some effect or what might
+         be safe to automatically retry. If no streams were acted upon, the last stream ID MUST be 0.
       </p>
-      <p id="rfc.section.3.7.7.p.8">The payload of a GOAWAY frame contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>) that contains the reason for closing the session.
+      <p id="rfc.section.3.7.7.p.10">The GOAWAY frame contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>) that contains the reason for closing the session.
       </p>
       <h3 id="rfc.section.3.7.8"><a href="#rfc.section.3.7.8">3.7.8</a>&nbsp;<a id="HEADERS" href="#HEADERS">HEADERS</a></h3>
       <p id="rfc.section.3.7.8.p.1">The HEADERS frame (type=8) provides header fields for a stream. It may be optionally sent on an existing stream at any time.
          Specific application of the headers in this frame is application-dependent.
       </p>
       <p id="rfc.section.3.7.8.p.2">No frame-specific flags are defined for the HEADERS frame.</p>
-      <p id="rfc.section.3.7.8.p.3">The identifier field in the HEADERS frame header MUST contain a stream identifier for an open stream.</p>
-      <p id="rfc.section.3.7.8.p.4">The body of a HEADERS frame contains a Headers Block (<a href="#HeaderBlock" title="Header Block">Section&nbsp;3.7.10</a>).
+      <p id="rfc.section.3.7.8.p.3">The body of a HEADERS frame contains a Headers Block (<a href="#HeaderBlock" title="Header Block">Section&nbsp;3.7.10</a>).
       </p>
       <h3 id="rfc.section.3.7.9"><a href="#rfc.section.3.7.9">3.7.9</a>&nbsp;<a id="WINDOW_UPDATE" href="#WINDOW_UPDATE">WINDOW_UPDATE</a></h3>
       <p id="rfc.section.3.7.9.p.1">The WINDOW_UPDATE frame (type=9) is used to implement flow control in HTTP/2.0.</p>
@@ -1299,8 +1305,8 @@ Upgrade: HTTP/2.0
             to be flow controlled.
          </dd>
       </dl>
-      <p id="rfc.section.3.7.9.p.6">The identifier field in the WINDOW_UPDATE frame header MUST contain a stream identifier for an open stream, or the value 0.
-         A zero value indicates that the WINDOW_UPDATE applies to the session level flow control window.
+      <p id="rfc.section.3.7.9.p.6">The WINDOW_UPDATE frame can be stream related or session related. The stream identifier in the WINDOW_UPDATE frame header
+         identifies the affected stream, or includes a value of 0 to indicate that the session flow control window is updated.
       </p>
       <p id="rfc.section.3.7.9.p.7">The payload of a WINDOW_UPDATE frame contains a 32-bit value. This value is the additional number of bytes that the sender
          can transmit in addition to the existing flow control window. The legal range for this field is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes; the most significant bit of this value is reserved.
@@ -1450,7 +1456,7 @@ Upgrade: HTTP/2.0
                <dd>the HTTP method for this request (e.g. "GET", "POST", "HEAD", etc) (<a href="#HTTP-p2" id="rfc.xref.HTTP-p2.2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p2-semantics.html#methods" title="Request Methods">Section 4</a>)
                </dd>
                <dt>":path":</dt>
-               <dd>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1" id="rfc.xref.HTTP-p1.6"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
+               <dd>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1" id="rfc.xref.HTTP-p1.6"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
                </dd>
             </dl> These header fields MUST be present in HTTP requests.
          </li>
@@ -1470,7 +1476,7 @@ Upgrade: HTTP/2.0
          <li>Header field names MUST be all lowercase.</li>
          <li>The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-Encoding header fields are not valid and MUST not be sent.</li>
          <li>User-agents MUST support gzip compression. Regardless of the Accept-Encoding sent by the user-agent, the server may always
-            send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Still valid?]</span> 
+            send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Still valid?]</span> 
          </li>
          <li>If a server receives a request where the sum of the data frame payload lengths does not equal the size of the Content-Length
             header field, the server MUST return a 400 (Bad Request) error.
@@ -1486,7 +1492,7 @@ Upgrade: HTTP/2.0
          it should attempt to raise the priority of that resource. Resources such as images, SHOULD generally use the lowest priority.
       </p>
       <p id="rfc.section.4.2.2.p.4">If a client sends a HEADERS+PRIORITY frame that omits a mandatory header, the server MUST reply with a HTTP 400 Bad Request
-         reply. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
+         reply. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
       </p>
       <p id="rfc.section.4.2.2.p.5">If the server receives a data frame prior to a HEADERS or HEADERS+PRIORITY frame the server MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1513,7 +1519,7 @@ Upgrade: HTTP/2.0
             size of an entity prior to receiving all the data frames. This can help in, for example, reporting progress.
          </li>
          <li>If a client receives a response where the sum of the data frame payload length does not equal the size of the Content-Length
-            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
+            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
          </li>
       </ul>
       <p id="rfc.section.4.2.3.p.3">If a client receives a response with an absent or duplicated status header, the client MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
@@ -1532,7 +1538,7 @@ Upgrade: HTTP/2.0
          advertising a SETTINGS_MAX_CONCURRENT_STREAMS SETTING (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.7.4</a>) of zero. This prevents servers from creating the streams necessary to push resources.
       </p>
       <p id="rfc.section.4.3.p.3">Browsers receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
-         policy (<a href="#RFC6454" id="rfc.xref.RFC6454.3"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.14">[<a href="#rfc.comment.14" class="smpl">rfc.comment.14</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+         policy (<a href="#RFC6454" id="rfc.xref.RFC6454.3"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
       </p>
       <p id="rfc.section.4.3.p.4">A client that accepts pushed resources caches those resources as though they were responses to GET requests.</p>
       <p id="rfc.section.4.3.p.5">Pushed responses are associated with a request at the HTTP/2.0 framing layer. The PUSH_PROMISE includes a stream identifier
@@ -1540,7 +1546,7 @@ Upgrade: HTTP/2.0
          header fields from the associated stream with the exception of resource identification header fields (<samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp>), which are provided as part of the PUSH_PROMISE frame. Pushed resources always have an associated <samp>:method</samp> of <samp>GET</samp>. A cache MUST store these inherited and implied request header fields with the cached resource.
       </p>
       <p id="rfc.section.4.3.p.6">Implementation note: With server push, it is theoretically possible for servers to push unreasonable amounts of content or
-         resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
+         resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.14">[<a href="#rfc.comment.14" class="smpl">rfc.comment.14</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
       </p>
       <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;Server implementation
       </h3>
@@ -1575,7 +1581,7 @@ Upgrade: HTTP/2.0
          <li>the resource is being pushed, but the data has not yet arrived</li>
          <li>the resource is being pushed, and the data has started to arrive</li>
       </ol>
-      <p id="rfc.section.4.3.2.p.2">When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-ID is received, the client MUST NOT<span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: SHOULD NOT?]</span> issue GET requests for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
+      <p id="rfc.section.4.3.2.p.2">When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-ID is received, the client MUST NOT<span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: SHOULD NOT?]</span> issue GET requests for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
       </p>
       <p id="rfc.section.4.3.2.p.3">A server MUST NOT push a resource with an Associated-To-Stream-ID of 0. Clients MUST treat this as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1584,7 +1590,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.4.3.2.p.5">To cancel individual server push streams, the client can issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL. Upon receipt, the server ceases transmission of the pushed data.
       </p>
       <p id="rfc.section.4.3.2.p.6">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
-         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.17">[<a href="#rfc.comment.17" class="smpl">rfc.comment.17</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
+         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
@@ -1666,7 +1672,7 @@ Upgrade: HTTP/2.0
       </h2>
       <p id="rfc.section.6.2.p.1">By utilizing TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
          (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-         attack. <span class="comment" id="rfc.comment.18">[<a href="#rfc.comment.18" class="smpl">rfc.comment.18</a>: Issue: This is no longer true]</span> 
+         attack. <span class="comment" id="rfc.comment.17">[<a href="#rfc.comment.17" class="smpl">rfc.comment.17</a>: Issue: This is no longer true]</span> 
       </p>
       <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;Cacheability of Pushed Resources
       </h2>
