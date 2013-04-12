@@ -463,8 +463,8 @@ ul p {
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
       <meta name="dct.issued" scheme="ISO8601" content="2013-04-12">
-      <meta name="dct.abstract" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient transfer of representations by providing compressed header fields, simultaneous requests, and also introduces unsolicited push of representations from server to client. This document is an alternative to, but does not obsolete the HTTP message format. HTTP semantics remain unchanged.">
-      <meta name="description" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient transfer of representations by providing compressed header fields, simultaneous requests, and also introduces unsolicited push of representations from server to client. This document is an alternative to, but does not obsolete the HTTP message format. HTTP semantics remain unchanged.">
+      <meta name="dct.abstract" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
+      <meta name="description" content="This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
    <body onload="init();">
       <table class="header">
@@ -510,10 +510,13 @@ ul p {
       <p class="title">Hypertext Transfer Protocol version 2.0<br><span class="filename">draft-ietf-httpbis-http2-latest</span></p>
       <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1> 
       <p>This specification describes an optimised expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0
-         encapsulation enables more efficient transfer of representations by providing compressed header fields, simultaneous requests,
-         and also introduces unsolicited push of representations from server to client.
+         encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression
+         and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers
+         to clients.
       </p>  
-      <p>This document is an alternative to, but does not obsolete the HTTP message format. HTTP semantics remain unchanged.</p> 
+      <p>This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics
+         remain unchanged.
+      </p> 
       <h1 id="rfc.note.1"><a href="#rfc.note.1">Editorial Note (To be removed by RFC Editor)</a></h1> 
       <p>Discussion of this draft takes place on the HTTPBIS working group mailing list (ietf-http-wg@w3.org), which is archived at &lt;<a href="http://lists.w3.org/Archives/Public/ietf-http-wg/">http://lists.w3.org/Archives/Public/ietf-http-wg/</a>&gt;.
       </p>  
@@ -581,23 +584,28 @@ ul p {
                      <li><a href="#rfc.section.3.6.2">3.6.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.6.2">Appropriate Use of Flow Control</a></li>
                   </ul>
                </li>
-               <li><a href="#rfc.section.3.7">3.7</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.7">Frame Types</a><ul>
-                     <li><a href="#rfc.section.3.7.1">3.7.1</a>&nbsp;&nbsp;&nbsp;<a href="#DataFrames">DATA Frames</a></li>
-                     <li><a href="#rfc.section.3.7.2">3.7.2</a>&nbsp;&nbsp;&nbsp;<a href="#HEADERS_PRIORITY">HEADERS+PRIORITY</a></li>
-                     <li><a href="#rfc.section.3.7.3">3.7.3</a>&nbsp;&nbsp;&nbsp;<a href="#RST_STREAM">RST_STREAM</a></li>
-                     <li><a href="#rfc.section.3.7.4">3.7.4</a>&nbsp;&nbsp;&nbsp;<a href="#SETTINGS">SETTINGS</a></li>
-                     <li><a href="#rfc.section.3.7.5">3.7.5</a>&nbsp;&nbsp;&nbsp;<a href="#PUSH_PROMISE">PUSH_PROMISE</a></li>
-                     <li><a href="#rfc.section.3.7.6">3.7.6</a>&nbsp;&nbsp;&nbsp;<a href="#PING">PING</a></li>
-                     <li><a href="#rfc.section.3.7.7">3.7.7</a>&nbsp;&nbsp;&nbsp;<a href="#GOAWAY">GOAWAY</a></li>
-                     <li><a href="#rfc.section.3.7.8">3.7.8</a>&nbsp;&nbsp;&nbsp;<a href="#HEADERS">HEADERS</a></li>
-                     <li><a href="#rfc.section.3.7.9">3.7.9</a>&nbsp;&nbsp;&nbsp;<a href="#WINDOW_UPDATE">WINDOW_UPDATE</a><ul>
-                           <li><a href="#rfc.section.3.7.9.1">3.7.9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.7.9.1">The Flow Control Window</a></li>
-                           <li><a href="#rfc.section.3.7.9.2">3.7.9.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.7.9.2">Initial Flow Control Window Size</a></li>
-                           <li><a href="#rfc.section.3.7.9.3">3.7.9.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.7.9.3">Reducing the Stream Window Size</a></li>
-                           <li><a href="#rfc.section.3.7.9.4">3.7.9.4</a>&nbsp;&nbsp;&nbsp;<a href="#EndFlowControl">Ending Flow Control</a></li>
+               <li><a href="#rfc.section.3.7">3.7</a>&nbsp;&nbsp;&nbsp;<a href="#HeaderBlock">Header Blocks</a></li>
+               <li><a href="#rfc.section.3.8">3.8</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8">Frame Types</a><ul>
+                     <li><a href="#rfc.section.3.8.1">3.8.1</a>&nbsp;&nbsp;&nbsp;<a href="#DataFrames">DATA Frames</a></li>
+                     <li><a href="#rfc.section.3.8.2">3.8.2</a>&nbsp;&nbsp;&nbsp;<a href="#HEADERS_PRIORITY">HEADERS+PRIORITY</a></li>
+                     <li><a href="#rfc.section.3.8.3">3.8.3</a>&nbsp;&nbsp;&nbsp;<a href="#RST_STREAM">RST_STREAM</a></li>
+                     <li><a href="#rfc.section.3.8.4">3.8.4</a>&nbsp;&nbsp;&nbsp;<a href="#SETTINGS">SETTINGS</a><ul>
+                           <li><a href="#rfc.section.3.8.4.1">3.8.4.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.4.1">SETTINGS ID/Value Pairs</a></li>
+                           <li><a href="#rfc.section.3.8.4.2">3.8.4.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.4.2">Settings Persistence</a></li>
+                           <li><a href="#rfc.section.3.8.4.3">3.8.4.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.4.3">Defined Settings</a></li>
                         </ul>
                      </li>
-                     <li><a href="#rfc.section.3.7.10">3.7.10</a>&nbsp;&nbsp;&nbsp;<a href="#HeaderBlock">Header Block</a></li>
+                     <li><a href="#rfc.section.3.8.5">3.8.5</a>&nbsp;&nbsp;&nbsp;<a href="#PUSH_PROMISE">PUSH_PROMISE</a></li>
+                     <li><a href="#rfc.section.3.8.6">3.8.6</a>&nbsp;&nbsp;&nbsp;<a href="#PING">PING</a></li>
+                     <li><a href="#rfc.section.3.8.7">3.8.7</a>&nbsp;&nbsp;&nbsp;<a href="#GOAWAY">GOAWAY</a></li>
+                     <li><a href="#rfc.section.3.8.8">3.8.8</a>&nbsp;&nbsp;&nbsp;<a href="#HEADERS">HEADERS</a></li>
+                     <li><a href="#rfc.section.3.8.9">3.8.9</a>&nbsp;&nbsp;&nbsp;<a href="#WINDOW_UPDATE">WINDOW_UPDATE</a><ul>
+                           <li><a href="#rfc.section.3.8.9.1">3.8.9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.9.1">The Flow Control Window</a></li>
+                           <li><a href="#rfc.section.3.8.9.2">3.8.9.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.9.2">Initial Flow Control Window Size</a></li>
+                           <li><a href="#rfc.section.3.8.9.3">3.8.9.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.8.9.3">Reducing the Stream Window Size</a></li>
+                           <li><a href="#rfc.section.3.8.9.4">3.8.9.4</a>&nbsp;&nbsp;&nbsp;<a href="#EndFlowControl">Ending Flow Control</a></li>
+                        </ul>
+                     </li>
                   </ul>
                </li>
             </ul>
@@ -667,40 +675,39 @@ ul p {
                <li><a href="#rfc.figure.1">Figure 1: Frame Header</a></li>
                <li><a href="#rfc.figure.2">Figure 2: HEADERS+PRIORITY Frame Payload</a></li>
                <li><a href="#rfc.figure.3">Figure 3: RST_STREAM Frame Payload</a></li>
-               <li><a href="#rfc.figure.4">Figure 4: SETTINGS ID/Value Pair</a></li>
+               <li><a href="#rfc.figure.4">Figure 4: SETTINGS ID/Value Pair Format</a></li>
                <li><a href="#rfc.figure.5">Figure 5: PUSH_PROMISE Payload Format</a></li>
                <li><a href="#rfc.figure.6">Figure 6: GOAWAY Payload Format</a></li>
             </ul>
          </li>
       </ul>
       <h1 id="rfc.section.1" class="np"><a href="#rfc.section.1">1.</a>&nbsp;<a id="intro" href="#intro">Introduction</a></h1>
-      <p id="rfc.section.1.p.1">The Hypertext Transfer Protocol (HTTP) is a wildly successful protocol. The HTTP/1.1 message encapsulation (<a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#http.message" title="Message Format">Section 3</a>) is optimized for implementation simplicity and accessibility, not application performance. As such it has several characteristics
+      <p id="rfc.section.1.p.1">The Hypertext Transfer Protocol (HTTP) is a wildly successful protocol. However, the HTTP/1.1 message encapsulation (<a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#http.message" title="Message Format">Section 3</a>) is optimized for implementation simplicity and accessibility, not application performance. As such it has several characteristics
          that have a negative overall effect on application performance.
       </p>
-      <p id="rfc.section.1.p.2">The HTTP/1.1 encapsulation ensures that only one request can be delivered at a time on a given connection. HTTP/1.1 pipelining,
-         which is not widely deployed, only partially addresses these concerns. Clients that need to make multiple requests therefore
-         use commonly multiple connections to a server or servers in order to reduce the overall latency of those requests. <span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: Need to tune the anti-pipelining comments here.]</span> 
+      <p id="rfc.section.1.p.2">In particular, HTTP/1.0 only allows one request can be delivered at a time on a given connection. HTTP/1.1 pipelining only
+         partially addressed these concerns, and is not widely deployed. Therefore, clients that need to make many requests (as is
+         common on the Web) typically use multiple connections to a server in order to reduce percieved latency.
       </p>
-      <p id="rfc.section.1.p.3">Furthermore, HTTP/1.1 header fields are represented in an inefficient fashion, which, in addition to generating more or larger
-         network packets, can cause the small initial TCP window to fill more quickly than is ideal. This results in excessive latency
-         where multiple requests are made on a new TCP connection.
+      <p id="rfc.section.1.p.3">Furthermore, HTTP/1.1 header fields are often repetitive and verbose, which, in addition to generating more or larger network
+         packets, can cause the small initial TCP congestion window to quickly quickly. This can result in excessive latency when multiple
+         requests are made on a new TCP connection.
       </p>
-      <p id="rfc.section.1.p.4">This document defines an optimized mapping of the HTTP semantics to a TCP connection. This optimization reduces the latency
-         costs of HTTP by allowing parallel requests on the same connection and by using an efficient coding for HTTP header fields.
-         Prioritization of requests lets more important requests complete faster, further improving application performance.
+      <p id="rfc.section.1.p.4">This document addresses these issues by defining an optimized mapping of HTTP's semantics to an underlying connection. Specifically,
+         it allows interleaving of request and response messages on the same connection and uses an efficient coding for HTTP header
+         fields. It also allows prioritization of requests, letting more important requests complete more quickly, further improving
+         perceived performance.
       </p>
-      <p id="rfc.section.1.p.5">HTTP/2.0 applications have an improved impact on network congestion due to the use of fewer TCP connections to achieve the
-         same effect. Fewer TCP connections compete more fairly with other flows. Long-lived connections are also more able to take
-         better advantage of the available network capacity, rather than operating in the slow start phase of TCP.
+      <p id="rfc.section.1.p.5">The resulting protocol is desined to have be more friendly to the network, because fewer TCP connections can be used, in comparison
+         to HTTP/1.x. This means less competition with other flows, and longer-lived connections, which in turn leads to better utilisation
+         of available network capacity.
       </p>
-      <p id="rfc.section.1.p.6">The HTTP/2.0 encapsulation also enables more efficient processing of messages by providing efficient message framing. Processing
-         of header fields in HTTP/2.0 messages is more efficient (for entities that process many messages).
-      </p>
+      <p id="rfc.section.1.p.6">Finally, this encapsulation also enables more scalable processing of messages through use of binary message framing.</p>
       <h2 id="rfc.section.1.1"><a href="#rfc.section.1.1">1.1</a>&nbsp;Document Organization
       </h2>
-      <p id="rfc.section.1.1.p.1">The HTTP/2.0 Specification is split into three parts: starting HTTP/2.0 (<a href="#starting" title="Starting HTTP/2.0">Section&nbsp;2</a>), which covers how a HTTP/2.0 is started; a framing layer (<a href="#FramingLayer" title="HTTP/2.0 Framing Layer">Section&nbsp;3</a>), which multiplexes a TCP connection into independent, length-prefixed frames; and an HTTP layer (<a href="#HTTPLayer" title="HTTP Message Exchanges">Section&nbsp;4</a>), which specifies the mechanism for overlaying HTTP request/response pairs on top of the framing layer. While some of the
-         framing layer concepts are isolated from the HTTP layer, building a generic framing layer has not been a goal. The framing
-         layer is tailored to the needs of the HTTP protocol and server push.
+      <p id="rfc.section.1.1.p.1">The HTTP/2.0 Specification is split into three parts: starting HTTP/2.0 (<a href="#starting" title="Starting HTTP/2.0">Section&nbsp;2</a>), which covers how a HTTP/2.0 session is initiated; a framing layer (<a href="#FramingLayer" title="HTTP/2.0 Framing Layer">Section&nbsp;3</a>), which multiplexes a single TCP connection into independent frames of various types; and an HTTP layer (<a href="#HTTPLayer" title="HTTP Message Exchanges">Section&nbsp;4</a>), which specifies the mechanism for expressing HTTP interations using the framing layer. While some of the framing layer concepts
+         are isolated from HTTP, building a generic framing layer has not been a goal. The framing layer is tailored to the needs of
+         the HTTP protocol and server push.
       </p>
       <h2 id="rfc.section.1.2"><a href="#rfc.section.1.2">1.2</a>&nbsp;Conventions and Terminology
       </h2>
@@ -713,11 +720,11 @@ ul p {
       <p id="rfc.section.1.2.p.3">The following terms are used: </p>
       <dl>
          <dt>client:</dt>
-         <dd>The endpoint initiating the HTTP/2.0 session.</dd>
+         <dd>The endpoint initiating the HTTP session.</dd>
          <dt>connection:</dt>
          <dd>A transport-level connection between two endpoints.</dd>
          <dt>endpoint:</dt>
-         <dd>Either the client or server of a connection.</dd>
+         <dd>Either the client or server of the connection.</dd>
          <dt>frame:</dt>
          <dd>The smallest unit of communication, each containing a frame header.</dd>
          <dt>message:</dt>
@@ -727,27 +734,28 @@ ul p {
          <dt>sender:</dt>
          <dd>An endpoint that is transmitting frames.</dd>
          <dt>server:</dt>
-         <dd>The endpoint which did not initiate the HTTP/2.0 session.</dd>
+         <dd>The endpoint which did not initiate the HTTP session.</dd>
          <dt>session:</dt>
-         <dd>A synonym for a connection.</dd>
+         <dd>A synonym for "connection".</dd>
          <dt>session error:</dt>
          <dd>An error on the HTTP/2.0 session.</dd>
          <dt>stream:</dt>
-         <dd>A bi-directional flow of bytes across a virtual channel within a HTTP/2.0 session.</dd>
+         <dd>A bi-directional flow of bytes across a virtual channel within the HTTP/2.0 session.</dd>
          <dt>stream error:</dt>
-         <dd>An error on an individual HTTP/2.0 stream.</dd>
+         <dd>An error on the individual HTTP/2.0 stream.</dd>
       </dl>
       <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a id="starting" href="#starting">Starting HTTP/2.0</a></h1>
       <p id="rfc.section.2.p.1">Just as HTTP/1.1 does, HTTP/2.0 uses the "http:" and "https:" URI schemes. An HTTP/2.0-capable client is therefore required
-         to discover whether a server (or intermediary) supports HTTP/2.0.
+         to discover whether the upstream server (including intermediaries) supports HTTP/2.0.
       </p>
       <p id="rfc.section.2.p.2">Different discovery mechanisms are defined for "http:" and "https:" URIs. Discovery for "http:" URIs is described in <a href="#discover-http" title="Starting HTTP/2.0 for &#34;http:&#34; URIs">Section&nbsp;2.2</a>; discovery for "https:" URIs is described in <a href="#discover-https" title="Starting HTTP/2.0 for &#34;https:&#34; URIs">Section&nbsp;2.3</a>.
       </p>
       <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;<a id="versioning" href="#versioning">HTTP/2.0 Version Identification</a></h2>
-      <p id="rfc.section.2.1.p.1">HTTP/2.0 is identified using the string "HTTP/2.0". This identification is used in the HTTP/1.1 Upgrade header field, in the <a href="#TLSNPN">TLS-NPN</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite>  <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: TBD]</span> field and other places where protocol identification is required.
+      <p id="rfc.section.2.1.p.1">The protocol defined in this document is identified using the string "HTTP/2.0". This identification is used in the HTTP/1.1
+         Upgrade header field, in the <a href="#TLSNPN">TLS-NPN</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite>  <span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: TBD]</span> field and other places where protocol identification is required.
       </p>
       <p id="rfc.section.2.1.p.2">Negotiating "HTTP/2.0" implies the use of the transport, security, framing and message semantics described in this document.</p>
-      <p id="rfc.section.2.1.p.3"> <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Editor's Note: please remove the following text prior to the publication of a final version of this document.]</span> 
+      <p id="rfc.section.2.1.p.3"> <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Editor's Note: please remove the following text prior to the publication of a final version of this document.]</span> 
       </p>
       <p id="rfc.section.2.1.p.4">Only implementations of the final, published RFC can identify themselves as "HTTP/2.0". Until such an RFC exists, implementations
          MUST NOT identify themselves using "HTTP/2.0".
@@ -788,7 +796,7 @@ Upgrade: HTTP/2.0
 </pre> <p id="rfc.section.2.2.p.8">Once the server returns the 101 response, both the client and the server send a session header (<a href="#SessionHeader" title="Session Header">Section&nbsp;3.2</a>).
       </p>
       <h2 id="rfc.section.2.3"><a href="#rfc.section.2.3">2.3</a>&nbsp;<a id="discover-https" href="#discover-https">Starting HTTP/2.0 for "https:" URIs</a></h2>
-      <p id="rfc.section.2.3.p.1">A client that makes a request to an "https:" URI without prior knowledge about support for HTTP/2.0 uses <a href="#RFC5246">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[RFC5246]</cite> with <a href="#TLSNPN">TLS-NPN</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite> extension. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: TBD, maybe ALPN]</span> 
+      <p id="rfc.section.2.3.p.1">A client that makes a request to an "https:" URI without prior knowledge about support for HTTP/2.0 uses <a href="#RFC5246">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[RFC5246]</cite> with <a href="#TLSNPN">TLS-NPN</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite> extension. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: TBD, maybe ALPN]</span> 
       </p>
       <p id="rfc.section.2.3.p.2">Once TLS negotiation is complete, both the client and the server send a session header (<a href="#SessionHeader" title="Session Header">Section&nbsp;3.2</a>).
       </p>
@@ -798,18 +806,18 @@ Upgrade: HTTP/2.0
          are required to support <a href="#TLSNPN">protocol negotiation in TLS</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite>.
       </p>
       <p id="rfc.section.2.4.p.2">Prior support for HTTP/2.0 is not a strong signal that a given server will support HTTP/2.0 for future sessions. It is possible
-         for server configurations to change or for configurations to differ between instances in clustered server. Different "transparent"
-         intermediaries - intermediaries that are not explicitly selected by either client or server - are another source of variability.
+         for server configurations to change or for configurations to differ between instances in clustered server. Interception proxies
+         (a.k.a. "transparent" proxies) are another source of variability.
       </p>
       <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a>&nbsp;<a id="FramingLayer" href="#FramingLayer">HTTP/2.0 Framing Layer</a></h1>
       <h2 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1</a>&nbsp;Session
       </h2>
       <p id="rfc.section.3.1.p.1">The HTTP/2.0 session runs atop TCP (<a href="#RFC0793"><cite title="Transmission Control Protocol">[RFC0793]</cite></a>). The client is the TCP connection initiator.
       </p>
-      <p id="rfc.section.3.1.p.2">HTTP/2.0 connections are persistent connections. For best performance, it is expected that clients will not close open connections
-         until the user navigates away from all web pages referencing a connection, or until the server closes the connection. Servers
+      <p id="rfc.section.3.1.p.2">HTTP/2.0 connections are persistent. That is, for best performance, it is expected that clients will not close connections
+         until the user navigates away from all Web pages referencing a connection, or until the server closes the connection. Servers
          are encouraged to leave connections open for as long as possible, but can terminate idle connections if necessary. When either
-         endpoint closes the transport-level connection, it MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.7.7</a>) frame so that the endpoints can reliably determine if requests finished before the close.
+         endpoint closes the transport-level connection, it MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) frame so that the endpoints can reliably determine if messages were processed beforehand.
       </p>
       <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a id="SessionHeader" href="#SessionHeader">Session Header</a></h2>
       <p id="rfc.section.3.2.p.1">After opening a TCP connection and performing either an HTTP/1.1 Upgrade or TLS handshake, the client sends the client session
@@ -818,27 +826,28 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.2.p.2">The session header provides a final confirmation that both peers agree to use the HTTP/2.0 protocol. The SETTINGS frame ensures
          that client or server configuration is known as quickly as possible.
       </p>
-      <p id="rfc.section.3.2.p.3">The client session header is the 25 byte sequence 0x464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a (the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.7.4</a>). The client sends the client session header immediately after receiving an HTTP/1.1 Upgrade, or after receiving a TLS Finished
-         message from the server.
+      <p id="rfc.section.3.2.p.3">The client session header is the 25 byte sequence 0x464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a (the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client session header immediately upon receipt of a 101 Switching Protocols response (indiciating a
+         successful upgrade), or after receiving a TLS Finished message from the server. If starting HTTP/2.0 with prior knowledge,
+         the client session header is sent upon connection establishment.
       </p>
       <p id="rfc.section.3.2.p.4"> </p>
       <ul class="empty">
          <li>The client session header is selected so that a large proportion of HTTP/1.1 or HTTP/1.0 servers and intermediaries do not
-            attempt to process further frames. This doesn't address the concerns raised in <a href="#TALKING"><cite title="Talking to Yourself for Fun and Profit">[TALKING]</cite></a>.
+            attempt to process further frames. Note that this does not address the concerns raised in <a href="#TALKING"><cite title="Talking to Yourself for Fun and Profit">[TALKING]</cite></a>.
          </li>
       </ul>
-      <p id="rfc.section.3.2.p.5">The server session header is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.7.4</a>). The server sends the server session header immediately after receiving and validating the client session header.
+      <p id="rfc.section.3.2.p.5">The server session header is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The server sends the server session header immediately after receiving and validating the client session header.
       </p>
       <p id="rfc.section.3.2.p.6">The client sends requests immediately after sending the session header, without waiting to receive a server session header.
          This ensures that confirming session headers does not add latency.
       </p>
-      <p id="rfc.section.3.2.p.7">Both client and server MUST close the connection if it does not begin with a valid session header. A GOAWAY frame (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.7.7</a>) MAY be omitted if it is clear that the peer is not using HTTP/2.0.
+      <p id="rfc.section.3.2.p.7">Both clients and servers MUST close the connection if it does not begin with a valid session header. A GOAWAY frame (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) MAY be omitted if it is clear that the peer is not using HTTP/2.0.
       </p>
       <h2 id="rfc.section.3.3"><a href="#rfc.section.3.3">3.3</a>&nbsp;Framing
       </h2>
       <p id="rfc.section.3.3.p.1">Once the connection is established, clients and servers exchange HTTP/2.0 frames. Frames are the basic unit of communication.</p>
       <h3 id="rfc.section.3.3.1"><a href="#rfc.section.3.3.1">3.3.1</a>&nbsp;<a id="FrameHeader" href="#FrameHeader">Frame Header</a></h3>
-      <p id="rfc.section.3.3.1.p.1">HTTP/2.0 frames share a common header format. Frames have an 8 byte header with between 0 and 65535 bytes of data.</p>
+      <p id="rfc.section.3.3.1.p.1">HTTP/2.0 frames share a common format, consisting of 8 byte of header with between 0 and 65535 bytes of data.</p>
       <div id="rfc.figure.1"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -852,19 +861,19 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.3.1.p.3">The fields of the frame header are defined as: </p>
       <dl>
          <dt>Length:</dt>
-         <dd>The 16-bit length of the frame payload in bytes. The length of the frame header is not included in this sum.</dd>
+         <dd>The 16-bit length of the frame data in bytes. The length of the frame header is not included.</dd>
          <dt>Type:</dt>
-         <dd>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and payload are interpreted.
-            Implementations MUST ignore frames that use types that they do not support.
+         <dd>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and data are interpreted. Implementations
+            MUST ignore unsupported and unrecognized frame types.
          </dd>
          <dt>Flags:</dt>
          <dd>An 8-bit field reserved for flags. Bits that have undefined semantics are reserved. The following flags are defined for all
             frame types: 
             <dl>
                <dt>FINAL (0x1):</dt>
-               <dd>Bit 1 (the least significant bit) indicates that this is the last frame in a stream. This places the stream into a half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>). No further frames follow in the direction of the carrying frame.
+               <dd>Bit 1 (the least significant bit) indicates that this is the last frame in a stream, placing it into a half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>). No further frames follow in the direction of the carrying frame.
                </dd>
-            </dl> Frame types can define semantics for frame-specific flags.
+            </dl> The remaining flags can be assigned semantics by the indicated frame type.
          </dd>
          <dt>R:</dt>
          <dd>A reserved 1-bit field. The semantics of this bit are not defined.</dd>
@@ -880,12 +889,12 @@ Upgrade: HTTP/2.0
       <h3 id="rfc.section.3.3.2"><a href="#rfc.section.3.3.2">3.3.2</a>&nbsp;<a id="FrameSize" href="#FrameSize">Frame Processing</a></h3>
       <p id="rfc.section.3.3.2.p.1">A frame of the maximum size might be too large for implementations with limited resources to process. Implementations MAY
          choose to support frames smaller than the maximum possible size. However, implementations MUST be able to receive frames containing
-         at least 8192 octets of payload.
+         at least 8192 octets of data.
       </p>
       <p id="rfc.section.3.3.2.p.2">An implementation MUST immediately close a stream if it is unable to process a frame related to that stream due to it exceeding
-         a size limit. The implementation MUST send a RST_STREAM frame (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.7.3</a>) containing FRAME_TOO_LARGE error code if the frame size limit is exceeded.
+         a size limit. The implementation MUST send a RST_STREAM frame (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.8.3</a>) containing FRAME_TOO_LARGE error code if the frame size limit is exceeded.
       </p>
-      <p id="rfc.section.3.3.2.p.3"> <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: <a href="https://github.com/http2/http2-spec/issues/28">Issue 28</a>: Need a way to signal the maximum frame size; no way to RST_STREAM on non-stream-related frames.]</span> 
+      <p id="rfc.section.3.3.2.p.3"> <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: <a href="https://github.com/http2/http2-spec/issues/28">Issue 28</a>: Need a way to signal the maximum frame size; no way to RST_STREAM on non-stream-related frames.]</span> 
       </p>
       <h2 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4</a>&nbsp;Streams
       </h2>
@@ -899,31 +908,31 @@ Upgrade: HTTP/2.0
       </ul>
       <h3 id="rfc.section.3.4.1"><a href="#rfc.section.3.4.1">3.4.1</a>&nbsp;<a id="StreamCreation" href="#StreamCreation">Stream Creation</a></h3>
       <p id="rfc.section.3.4.1.p.1">Use of streams does not require negotiation. A stream is not created, streams are used by sending a frame on the stream.</p>
-      <p id="rfc.section.3.4.1.p.2">Streams are identified by a 31-bit numeric identifier. Streams initiated by a client use odd numbered stream identifiers.
-         Streams initiated by the server use even numbered stream identifiers. A stream identifier of zero MUST NOT be used to create
+      <p id="rfc.section.3.4.1.p.2">Streams are identified by a 31-bit numeric identifier. Streams initiated by a client use odd numbered stream identifiers;
+         those initiated by the server use even numbered stream identifiers. A stream identifier of zero MUST NOT be used to create
          a new stream.
       </p>
-      <p id="rfc.section.3.4.1.p.3">The stream identifier of a new stream MUST be greater than all other streams from that endpoint, unless the stream identifier
-         was previously reserved (such as the promised stream identifier in a PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;3.7.5</a>) frame). An endpoint that receives an unexpected stream identifier MUST treat this as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
+      <p id="rfc.section.3.4.1.p.3">The stream identifier of a new stream MUST be greater than all previously streams from that endpoint, unless the stream identifier
+         was reserved (such as the promised stream identifier in a PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;3.8.5</a>) frame). An endpoint that receives an unexpected stream identifier MUST handle it as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
-      <p id="rfc.section.3.4.1.p.4">A long-lived session can result in available stream identifiers being exhausted. An endpoint that is unable to create a new
-         stream identifier can establish a new session for any new streams.
+      <p id="rfc.section.3.4.1.p.4">A long-lived session can exhaust the available stream identifiers. An endpoint that is unable to create a new stream identifier
+         can establish a new session for any new streams.
       </p>
-      <p id="rfc.section.3.4.1.p.5">An endpoint cannot prevent the creation of a new stream, but it can request the early termination of an unwanted stream. Upon
-         receipt of a frame, the recipient can terminate the corresponding stream by sending a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type REFUSED_STREAM. This cannot prevent the initiating endpoint from sending frames for that stream prior to receiving
+      <p id="rfc.section.3.4.1.p.5">An endpoint can request the early termination of an unwanted stream. Upon receipt of a frame, the receiver can terminate the
+         corresponding stream by sending a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type REFUSED_STREAM. This cannot prevent the initiating endpoint from sending frames for that stream prior to receiving
          this request.
       </p>
       <h3 id="rfc.section.3.4.2"><a href="#rfc.section.3.4.2">3.4.2</a>&nbsp;<a id="StreamPriority" href="#StreamPriority">Stream priority</a></h3>
-      <p id="rfc.section.3.4.2.p.1">The creator of a stream assigns a priority for that stream. Priority is represented as a 31 bit integer. 0 represents the
+      <p id="rfc.section.3.4.2.p.1">The creator of a stream can assign a priority for that stream. Priority is represented as a 31 bit integer. 0 represents the
          highest priority and 2<sup>31</sup>-1 represents the lowest priority.
       </p>
-      <p id="rfc.section.3.4.2.p.2">The sender and recipient SHOULD use best-effort to process streams in the order of highest priority to lowest priority. <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: ED: toothless, useless "SHOULD": reword]</span> 
+      <p id="rfc.section.3.4.2.p.2">Senders and receivers SHOULD use best-effort to process streams in the order of highest priority to lowest priority. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: ED: toothless, useless "SHOULD": reword]</span> 
       </p>
       <h3 id="rfc.section.3.4.3"><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;Stream headers
       </h3>
-      <p id="rfc.section.3.4.3.p.1">Streams carry optional sets of header fields which carry metadata about the stream. After the stream has been created, and
-         as long as the sender is not closed (<a href="#StreamClose" title="Stream close">Section&nbsp;3.4.6</a>) or half-closed (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>), each side may send HEADERS frame(s) containing the header data. Header data can be sent in multiple HEADERS frames, and
-         HEADERS frames may be interleaved with data frames.
+      <p id="rfc.section.3.4.3.p.1">Streams can carry optional sets of header fields containing metadata. After the stream has been created, and as long as the
+         sender is not closed (<a href="#StreamClose" title="Stream close">Section&nbsp;3.4.6</a>) or half-closed (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>), each side may send HEADERS frame(s) containing header data. Header data can be sent in multiple HEADERS frames, and HEADERS
+         frames may be interleaved with data frames.
       </p>
       <h3 id="rfc.section.3.4.4"><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;Stream data exchange
       </h3>
@@ -934,7 +943,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.4.5.p.1">When one side of the stream sends a frame with the FINAL flag set, the stream is half-closed from that endpoint. The sender
          of the FINAL flag MUST NOT send further frames on that stream. When both sides have half-closed, the stream is closed.
       </p>
-      <p id="rfc.section.3.4.5.p.2">An endpoint MUST treat the receipt of a data frame on a half-closed stream as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
+      <p id="rfc.section.3.4.5.p.2">Receivers of frames on a half-closed stream MUST handle them as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
       </p>
       <p id="rfc.section.3.4.5.p.3">Streams that have never received packets can be considered to be half-closed in the direction that is silent. This allows
          either peer to create a unidirectional stream, which does not require an explicit close from the peer that does not transmit
@@ -944,8 +953,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.4.6.p.1">Streams can be terminated in the following ways: </p>
       <dl>
          <dt>Normal termination:</dt>
-         <dd>Normal stream termination occurs when both sender and recipient have half-closed the stream by sending a frame containing
-            a FINAL flag (<a href="#FrameHeader" title="Frame Header">Section&nbsp;3.3.1</a>).
+         <dd>Normal stream termination occurs when both client and server have half-closed the stream by sending a frame containing a FINAL flag (<a href="#FrameHeader" title="Frame Header">Section&nbsp;3.3.1</a>).
          </dd>
          <dt>Half-close on unidirectional stream:</dt>
          <dd>A stream that only has frames sent in one direction can be tentatively considered to be closed once a frame containing a FINAL
@@ -954,15 +962,15 @@ Upgrade: HTTP/2.0
          <dt>Abrupt termination:</dt>
          <dd>Either the peer can send a RST_STREAM control frame at any time to terminate an active stream. RST_STREAM contains an error
             code to indicate the reason for termination. A RST_STREAM indicates that the sender will transmit no further data on the stream
-            and that the receiver is requested to cease transmission. <br><br> The sender of a RST_STREAM frame MUST allow for frames that have already been sent by the peer prior to the RST_STREAM being
+            and that the receiver is advised to cease transmission on it. <br><br> The sender of a RST_STREAM frame MUST allow for frames that have already been sent by the peer prior to the RST_STREAM being
             processed. If in-transit frames alter session state, these frames cannot be safely discarded. See Stream Error Handling (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) for more details.
          </dd>
          <dt>TCP connection teardown:</dt>
-         <dd>If the TCP connection is torn down while un-closed streams exist, then the endpoint must assume that the stream was abnormally
+         <dd>If the TCP connection is torn down while un-closed streams exist, then the endpoint MUST assume that the stream was abnormally
             interrupted and may be incomplete.
          </dd>
       </dl>
-      <p id="rfc.section.3.4.6.p.2">If an endpoint receives a data frame after the stream is closed, it MAY send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
+      <p id="rfc.section.3.4.6.p.2">If an endpoint receives a frame on a stream after it is closed, it MAY send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
       <h2 id="rfc.section.3.5"><a href="#rfc.section.3.5">3.5</a>&nbsp;Error Handling
       </h2>
       <p id="rfc.section.3.5.p.1">HTTP/2.0 framing permits two classes of error: </p>
@@ -972,7 +980,7 @@ Upgrade: HTTP/2.0
       </ul>
       <h3 id="rfc.section.3.5.1"><a href="#rfc.section.3.5.1">3.5.1</a>&nbsp;<a id="SessionErrorHandler" href="#SessionErrorHandler">Session Error Handling</a></h3>
       <p id="rfc.section.3.5.1.p.1">A session error is any error which prevents further processing of the framing layer or which corrupts any session state.</p>
-      <p id="rfc.section.3.5.1.p.2">An endpoint that encounters a session error MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.7.7</a>) frame with the stream identifier of the last stream that it successfully received from its peer. The GOAWAY frame includes
+      <p id="rfc.section.3.5.1.p.2">An endpoint that encounters a session error MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) frame with the stream identifier of the last stream that it successfully received from its peer. The GOAWAY frame includes
          an error code that indicates why the session is terminating. After sending the GOAWAY frame, the endpoint MUST close the TCP
          connection.
       </p>
@@ -986,20 +994,18 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.5.2.p.1">A stream error is an error related to a specific stream identifier that does not affect processing of other streams at the
          framing layer.
       </p>
-      <p id="rfc.section.3.5.2.p.2">An endpoint that detects a stream error sends a RST_STREAM (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.7.3</a>) frame that contains the stream identifier of the stream where the error occurred. The RST_STREAM frame includes an error code
+      <p id="rfc.section.3.5.2.p.2">An endpoint that detects a stream error sends a RST_STREAM (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.8.3</a>) frame that contains the stream identifier of the stream where the error occurred. The RST_STREAM frame includes an error code
          that indicates the type of error.
       </p>
       <p id="rfc.section.3.5.2.p.3">A RST_STREAM is the last frame that an endpoint can send on a stream. The peer that sends the RST_STREAM frame MUST be prepared
          to receive any frames that were sent or enqueued for sending by the remote peer. These frames can be ignored, except where
-         they modify session state (such as the header compression state).
+         they modify session state (such as that for header compression).
       </p>
-      <p id="rfc.section.3.5.2.p.4">An endpoint SHOULD NOT send more than one RST_STREAM frame for any stream. An endpoint MAY send additional RST_STREAM frames
-         if it receives frames on a closed stream after more than a round trip time. This behaviour is permitted to deal with misbehaving
-         implementations where treating this as a session error is inappropriate.
+      <p id="rfc.section.3.5.2.p.4">Normally, an endpoint SHOULD NOT send more than one RST_STREAM frame for any stream. However, an endpoint MAY send additional
+         RST_STREAM frames if it receives frames on a closed stream after more than a round trip time. This behaviour is permitted
+         to deal with misbehaving implementations.
       </p>
-      <p id="rfc.section.3.5.2.p.5">An endpoint MUST NOT send a RST_STREAM in response to an RST_STREAM frame. This could trigger infinite loops of RST_STREAM
-         frames.
-      </p>
+      <p id="rfc.section.3.5.2.p.5">An endpoint MUST NOT send a RST_STREAM in response to an RST_STREAM frame, to avoid looping.</p>
       <h3 id="rfc.section.3.5.3"><a href="#rfc.section.3.5.3">3.5.3</a>&nbsp;<a id="ErrorCodes" href="#ErrorCodes">Error Codes</a></h3>
       <p id="rfc.section.3.5.3.p.1">Error codes are 32-bit fields that are used in RST_STREAM and GOAWAY frames to convey the reasons for the stream or session
          error.
@@ -1014,26 +1020,27 @@ Upgrade: HTTP/2.0
             shutdown of a session.
          </dd>
          <dt>PROTOCOL_ERROR (1):</dt>
-         <dd>An unspecific protocol error was detected. This error is for use when a more specific error code is not available.</dd>
+         <dd>The endpoint detected an unspecific protocol error. This error is for use when a more specific error code is not available.</dd>
          <dt>INTERNAL_ERROR (2):</dt>
-         <dd>The implementation encountered an unexpected internal error.</dd>
+         <dd>The endpoint encountered an unexpected internal error.</dd>
          <dt>FLOW_CONTROL_ERROR (3):</dt>
          <dd>The endpoint detected that its peer violated the flow control protocol.</dd>
          <dt>INVALID_STREAM (4):</dt>
-         <dd>A frame was received for an inactive stream.</dd>
+         <dd>The endpoint received a frame for an inactive stream.</dd>
          <dt>STREAM_CLOSED (5):</dt>
          <dd>The endpoint received a frame after a stream was half-closed.</dd>
          <dt>FRAME_TOO_LARGE (6):</dt>
          <dd>The endpoint received a frame that was larger than the maximum size that it supports.</dd>
          <dt>REFUSED_STREAM (7):</dt>
-         <dd>Indicates that the stream was refused before any processing has been done on the stream.</dd>
+         <dd>The endpoint is refusing the stream before processing its payload.</dd>
          <dt>CANCEL (8):</dt>
          <dd>Used by the creator of a stream to indicate that the stream is no longer needed.</dd>
       </dl>
       <h2 id="rfc.section.3.6"><a href="#rfc.section.3.6">3.6</a>&nbsp;<a id="flowcontrol" href="#flowcontrol">Stream Flow Control</a></h2>
-      <p id="rfc.section.3.6.p.1">Multiplexing streams introduces contention for access to the shared TCP connection. Stream contention can result in streams
-         being blocked by other streams. A flow control scheme ensures that streams do not destructively interfere with other streams
-         on the same TCP connection.
+      <p id="rfc.section.3.6.p.1">Using streams for multiplexing introduces contention over use of the TCP connection, resulting in blocked streams. A flow
+         control scheme ensures that streams on the same connection do not destructively interfere with each other.
+      </p>
+      <p id="rfc.section.3.6.p.2">HTTP/2.0 provides for flow control through use of the WINDOW_UPDATE (<a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;3.8.9</a>) frame type.
       </p>
       <h3 id="rfc.section.3.6.1"><a href="#rfc.section.3.6.1">3.6.1</a>&nbsp;<a id="fc-principles" href="#fc-principles">Flow Control Principles</a></h3>
       <p id="rfc.section.3.6.1.p.1">Experience with TCP congestion control has shown that algorithms can evolve over time to become more sophisticated without
@@ -1061,7 +1068,7 @@ Upgrade: HTTP/2.0
          <li>Flow control can be disabled by a receiver. A receiver can choose to either disable flow control for a stream or connection
             by declaring an infinite flow control limit.
          </li>
-         <li>HTTP/2.0 standardizes only the format of the window update message (<a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;3.7.9</a>). This does not stipulate how a receiver decides when to send this message or the value that it sends. Nor does it specify
+         <li>HTTP/2.0 standardizes only the format of the window update message (<a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;3.8.9</a>). This does not stipulate how a receiver decides when to send this message or the value that it sends. Nor does it specify
             how a sender chooses to send packets. Implementations are able to select any algorithm that suits their needs.
          </li>
       </ol>
@@ -1071,30 +1078,36 @@ Upgrade: HTTP/2.0
       </p>
       <h3 id="rfc.section.3.6.2"><a href="#rfc.section.3.6.2">3.6.2</a>&nbsp;Appropriate Use of Flow Control
       </h3>
-      <p id="rfc.section.3.6.2.p.1">Flow control is defined to protect deployments (client, server or intermediary) that are operating under constraints. For
-         example, a proxy must share memory between many connections. Flow control addresses cases where the receiver is unable process
-         data on one stream, yet wants to be continue to process other streams.
+      <p id="rfc.section.3.6.2.p.1">Flow control is defined to protect endpoints (client, server or intermediary) that are operating under resource constraints.
+         For example, a proxy needs to share memory between many connections, and also might have a slow upstream connection and a
+         fast downstream one. Flow control addresses cases where the receiver is unable process data on one stream, yet wants to be
+         continue to process other streams in the same connection.
       </p>
-      <p id="rfc.section.3.6.2.p.2">Deployments that do not rely on this capability SHOULD disable flow control for data that is being received. Note that flow
+      <p id="rfc.section.3.6.2.p.2">Deployments that do not require this capability SHOULD disable flow control for data that is being received. Note that flow
          control cannot be disabled for sending. Sending data is always subject to the flow control window advertised by the receiver.
       </p>
-      <p id="rfc.section.3.6.2.p.3">Deployments with constrained resources (for example, memory), MAY employ flow control to limit the amount of memory a peer
-         can consume. This can lead to suboptimal use of available network resources if flow control is enabled without knowledge of
-         the bandwidth-delay product (see <a href="#RFC1323"><cite title="TCP Extensions for High Performance">[RFC1323]</cite></a>).
+      <p id="rfc.section.3.6.2.p.3">Deployments with constrained resources (for example, memory) MAY employ flow control to limit the amount of memory a peer
+         can consume. Note, however, that this can lead to suboptimal use of available network resources if flow control is enabled
+         without knowledge of the bandwidth-delay product (see <a href="#RFC1323"><cite title="TCP Extensions for High Performance">[RFC1323]</cite></a>).
       </p>
-      <p id="rfc.section.3.6.2.p.4">Implementation of flow control in full awareness of the current bandwidth-delay product is difficult, but it can ensure that
-         constrained resources are protected without any reduction in connection utilization.
+      <p id="rfc.section.3.6.2.p.4">Even with full awareness of the current bandwidth-delay product, implementation of flow control is difficult. However, it
+         can ensure that constrained resources are protected without any reduction in connection utilization.
       </p>
-      <h2 id="rfc.section.3.7"><a href="#rfc.section.3.7">3.7</a>&nbsp;Frame Types
+      <h2 id="rfc.section.3.7"><a href="#rfc.section.3.7">3.7</a>&nbsp;<a id="HeaderBlock" href="#HeaderBlock">Header Blocks</a></h2>
+      <p id="rfc.section.3.7.p.1">The header block is found in the HEADERS, HEADERS+PRIORITY and PUSH_PROMISE frames. The header block consists of a set of
+         header fields, which are name-value pairs. Headers are compressed using black magic.
+      </p>
+      <p id="rfc.section.3.7.p.2">Compression of header fields is a work in progress, as is the format of this block.</p>
+      <h2 id="rfc.section.3.8"><a href="#rfc.section.3.8">3.8</a>&nbsp;Frame Types
       </h2>
-      <h3 id="rfc.section.3.7.1"><a href="#rfc.section.3.7.1">3.7.1</a>&nbsp;<a id="DataFrames" href="#DataFrames">DATA Frames</a></h3>
-      <p id="rfc.section.3.7.1.p.1">DATA frames (type=0) are used to convey HTTP message bodies. The payload of a data frame contains either a request or response
-         body.
+      <h3 id="rfc.section.3.8.1"><a href="#rfc.section.3.8.1">3.8.1</a>&nbsp;<a id="DataFrames" href="#DataFrames">DATA Frames</a></h3>
+      <p id="rfc.section.3.8.1.p.1">DATA frames (type=0) are used to convey HTTP message bodies. The payload of a data frame contains a portion of the body's
+         payload, or the complete body if there is only one DATA frame in the stream.
       </p>
-      <p id="rfc.section.3.7.1.p.2">No frame-specific flags are defined for DATA frames.</p>
-      <h3 id="rfc.section.3.7.2"><a href="#rfc.section.3.7.2">3.7.2</a>&nbsp;<a id="HEADERS_PRIORITY" href="#HEADERS_PRIORITY">HEADERS+PRIORITY</a></h3>
-      <p id="rfc.section.3.7.2.p.1">The HEADERS+PRIORITY frame (type=1) allows the sender to set header fields and stream priority at the same time. This MUST
-         be used for each stream that is created.
+      <p id="rfc.section.3.8.1.p.2">The DATA frame does not define any additional flags.</p>
+      <h3 id="rfc.section.3.8.2"><a href="#rfc.section.3.8.2">3.8.2</a>&nbsp;<a id="HEADERS_PRIORITY" href="#HEADERS_PRIORITY">HEADERS+PRIORITY</a></h3>
+      <p id="rfc.section.3.8.2.p.1">The HEADERS+PRIORITY frame (type=1) allows the sender to set header fields and stream priority at the same time. It MUST be
+         used for each stream that is created.
       </p>
       <div id="rfc.figure.2"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1104,15 +1117,12 @@ Upgrade: HTTP/2.0
 |                    Header Block (*)                         ...
 +---------------------------------------------------------------+
 </pre> <p class="figure">Figure 2: HEADERS+PRIORITY Frame Payload</p>
-      <p id="rfc.section.3.7.2.p.3">The HEADERS+PRIORITY frame is identical to the HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.7.8</a>), with a 32-bit field containing priority included before the header block.
+      <p id="rfc.section.3.8.2.p.3">The HEADERS+PRIORITY frame is identical to the HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>), preceded by a single reserved bit and a 31-bit priority; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;3.4.2</a>.
       </p>
-      <p id="rfc.section.3.7.2.p.4">The most significant bit of the priority is reserved. The 31-bit priority indicates the priority for the stream, as assigned
-         by the sender, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;3.4.2</a>.
-      </p>
-      <h3 id="rfc.section.3.7.3"><a href="#rfc.section.3.7.3">3.7.3</a>&nbsp;<a id="RST_STREAM" href="#RST_STREAM">RST_STREAM</a></h3>
-      <p id="rfc.section.3.7.3.p.1">The RST_STREAM frame (type=3) allows for abnormal termination of a stream. When sent by the creator of a stream, it indicates
-         the creator wishes to cancel the stream. When sent by the recipient of a stream, it indicates an error or that the recipient
-         did not want to accept the stream, so the stream should be closed.
+      <h3 id="rfc.section.3.8.3"><a href="#rfc.section.3.8.3">3.8.3</a>&nbsp;<a id="RST_STREAM" href="#RST_STREAM">RST_STREAM</a></h3>
+      <p id="rfc.section.3.8.3.p.1">The RST_STREAM frame (type=3) allows for abnormal termination of a stream. When sent by the creator of a stream, it indicates
+         that they wish to cancel the stream. When sent by the receiver of a stream, it indicates an error or that the receiver did
+         not want to accept the stream, so the stream should be closed.
       </p>
       <div id="rfc.figure.3"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1120,35 +1130,35 @@ Upgrade: HTTP/2.0
 |                         Error Code (32)                       |
 +---------------------------------------------------------------+
 </pre> <p class="figure">Figure 3: RST_STREAM Frame Payload</p>
-      <p id="rfc.section.3.7.3.p.3">The RST_STREAM frame does not define any valid flags.</p>
-      <p id="rfc.section.3.7.3.p.4">The RST_STREAM frame contains a single 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>). The error code indicates why the stream is being terminated.
+      <p id="rfc.section.3.8.3.p.3">The RST_STREAM frame does not define any additional flags.</p>
+      <p id="rfc.section.3.8.3.p.4">The RST_STREAM frame contains a single 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>). The error code indicates why the stream is being terminated.
       </p>
-      <p id="rfc.section.3.7.3.p.5">After receiving a RST_STREAM on a stream, the recipient must not send additional frames for that stream, and the stream moves
+      <p id="rfc.section.3.8.3.p.5">After receiving a RST_STREAM on a stream, the receiver must not send additional frames for that stream, and the stream moves
          into the closed state.
       </p>
-      <h3 id="rfc.section.3.7.4"><a href="#rfc.section.3.7.4">3.7.4</a>&nbsp;<a id="SETTINGS" href="#SETTINGS">SETTINGS</a></h3>
-      <p id="rfc.section.3.7.4.p.1">A SETTINGS frame (type=4) contains a set of id/value pairs for communicating configuration data about how the two endpoints
-         may communicate. SETTINGS frames MUST be sent at the start of a session, but they can be sent at any other time by either
-         endpoint. Settings are declarative, not negotiated, each peer indicates their own configuration.
+      <h3 id="rfc.section.3.8.4"><a href="#rfc.section.3.8.4">3.8.4</a>&nbsp;<a id="SETTINGS" href="#SETTINGS">SETTINGS</a></h3>
+      <p id="rfc.section.3.8.4.p.1">A SETTINGS frame (type=4) contains a set of id/value pairs for communicating configuration data regarding how the two endpoints
+         can communicate. SETTINGS frames MUST be sent at the start of a session, and additionally they can be sent at any other time
+         by either endpoint. Settings are declarative, not negotiated; each peer indicates their own configuration.
       </p>
-      <p id="rfc.section.3.7.4.p.2"> <span class="comment" id="rfc.comment.7">[<a href="#rfc.comment.7" class="smpl">rfc.comment.7</a>: Note that persistence of settings is under discussion in the WG and might be removed in a future version of this document.]</span> 
+      <p id="rfc.section.3.8.4.p.2">SETTINGS does not need to include every defined setting; senders MUST only include those for which it has accurate values
+         to convey. When multiple ID/value pairs are sent, they SHOULD be sent in order of lowest id to highest id. A single SETTINGS
+         frame MUST NOT contain multiple values for the same ID. If the receiver of a SETTINGS frame discovers multiple values for
+         the same ID, it MUST ignore all values for that ID except the first one.
       </p>
-      <p id="rfc.section.3.7.4.p.3">When the server is the sender, the sender can request that configuration data be persisted by the client across HTTP/2.0 sessions
-         and returned to the server in future communications.
+      <p id="rfc.section.3.8.4.p.3">Over the lifetime of a session, a server MAY send multiple SETTINGS frames containing different ID/Value pairs. When the same
+         ID/Value is sent twice, the most recent value overrides any previously sent values.
       </p>
-      <p id="rfc.section.3.7.4.p.4">Clients persist settings on a per origin basis (see <a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a> for a definition of web origins). That is, when a client connects to a server, and the server persists settings within the
-         client, the client SHOULD return the persisted settings on future connections to the same origin AND IP address and TCP port.
-         Clients MUST NOT request servers to use the persistence features of the SETTINGS frames, and servers MUST ignore persistence
-         related flags sent by a client.
-      </p>
-      <p id="rfc.section.3.7.4.p.5">Valid frame-specific flags for the SETTINGS frame are: </p>
+      <p id="rfc.section.3.8.4.p.4">Additional flags for the SETTINGS frame are: </p>
       <dl>
          <dt>CLEAR_PERSISTED (0x2):</dt>
          <dd>Bit 2 being set indicates a request to clear any previously persisted settings before processing the settings. Clients MUST
             NOT set this flag.
          </dd>
       </dl>
-      <p id="rfc.section.3.7.4.p.6">SETTINGS frames always apply to a session, never a single stream. The stream identifier for a settings frame MUST be zero.</p>
+      <p id="rfc.section.3.8.4.p.5">SETTINGS frames always apply to a session, never a single stream. The stream identifier for a settings frame MUST be zero.</p>
+      <h4 id="rfc.section.3.8.4.1"><a href="#rfc.section.3.8.4.1">3.8.4.1</a>&nbsp;SETTINGS ID/Value Pairs
+      </h4>
       <div id="rfc.figure.4"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1156,11 +1166,11 @@ Upgrade: HTTP/2.0
 +---------------+-----------------------------------------------+
 |                        Value (32)                             |
 +---------------------------------------------------------------+
-</pre> <p class="figure">Figure 4: SETTINGS ID/Value Pair</p>
-      <p id="rfc.section.3.7.4.p.8">The payload of a SETTINGS frame contains zero or more settings. Each setting is comprised of the following </p>
+</pre> <p class="figure">Figure 4: SETTINGS ID/Value Pair Format</p>
+      <p id="rfc.section.3.8.4.1.p.2">The payload of a SETTINGS frame contains zero or more settings. Each setting is comprised of the following: </p>
       <dl>
          <dt>Settings Flags:</dt>
-         <dd>An 8-bit flags field containing per-setting instructions. The following flags are valid: 
+         <dd>An 8-bit flags field containing per-setting instructions. The following instructions are defined: 
             <dl>
                <dt>PERSIST_VALUE (0x1):</dt>
                <dd>Bit 1 (the least significant bit) being set indicates a request from the server to the client to persist this setting. A client
@@ -1170,80 +1180,88 @@ Upgrade: HTTP/2.0
                <dd>Bit 2 being set indicates that this setting is a persisted setting being returned by the client to the server. This also indicates
                   that this setting is not a client setting, but a value previously set by the server. A server MUST NOT set this flag.
                </dd>
-            </dl> All other settings flags are reserved.
+            </dl> 
          </dd>
          <dt>Setting Identifier:</dt>
          <dd>A 24-bit field that identifies the setting.</dd>
          <dt>Value:</dt>
          <dd>A 32-bit value for the setting.</dd>
       </dl>
-      <p id="rfc.section.3.7.4.p.9">The following settings are defined: </p>
+      <h4 id="rfc.section.3.8.4.2"><a href="#rfc.section.3.8.4.2">3.8.4.2</a>&nbsp;Settings Persistence
+      </h4>
+      <p id="rfc.section.3.8.4.2.p.1">When the server is the sender, the sender can request that configuration data be persisted by the client across HTTP/2.0 sessions
+         and returned to the server in future communications.
+      </p>
+      <p id="rfc.section.3.8.4.2.p.2"> <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Note that persistence of settings is under discussion in the WG and might be removed in a future version of this document.]</span> 
+      </p>
+      <p id="rfc.section.3.8.4.2.p.3">Clients persist settings on a per origin basis (see <a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a> for a definition of web origins). That is, when a client connects to a server, and the server persists settings within the
+         client, the client SHOULD return the persisted settings on future connections to the same origin AND IP address and TCP port.
+         Clients MUST NOT request servers to use the persistence features of the SETTINGS frames, and servers MUST ignore persistence
+         related flags sent by a client.
+      </p>
+      <p id="rfc.section.3.8.4.2.p.4">For example, if the server sends IDs 1, 2, and 3 with the FLAG_SETTINGS_PERSIST_VALUE in a first SETTINGS frame, and then
+         sends IDs 4 and 5 with the FLAG_SETTINGS_PERSIST_VALUE, when the client returns the persisted state on its next SETTINGS frame,
+         it SHOULD send all 5 settings (1, 2, 3, 4, and 5 in this example) to the server.
+      </p>
+      <h4 id="rfc.section.3.8.4.3"><a href="#rfc.section.3.8.4.3">3.8.4.3</a>&nbsp;Defined Settings
+      </h4>
+      <p id="rfc.section.3.8.4.3.p.1">The following settings are defined: </p>
       <dl>
          <dt>SETTINGS_UPLOAD_BANDWIDTH (1):</dt>
          <dd>
-            <p>allows the sender to send its expected upload bandwidth on this channel. This number is an estimate. The value should be the
-               integral number of kilobytes per second that the sender predicts as an expected maximum upload channel capacity.
+            <p>indicates the sender's estimated upload bandwidth for this session. The value is an the integral number of kilobytes per second
+               that the sender predicts as an expected maximum upload channel capacity.
             </p>
          </dd>
          <dt>SETTINGS_DOWNLOAD_BANDWIDTH (2):</dt>
          <dd>
-            <p>allows the sender to send its expected download bandwidth on this channel. This number is an estimate. The value should be
-               the integral number of kilobytes per second that the sender predicts as an expected maximum download channel capacity.
+            <p>indicates the sender's estimated download bandwidth for this session. The value is an integral number of kilobytes per second
+               that the sender predicts as an expected maximum download channel capacity.
             </p>
          </dd>
          <dt>SETTINGS_ROUND_TRIP_TIME (3):</dt>
          <dd>
-            <p>allows the sender to send its expected round-trip-time on this channel. The round trip time is defined as the minimum amount
-               of time to send a control frame from this client to the remote and receive a response. The value is represented in milliseconds.
+            <p>indicates the sender's estimated round-trip-time for this session. The round trip time is defined as the minimum amount of
+               time to send a control frame from this client to the remote and receive a response. The value is represented in milliseconds.
             </p>
          </dd>
          <dt>SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
          <dd>
-            <p>allows the sender to inform the remote endpoint the maximum number of concurrent streams which it will allow. This limit is
-               directional: it applies to the number of streams that the sender permits the receiver to create. By default there is no limit.
-               For implementers it is recommended that this value be no smaller than 100, so as to not unnecessarily limit parallelism.
+            <p>indicates the maximum number of concurrent streams that the sender will allow. This limit is directional: it applies to the
+               number of streams that the sender permits the receiver to create. By default there is no limit. It is recommended that this
+               value be no smaller than 100, so as to not unnecessarily limit parallelism.
             </p>
          </dd>
          <dt>SETTINGS_CURRENT_CWND (5):</dt>
          <dd>
-            <p>allows the sender to inform the remote endpoint of the current TCP CWND value.</p>
+            <p>indicates the sender's current TCP CWND value.</p>
          </dd>
          <dt>SETTINGS_DOWNLOAD_RETRANS_RATE (6):</dt>
          <dd>
-            <p>allows the sender to inform the remote endpoint the retransmission rate (bytes retransmitted / total bytes transmitted).</p>
+            <p>indicates the sender's retransmission rate (bytes retransmitted / total bytes transmitted).</p>
          </dd>
          <dt>SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
          <dd>
-            <p>allows the sender to inform the remote endpoint the initial window size (in bytes) for new streams.</p>
+            <p>indicates the sender's initial stream window size (in bytes) for new streams.</p>
          </dd>
          <dt>SETTINGS_FLOW_CONTROL_OPTIONS (10):</dt>
          <dd>
-            <p>This setting allows an endpoint to indicate that streams directed to them will not be subject to flow control. The least significant
-               bit (0x1) is set to indicate that new streams are not flow controlled. Bit 2 (0x2) is set to indicate that the session is
-               not flow controlled. All other bits are reserved.
+            <p>indicates that streams directed to the sender will not be subject to flow control. The least significant bit (0x1) is set
+               to indicate that new streams are not flow controlled. Bit 2 (0x2) is set to indicate that the session is not flow controlled.
+               All other bits are reserved.
             </p>
             <p>This setting applies to all streams, including existing streams.</p>
-            <p>These bits cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;3.7.9.4</a>.
+            <p>These bits cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;3.8.9.4</a>.
             </p>
          </dd>
       </dl>
-      <p id="rfc.section.3.7.4.p.10">The message is intentionally extensible for future information which may improve client-server communications. The sender
-         does not need to send every type of ID/value. It must only send those for which it has accurate values to convey. When multiple
-         ID/value pairs are sent, they should be sent in order of lowest id to highest id. A single SETTINGS frame MUST not contain
-         multiple values for the same ID. If the recipient of a SETTINGS frame discovers multiple values for the same ID, it MUST ignore
-         all values except the first one.
+      <p id="rfc.section.3.8.4.3.p.2">The SETTINGS frame is extensible for future information which may improve client-server communications.</p>
+      <h3 id="rfc.section.3.8.5"><a href="#rfc.section.3.8.5">3.8.5</a>&nbsp;<a id="PUSH_PROMISE" href="#PUSH_PROMISE">PUSH_PROMISE</a></h3>
+      <p id="rfc.section.3.8.5.p.1">The PUSH_PROMISE frame (type=5) is a promise to create a stream and serve the referenced resource in the future. Minimal data
+         allowing the receiver to understand which resource(s) are to be pushed are to be included.
       </p>
-      <p id="rfc.section.3.7.4.p.11">A server may send multiple SETTINGS frames containing different ID/Value pairs. When the same ID/Value is sent twice, the
-         most recent value overrides any previously sent values. If the server sends IDs 1, 2, and 3 with the FLAG_SETTINGS_PERSIST_VALUE
-         in a first SETTINGS frame, and then sends IDs 4 and 5 with the FLAG_SETTINGS_PERSIST_VALUE, when the client returns the persisted
-         state on its next SETTINGS frame, it SHOULD send all 5 settings (1, 2, 3, 4, and 5 in this example) to the server.
-      </p>
-      <h3 id="rfc.section.3.7.5"><a href="#rfc.section.3.7.5">3.7.5</a>&nbsp;<a id="PUSH_PROMISE" href="#PUSH_PROMISE">PUSH_PROMISE</a></h3>
-      <p id="rfc.section.3.7.5.p.1">The PUSH_PROMISE frame (type=5) allows the sender to signal a promise to create a stream and serve the referenced resource.
-         Minimal data allowing the receiver to understand which resource(s) are to be pushed are to be included.
-      </p>
-      <p id="rfc.section.3.7.5.p.2">PUSH_PROMISE frames are sent on an existing stream. They declare the intent to use another stream for the pushing of a resource.
-         The PUSH_PROMISE allows the client an opportunity to reject pushed resources.
+      <p id="rfc.section.3.8.5.p.2">PUSH_PROMISE frames are sent on an existing stream. They declare the intent to use another stream for the pushing of a resource,
+         giving the client an opportunity to reject the pushed resources.
       </p>
       <div id="rfc.figure.5"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1253,50 +1271,50 @@ Upgrade: HTTP/2.0
 |                    Header Block (*)                         ...
 +---------------------------------------------------------------+
 </pre> <p class="figure">Figure 5: PUSH_PROMISE Payload Format</p>
-      <p id="rfc.section.3.7.5.p.4">There are no frame-specific flags for the PUSH_PROMISE frame.</p>
-      <p id="rfc.section.3.7.5.p.5">The body of a PUSH_PROMISE includes a "Promised-Stream-ID". This 31-bit identifier indicates the stream on which the resource
+      <p id="rfc.section.3.8.5.p.4">There are no frame-specific flags for the PUSH_PROMISE frame.</p>
+      <p id="rfc.section.3.8.5.p.5">The body of a PUSH_PROMISE includes a "Promised-Stream-ID". This 31-bit identifier indicates the stream on which the resource
          will be pushed. The promised stream identifier MUST be a valid choice for the next stream sent by the sender (see new stream identifier (<a href="#StreamCreation" title="Stream Creation">Section&nbsp;3.4.1</a>)).
       </p>
-      <p id="rfc.section.3.7.5.p.6">There is no requirement that the streams referred to by this frame are created in the order referenced. The PUSH_PROMISE reserves
-         stream identifiers for later use; these reserved identifiers can be used as prioritization needs dictate.
+      <p id="rfc.section.3.8.5.p.6">There is no requirement that the streams referred to by this frame are created in the order referenced. The PUSH_PROMISE only
+         reserves stream identifiers for later use..
       </p>
-      <p id="rfc.section.3.7.5.p.7">The PUSH_PROMISE also includes a header block (<a href="#HeaderBlock" title="Header Block">Section&nbsp;3.7.10</a>), which describes the resource that will be pushed.
+      <p id="rfc.section.3.8.5.p.7">The PUSH_PROMISE also includes a header block (<a href="#HeaderBlock" title="Header Blocks">Section&nbsp;3.7</a>), which describes the resource that will be pushed.
       </p>
-      <h3 id="rfc.section.3.7.6"><a href="#rfc.section.3.7.6">3.7.6</a>&nbsp;<a id="PING" href="#PING">PING</a></h3>
-      <p id="rfc.section.3.7.6.p.1">The PING frame (type=6) is a mechanism for measuring a minimal round-trip time from the sender. PING frames can be sent from
-         the client or the server.
+      <h3 id="rfc.section.3.8.6"><a href="#rfc.section.3.8.6">3.8.6</a>&nbsp;<a id="PING" href="#PING">PING</a></h3>
+      <p id="rfc.section.3.8.6.p.1">The PING frame (type=6) is a mechanism for measuring a minimal round-trip time from the sender, as well as determining whether
+         an idle connection is still functional. PING frames can be sent from any endpoint.
       </p>
-      <p id="rfc.section.3.7.6.p.2">Recipients of a PING frame send an identical frame to the sender as soon as possible. PING should take highest priority if
-         there is other data waiting to be sent.
+      <p id="rfc.section.3.8.6.p.2">Receivers of a PING frame send a PING frame with the PONG flag and the same payload to the sender as soon as possible. PING
+         SHOULD take highest priority if there is other data waiting to be sent.
       </p>
-      <p id="rfc.section.3.7.6.p.3">The PING frame defines a frame-specific flag: </p>
+      <p id="rfc.section.3.8.6.p.3">The PING frame defines a frame-specific flag: </p>
       <dl>
          <dt>PONG (0x2):</dt>
-         <dd>Bit 2 being set indicates that this ping frame is a ping response. An endpoint MUST set this flag in ping responses. An endpoint
-            MUST NOT respond to ping frames containing this flag.
+         <dd>Bit 2 being set indicates that this PING frame is a PING response. An endpoint MUST set this flag in PING responses. An endpoint
+            MUST NOT respond to PING frames containing this flag.
          </dd>
       </dl>
-      <p id="rfc.section.3.7.6.p.4">The payload of a PING frame contains any value. A PING response MUST contain the contents of the PING request.</p>
-      <h3 id="rfc.section.3.7.7"><a href="#rfc.section.3.7.7">3.7.7</a>&nbsp;<a id="GOAWAY" href="#GOAWAY">GOAWAY</a></h3>
-      <p id="rfc.section.3.7.7.p.1">The GOAWAY frame (type=7) informs the remote side of the connection to stop creating streams on this session. It can be sent
+      <p id="rfc.section.3.8.6.p.4">The payload of a PING frame can contain any value. A PING response MUST contain the contents of the PING request.</p>
+      <h3 id="rfc.section.3.8.7"><a href="#rfc.section.3.8.7">3.8.7</a>&nbsp;<a id="GOAWAY" href="#GOAWAY">GOAWAY</a></h3>
+      <p id="rfc.section.3.8.7.p.1">The GOAWAY frame (type=7) informs the remote side of the connection to stop creating streams on this session. It can be sent
          from the client or the server. Once sent, the sender will ignore frames sent on new streams for the remainder of the session.
-         Recipients of a GOAWAY frame MUST NOT open additional streams on the session, although a new session can be established for
+         Receivers of a GOAWAY frame MUST NOT open additional streams on the session, although a new session can be established for
          new streams. The purpose of this message is to allow an endpoint to gracefully stop accepting new streams (perhaps for a reboot
          or maintenance), while still finishing processing of previously established streams.
       </p>
-      <p id="rfc.section.3.7.7.p.2">There is an inherent race condition between an endpoint starting new streams and the remote sending a GOAWAY message. To deal
+      <p id="rfc.section.3.8.7.p.2">There is an inherent race condition between an endpoint starting new streams and the remote sending a GOAWAY message. To deal
          with this case, the GOAWAY contains the stream identifier of the last stream which was processed on the sending endpoint in
          this session. If the receiver of the GOAWAY used streams that are newer than the indicated stream identifier, they were not
          processed by the sender and the receiver may treat the streams as though they had never been created at all (hence the receiver
          may want to re-create the streams later on a new session).
       </p>
-      <p id="rfc.section.3.7.7.p.3">Endpoints should always send a GOAWAY message before closing a connection so that the remote can know whether a stream has
+      <p id="rfc.section.3.8.7.p.3">Endpoints should always send a GOAWAY message before closing a connection so that the remote can know whether a stream has
          been partially processed or not. (For example, if an HTTP client sends a POST at the same time that a server closes a connection,
          the client cannot know if the server started to process that POST request if the server does not send a GOAWAY frame to indicate
          where it stopped working).
       </p>
-      <p id="rfc.section.3.7.7.p.4">After sending a GOAWAY message, the sender can ignore frames for new streams.</p>
-      <p id="rfc.section.3.7.7.p.5"> <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: Issue: session state that is established by those "ignored" messages cannot be ignored without the state in the two peers
+      <p id="rfc.section.3.8.7.p.4">After sending a GOAWAY message, the sender can ignore frames for new streams.</p>
+      <p id="rfc.section.3.8.7.p.5"> <span class="comment" id="rfc.comment.7">[<a href="#rfc.comment.7" class="smpl">rfc.comment.7</a>: Issue: session state that is established by those "ignored" messages cannot be ignored without the state in the two peers
             becoming unsynchronized.]</span> 
       </p>
       <div id="rfc.figure.6"></div> <pre class="inline"> 0                   1                   2                   3
@@ -1307,130 +1325,125 @@ Upgrade: HTTP/2.0
 |                      Error Code (32)                          |
 +---------------------------------------------------------------+
 </pre> <p class="figure">Figure 6: GOAWAY Payload Format</p>
-      <p id="rfc.section.3.7.7.p.7">The GOAWAY frame does not define any valid flags.</p>
-      <p id="rfc.section.3.7.7.p.8">The GOAWAY frame applies to the session, not a specific stream. The stream identifier MUST be zero.</p>
-      <p id="rfc.section.3.7.7.p.9">The GOAWAY frame contains an identifier of the last stream that the sender of the GOAWAY is prepared to act upon, which can
+      <p id="rfc.section.3.8.7.p.7">The GOAWAY frame does not define any additional flags.</p>
+      <p id="rfc.section.3.8.7.p.8">The GOAWAY frame applies to the session, not a specific stream. The stream identifier MUST be zero.</p>
+      <p id="rfc.section.3.8.7.p.9">The GOAWAY frame contains an identifier of the last stream that the sender of the GOAWAY is prepared to act upon, which can
          include processing and replies. This allows an endpoint to discover what streams might have had some effect or what might
          be safe to automatically retry. If no streams were acted upon, the last stream ID MUST be 0.
       </p>
-      <p id="rfc.section.3.7.7.p.10">The GOAWAY frame contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>) that contains the reason for closing the session.
+      <p id="rfc.section.3.8.7.p.10">The GOAWAY frame also contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;3.5.3</a>) that contains the reason for closing the session.
       </p>
-      <h3 id="rfc.section.3.7.8"><a href="#rfc.section.3.7.8">3.7.8</a>&nbsp;<a id="HEADERS" href="#HEADERS">HEADERS</a></h3>
-      <p id="rfc.section.3.7.8.p.1">The HEADERS frame (type=8) provides header fields for a stream. It may be optionally sent on an existing stream at any time.
+      <h3 id="rfc.section.3.8.8"><a href="#rfc.section.3.8.8">3.8.8</a>&nbsp;<a id="HEADERS" href="#HEADERS">HEADERS</a></h3>
+      <p id="rfc.section.3.8.8.p.1">The HEADERS frame (type=8) provides header fields for a stream. It may be optionally sent on an existing stream at any time.
          Specific application of the headers in this frame is application-dependent.
       </p>
-      <p id="rfc.section.3.7.8.p.2">No frame-specific flags are defined for the HEADERS frame.</p>
-      <p id="rfc.section.3.7.8.p.3">The body of a HEADERS frame contains a Headers Block (<a href="#HeaderBlock" title="Header Block">Section&nbsp;3.7.10</a>).
+      <p id="rfc.section.3.8.8.p.2">The HEADERS frame does not define any additional flags.</p>
+      <p id="rfc.section.3.8.8.p.3">The body of a HEADERS frame contains a Headers Block (<a href="#HeaderBlock" title="Header Blocks">Section&nbsp;3.7</a>).
       </p>
-      <h3 id="rfc.section.3.7.9"><a href="#rfc.section.3.7.9">3.7.9</a>&nbsp;<a id="WINDOW_UPDATE" href="#WINDOW_UPDATE">WINDOW_UPDATE</a></h3>
-      <p id="rfc.section.3.7.9.p.1">The WINDOW_UPDATE frame (type=9) is used to implement flow control in HTTP/2.0.</p>
-      <p id="rfc.section.3.7.9.p.2">Flow control in HTTP/2.0 operates at two levels: on each individual stream and on the entire session.</p>
-      <p id="rfc.section.3.7.9.p.3">Flow control in HTTP/2.0 is hop by hop, that is, only between the two endpoints of a HTTP/2.0 connection. Intermediaries do
-         not forward WINDOW_UPDATE messages between dependent sessions. However, throttling of data transfer by any recipient can indirectly
-         cause the propagation of flow control information toward the original sender.
+      <h3 id="rfc.section.3.8.9"><a href="#rfc.section.3.8.9">3.8.9</a>&nbsp;<a id="WINDOW_UPDATE" href="#WINDOW_UPDATE">WINDOW_UPDATE</a></h3>
+      <p id="rfc.section.3.8.9.p.1">The WINDOW_UPDATE frame (type=9) is used to implement flow control.</p>
+      <p id="rfc.section.3.8.9.p.2">Flow control operates at two levels: on each individual stream and on the entire session.</p>
+      <p id="rfc.section.3.8.9.p.3">Both types of flow control are hop by hop; that is, only between the two endpoints. Intermediaries do not forward WINDOW_UPDATE
+         messages between dependent sessions. However, throttling of data transfer by any receiver can indirectly cause the propagation
+         of flow control information toward the original sender.
       </p>
-      <p id="rfc.section.3.7.9.p.4">Flow control only applies to frames that are identified as being subject to flow control. Of the frames defined in this document,
-         only data frames are subject to flow control. Receivers MUST either buffer or process all other frames, terminate the corresponding
-         stream, or terminate the session. The stream or session is terminated with a FLOW_CONTROL_ERROR code.
+      <p id="rfc.section.3.8.9.p.4">Flow control only applies to frames that are identified as being subject to flow control. Of the frames defined in this document,
+         this includes only DATA frame. Receivers MUST either buffer or process all other frames, terminate the corresponding stream,
+         or terminate the session. The stream or session is terminated with a FLOW_CONTROL_ERROR code.
       </p>
-      <p id="rfc.section.3.7.9.p.5">Valid flags for the WINDOW_UPDATE frame are: </p>
+      <p id="rfc.section.3.8.9.p.5">The following additional flags are defined for the WINDOW_UPDATE frame: </p>
       <dl>
          <dt>END_FLOW_CONTROL (0x2):</dt>
-         <dd>Bit 2 being set indicates that flow control for the identified stream or session is ended and subsequent frames do not need
-            to be flow controlled.
+         <dd>Bit 2 being set indicates that flow control for the identified stream or session has been ended; subsequent frames do not
+            need to be flow controlled.
          </dd>
       </dl>
-      <p id="rfc.section.3.7.9.p.6">The WINDOW_UPDATE frame can be stream related or session related. The stream identifier in the WINDOW_UPDATE frame header
-         identifies the affected stream, or includes a value of 0 to indicate that the session flow control window is updated.
+      <p id="rfc.section.3.8.9.p.6">The WINDOW_UPDATE frame can be specific to a stream or to the entire session. In the former case, the frame's stream identifier
+         indicates the affected stream; in the latter, the value "0" indicates that the entire session is the subject of the frame.
       </p>
-      <p id="rfc.section.3.7.9.p.7">The payload of a WINDOW_UPDATE frame contains a 32-bit value. This value is the additional number of bytes that the sender
-         can transmit in addition to the existing flow control window. The legal range for this field is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes; the most significant bit of this value is reserved.
+      <p id="rfc.section.3.8.9.p.7">The payload of a WINDOW_UPDATE frame is a 32-bit value indicating the additional number of bytes that the sender can transmit
+         in addition to the existing flow control window. The legal range for this field is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes; the most significant bit of this value is reserved.
       </p>
-      <h4 id="rfc.section.3.7.9.1"><a href="#rfc.section.3.7.9.1">3.7.9.1</a>&nbsp;The Flow Control Window
+      <h4 id="rfc.section.3.8.9.1"><a href="#rfc.section.3.8.9.1">3.8.9.1</a>&nbsp;The Flow Control Window
       </h4>
-      <p id="rfc.section.3.7.9.1.p.1">Flow control in HTTP/2.0 is implemented by a flow control window kept by the sender of each stream. The flow control window
-         is a simple integer value that indicates how many bytes of data the sender is permitted to transmit. The flow control window
-         size is a measure of the buffering capability of the recipient.
+      <p id="rfc.section.3.8.9.1.p.1">Flow control in HTTP/2.0 is implemented using a window kept by each sender on every stream. The flow control window is a simple
+         integer value that indicates how many bytes of data the sender is permitted to transmit; as such, its size is a measure of
+         the buffering capability of the receiver.
       </p>
-      <p id="rfc.section.3.7.9.1.p.2">Two flow control windows apply to the sending of every message: the stream flow control window and the session flow control
-         window. The sender MUST NOT send a flow controlled frame with a length that exceeds the space available in either of the flow
-         control windows advertised by the receiver. Frames with zero length with the FINAL flag set (for example, an empty data frame)
-         MAY be sent if there is no available space in either flow control window.
+      <p id="rfc.section.3.8.9.1.p.2">Two flow control windows are applicable; the stream flow control window and the session flow control window. The sender MUST
+         NOT send a flow controlled frame with a length that exceeds the space available in either of the flow control windows advertised
+         by the receiver. Frames with zero length with the FINAL flag set (for example, an empty data frame) MAY be sent if there is
+         no available space in either flow control window.
       </p>
-      <p id="rfc.section.3.7.9.1.p.3">For flow control calculations, the 8 byte frame header is not counted.</p>
-      <p id="rfc.section.3.7.9.1.p.4">After sending a flow controlled frame, the sender reduces the space available in both windows by the length of the transmitted
+      <p id="rfc.section.3.8.9.1.p.3">For flow control calculations, the 8 byte frame header is not counted.</p>
+      <p id="rfc.section.3.8.9.1.p.4">After sending a flow controlled frame, the sender reduces the space available in both windows by the length of the transmitted
          frame.
       </p>
-      <p id="rfc.section.3.7.9.1.p.5">The receiver of a message sends a WINDOW_UPDATE frame as it consumes data and frees up space in flow control windows. Separate
+      <p id="rfc.section.3.8.9.1.p.5">The receiver of a message sends a WINDOW_UPDATE frame as it consumes data and frees up space in flow control windows. Separate
          WINDOW_UPDATE messages are sent for the stream and session level flow control windows.
       </p>
-      <p id="rfc.section.3.7.9.1.p.6">A sender that receives a WINDOW_UPDATE frame updates the corresponding window by the amount specified in the frame.</p>
-      <p id="rfc.section.3.7.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup> - 1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
+      <p id="rfc.section.3.8.9.1.p.6">A sender that receives a WINDOW_UPDATE frame updates the corresponding window by the amount specified in the frame.</p>
+      <p id="rfc.section.3.8.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup> - 1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
          either the stream or the session, as appropriate. For streams, the sender sends a RST_STREAM with the error code of FLOW_CONTROL_ERROR
          code; for the session, a GOAWAY message with a FLOW_CONTROL_ERROR code.
       </p>
-      <p id="rfc.section.3.7.9.1.p.8">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
+      <p id="rfc.section.3.8.9.1.p.8">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
          to each other. This property allows a receiver to aggressively update the window size kept by the sender to prevent streams
          from stalling.
       </p>
-      <h4 id="rfc.section.3.7.9.2"><a href="#rfc.section.3.7.9.2">3.7.9.2</a>&nbsp;Initial Flow Control Window Size
+      <h4 id="rfc.section.3.8.9.2"><a href="#rfc.section.3.8.9.2">3.8.9.2</a>&nbsp;Initial Flow Control Window Size
       </h4>
-      <p id="rfc.section.3.7.9.2.p.1">When a HTTP/2.0 connection is first established, new streams are created with an initial flow control window size of 65535
+      <p id="rfc.section.3.8.9.2.p.1">When a HTTP/2.0 connection is first established, new streams are created with an initial flow control window size of 65535
          bytes. The session flow control window is 65536 bytes. Both endpoints can adjust the initial window size for new streams by
          including a value for SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame that forms part of the session header.
       </p>
-      <p id="rfc.section.3.7.9.2.p.2">Prior to receiving a SETTINGS frame that sets a value for SETTINGS_INITIAL_WINDOW_SIZE, a client can only use the default
+      <p id="rfc.section.3.8.9.2.p.2">Prior to receiving a SETTINGS frame that sets a value for SETTINGS_INITIAL_WINDOW_SIZE, a client can only use the default
          initial window size when sending flow controlled frames. Similarly, the session flow control window is set to the default
          initial window size until a WINDOW_UPDATE message is received.
       </p>
-      <p id="rfc.section.3.7.9.2.p.3">A SETTINGS frame can alter the initial flow control window size for all current streams. When the value of SETTINGS_INITIAL_WINDOW_SIZE
+      <p id="rfc.section.3.8.9.2.p.3">A SETTINGS frame can alter the initial flow control window size for all current streams. When the value of SETTINGS_INITIAL_WINDOW_SIZE
          changes, a receiver MUST adjust the size of all flow control windows that it maintains by the difference between the new value
          and the old value.
       </p>
-      <p id="rfc.section.3.7.9.2.p.4">A change to SETTINGS_INITIAL_WINDOW_SIZE could cause the available space in a flow control window to become negative. A sender
-         MUST track the negative flow control window and not send new flow controlled frames until it receives WINDOW_UPDATE messages
-         that cause the flow control window to become positive.
+      <p id="rfc.section.3.8.9.2.p.4">A change to SETTINGS_INITIAL_WINDOW_SIZE could cause the available space in a flow control window to become negative. A sender
+         MUST track the negative flow control window, and MUST NOT send new flow controlled frames until it receives WINDOW_UPDATE
+         messages that cause the flow control window to become positive.
       </p>
-      <p id="rfc.section.3.7.9.2.p.5">For example, if the server sets the initial window size to be 16KB, and the client sends 64KB immediately on connection establishment,
+      <p id="rfc.section.3.8.9.2.p.5">For example, if the server sets the initial window size to be 16KB, and the client sends 64KB immediately on connection establishment,
          the client will recalculate the available flow control window to be -48KB on receipt of the SETTINGS frame. The client retains
          a negative flow control window until WINDOW_UPDATE frames restore the window to being positive, after which the client can
          resume sending.
       </p>
-      <h4 id="rfc.section.3.7.9.3"><a href="#rfc.section.3.7.9.3">3.7.9.3</a>&nbsp;Reducing the Stream Window Size
+      <h4 id="rfc.section.3.8.9.3"><a href="#rfc.section.3.8.9.3">3.8.9.3</a>&nbsp;Reducing the Stream Window Size
       </h4>
-      <p id="rfc.section.3.7.9.3.p.1">A receiver that wishes to use a smaller flow control window than the current size sends a new SETTINGS frame. However, the
-         receiver MUST be prepared to receive data that exceeds this window size, since the sender might send data that exceeds the
-         lower limit prior to processing the SETTINGS frame.
+      <p id="rfc.section.3.8.9.3.p.1">A receiver that wishes to use a smaller flow control window than the current size can send a new SETTINGS frame. However,
+         the receiver MUST be prepared to receive data that exceeds this window size, since the sender might send data that exceeds
+         the lower limit prior to processing the SETTINGS frame.
       </p>
-      <p id="rfc.section.3.7.9.3.p.2">A receiver has two options for handling streams that exceed flow control limits: </p>
+      <p id="rfc.section.3.8.9.3.p.2">A receiver has two options for handling streams that exceed flow control limits: </p>
       <ol>
          <li>The receiver can immediately send RST_STREAM with FLOW_CONTROL_ERROR error code for the affected streams.</li>
          <li>The receiver can accept the streams and tolerate the resulting head of line blocking, sending WINDOW_UPDATE messages as it
             consumes data.
          </li>
       </ol>
-      <p> If a receiver decides to accept streams, both sides must recompute the available flow control window based on the initial
+      <p> If a receiver decides to accept streams, both sides MUST recompute the available flow control window based on the initial
          window size sent in the SETTINGS.
       </p>
-      <h4 id="rfc.section.3.7.9.4"><a href="#rfc.section.3.7.9.4">3.7.9.4</a>&nbsp;<a id="EndFlowControl" href="#EndFlowControl">Ending Flow Control</a></h4>
-      <p id="rfc.section.3.7.9.4.p.1">After a recipient reads in a frame that marks the end of a stream (for example, a data stream with a FINAL flag set), it ceases
+      <h4 id="rfc.section.3.8.9.4"><a href="#rfc.section.3.8.9.4">3.8.9.4</a>&nbsp;<a id="EndFlowControl" href="#EndFlowControl">Ending Flow Control</a></h4>
+      <p id="rfc.section.3.8.9.4.p.1">After a receiver reads in a frame that marks the end of a stream (for example, a data stream with a FINAL flag set), it ceases
          transmission of WINDOW_UPDATE frames. A sender is not required to maintain the available flow control window for streams that
          it is no longer sending on.
       </p>
-      <p id="rfc.section.3.7.9.4.p.2">Flow control can be disabled for all streams or the session using the SETTINGS_FLOW_CONTROL_OPTIONS setting. An implementation
+      <p id="rfc.section.3.8.9.4.p.2">Flow control can be disabled for all streams or the session using the SETTINGS_FLOW_CONTROL_OPTIONS setting. An implementation
          that does not wish to perform flow control can use this in the initial SETTINGS exchange.
       </p>
-      <p id="rfc.section.3.7.9.4.p.3">Flow control can be disabled for an individual stream or the overall session by sending a WINDOW_UPDATE with the END_FLOW_CONTROL
+      <p id="rfc.section.3.8.9.4.p.3">Flow control can be disabled for an individual stream or the overall session by sending a WINDOW_UPDATE with the END_FLOW_CONTROL
          flag set. The payload of a WINDOW_UPDATE frame that has the END_FLOW_CONTROL flag set is ignored.
       </p>
-      <p id="rfc.section.3.7.9.4.p.4">Flow control cannot be enabled again once disabled. Any attempt to re-enable flow control - by sending a WINDOW_UPDATE or
+      <p id="rfc.section.3.8.9.4.p.4">Flow control cannot be enabled again once disabled. Any attempt to re-enable flow control - by sending a WINDOW_UPDATE or
          by clearing the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be rejected with a FLOW_CONTROL_ERROR error code.
       </p>
-      <h3 id="rfc.section.3.7.10"><a href="#rfc.section.3.7.10">3.7.10</a>&nbsp;<a id="HeaderBlock" href="#HeaderBlock">Header Block</a></h3>
-      <p id="rfc.section.3.7.10.p.1">The header block is found in the HEADERS, HEADERS+PRIORITY and PUSH_PROMISE frames. The header block consists of a set of
-         header fields, which are name-value pairs. Headers are compressed using black magic.
-      </p>
-      <p id="rfc.section.3.7.10.p.2">Compression of header fields is a work in progress, as is the format of this block.</p>
       <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a>&nbsp;<a id="HTTPLayer" href="#HTTPLayer">HTTP Message Exchanges</a></h1>
       <p id="rfc.section.4.p.1">HTTP/2.0 is intended to be as compatible as possible with current web-based applications. This means that, from the perspective
          of the server business logic or application API, the features of HTTP are unchanged. To achieve this, all of the application
@@ -1491,7 +1504,7 @@ Upgrade: HTTP/2.0
                <dd>the HTTP method for this request (e.g. "GET", "POST", "HEAD", etc) (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p2-semantics.html#methods" title="Request Methods">Section 4</a>)
                </dd>
                <dt>":path":</dt>
-               <dd>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
+               <dd>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
                </dd>
             </dl> These header fields MUST be present in HTTP requests.
          </li>
@@ -1511,7 +1524,7 @@ Upgrade: HTTP/2.0
          <li>Header field names MUST be all lowercase.</li>
          <li>The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-Encoding header fields are not valid and MUST not be sent.</li>
          <li>User-agents MUST support gzip compression. Regardless of the Accept-Encoding sent by the user-agent, the server may always
-            send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Still valid?]</span> 
+            send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Still valid?]</span> 
          </li>
          <li>If a server receives a request where the sum of the data frame payload lengths does not equal the size of the Content-Length
             header field, the server MUST return a 400 (Bad Request) error.
@@ -1527,7 +1540,7 @@ Upgrade: HTTP/2.0
          it should attempt to raise the priority of that resource. Resources such as images, SHOULD generally use the lowest priority.
       </p>
       <p id="rfc.section.4.2.2.p.4">If a client sends a HEADERS+PRIORITY frame that omits a mandatory header, the server MUST reply with a HTTP 400 Bad Request
-         reply. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
+         reply. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
       </p>
       <p id="rfc.section.4.2.2.p.5">If the server receives a data frame prior to a HEADERS or HEADERS+PRIORITY frame the server MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1554,7 +1567,7 @@ Upgrade: HTTP/2.0
             size of an entity prior to receiving all the data frames. This can help in, for example, reporting progress.
          </li>
          <li>If a client receives a response where the sum of the data frame payload length does not equal the size of the Content-Length
-            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
+            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
          </li>
       </ul>
       <p id="rfc.section.4.2.3.p.3">If a client receives a response with an absent or duplicated status header, the client MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
@@ -1570,10 +1583,10 @@ Upgrade: HTTP/2.0
          the performance benefit.
       </p>
       <p id="rfc.section.4.3.p.2">Server push is an optional feature. Server push can be disabled by clients that do not wish to receive pushed resources by
-         advertising a SETTINGS_MAX_CONCURRENT_STREAMS SETTING (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.7.4</a>) of zero. This prevents servers from creating the streams necessary to push resources.
+         advertising a SETTINGS_MAX_CONCURRENT_STREAMS SETTING (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>) of zero. This prevents servers from creating the streams necessary to push resources.
       </p>
       <p id="rfc.section.4.3.p.3">Browsers receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
-         policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+         policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
       </p>
       <p id="rfc.section.4.3.p.4">A client that accepts pushed resources caches those resources as though they were responses to GET requests.</p>
       <p id="rfc.section.4.3.p.5">Pushed responses are associated with a request at the HTTP/2.0 framing layer. The PUSH_PROMISE includes a stream identifier
@@ -1581,7 +1594,7 @@ Upgrade: HTTP/2.0
          header fields from the associated stream with the exception of resource identification header fields (<samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp>), which are provided as part of the PUSH_PROMISE frame. Pushed resources always have an associated <samp>:method</samp> of <samp>GET</samp>. A cache MUST store these inherited and implied request header fields with the cached resource.
       </p>
       <p id="rfc.section.4.3.p.6">Implementation note: With server push, it is theoretically possible for servers to push unreasonable amounts of content or
-         resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.14">[<a href="#rfc.comment.14" class="smpl">rfc.comment.14</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
+         resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
       </p>
       <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;Server implementation
       </h3>
@@ -1616,7 +1629,7 @@ Upgrade: HTTP/2.0
          <li>the resource is being pushed, but the data has not yet arrived</li>
          <li>the resource is being pushed, and the data has started to arrive</li>
       </ol>
-      <p id="rfc.section.4.3.2.p.2">When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-ID is received, the client MUST NOT<span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: SHOULD NOT?]</span> issue GET requests for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
+      <p id="rfc.section.4.3.2.p.2">When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-ID is received, the client MUST NOT<span class="comment" id="rfc.comment.14">[<a href="#rfc.comment.14" class="smpl">rfc.comment.14</a>: SHOULD NOT?]</span> issue GET requests for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
       </p>
       <p id="rfc.section.4.3.2.p.3">A server MUST NOT push a resource with an Associated-To-Stream-ID of 0. Clients MUST treat this as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1625,7 +1638,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.4.3.2.p.5">To cancel individual server push streams, the client can issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL. Upon receipt, the server ceases transmission of the pushed data.
       </p>
       <p id="rfc.section.4.3.2.p.6">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
-         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
+         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
@@ -1707,7 +1720,7 @@ Upgrade: HTTP/2.0
       </h2>
       <p id="rfc.section.6.2.p.1">By utilizing TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
          (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-         attack. <span class="comment" id="rfc.comment.17">[<a href="#rfc.comment.17" class="smpl">rfc.comment.17</a>: Issue: This is no longer true]</span> 
+         attack. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: Issue: This is no longer true]</span> 
       </p>
       <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;Cacheability of Pushed Resources
       </h2>
@@ -1861,7 +1874,7 @@ Upgrade: HTTP/2.0
          <dt>Specification:</dt>
          <dd>An optional reference for a specification that defines the setting.</dd>
       </dl>
-      <p id="rfc.section.8.3.p.4">An initial set of settings registrations can be found in <a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.7.4</a>.
+      <p id="rfc.section.8.3.p.4">An initial set of settings registrations can be found in <a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>.
       </p>
       <h1 id="rfc.section.9"><a href="#rfc.section.9">9.</a>&nbsp;Acknowledgements
       </h1>
