@@ -422,7 +422,7 @@ ul p {
        content: "Belshe, et al."; 
   } 
   @bottom-center {
-       content: "Expires October 16, 2013"; 
+       content: "Expires October 18, 2013"; 
   } 
   @bottom-right {
        content: "[Page " counter(page) "]"; 
@@ -462,7 +462,7 @@ ul p {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-04-14">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-04-16">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ ul p {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: October 16, 2013</td>
+               <td class="left">Expires: October 18, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ ul p {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">April 14, 2013</td>
+               <td class="right">April 16, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -533,7 +533,7 @@ ul p {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on October 16, 2013.</p>
+      <p>This Internet-Draft will expire on October 18, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -567,10 +567,8 @@ ul p {
                <li><a href="#rfc.section.3.4">3.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.4">Streams</a><ul>
                      <li><a href="#rfc.section.3.4.1">3.4.1</a>&nbsp;&nbsp;&nbsp;<a href="#StreamCreation">Stream Creation</a></li>
                      <li><a href="#rfc.section.3.4.2">3.4.2</a>&nbsp;&nbsp;&nbsp;<a href="#StreamPriority">Stream priority</a></li>
-                     <li><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.4.3">Stream headers</a></li>
-                     <li><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.4.4">Stream data exchange</a></li>
-                     <li><a href="#rfc.section.3.4.5">3.4.5</a>&nbsp;&nbsp;&nbsp;<a href="#StreamHalfClose">Stream half-close</a></li>
-                     <li><a href="#rfc.section.3.4.6">3.4.6</a>&nbsp;&nbsp;&nbsp;<a href="#StreamClose">Stream close</a></li>
+                     <li><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;&nbsp;&nbsp;<a href="#StreamHalfClose">Stream half-close</a></li>
+                     <li><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;&nbsp;&nbsp;<a href="#StreamClose">Stream close</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.3.5">3.5</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.3.5">Error Handling</a><ul>
@@ -729,6 +727,10 @@ ul p {
          <dd>The smallest unit of communication, each containing a frame header.</dd>
          <dt>message:</dt>
          <dd>A complete sequence of frames.</dd>
+         <dt>peer:</dt>
+         <dd>An endpoint. When discussing a particular endpoint, "peer" refers to the endpoint that is remote to the primary subject of
+            discussion.
+         </dd>
          <dt>receiver:</dt>
          <dd>An endpoint that is receiving frames.</dd>
          <dt>sender:</dt>
@@ -872,9 +874,11 @@ Upgrade: HTTP/2.0
             frame types: 
             <dl>
                <dt>FINAL (0x1):</dt>
-               <dd>Bit 1 (the least significant bit) indicates that this is the last frame in a stream, placing it into a half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>). No further frames follow in the direction of the carrying frame.
+               <dd>Bit 1 (the least significant bit) indicates that this is the last frame in a stream, placing it into a half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>). No further frames follow in the direction of the carrying frame.
                </dd>
-            </dl> The remaining flags can be assigned semantics by the indicated frame type.
+            </dl> Implementations MUST process these flags for all frames, including frames of unsupported types. The remaining flags can be
+            assigned semantics by the indicated frame type. The value of other flags MUST be ignored for frame types that are not supported
+            by the implementation.
          </dd>
          <dt>R:</dt>
          <dd>A reserved 1-bit field. The semantics of this bit are not defined.</dd>
@@ -919,7 +923,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.4.1.p.4">An endpoint MUST NOT create a stream if there are open streams that exceed the SETTINGS_MAX_CONCURRENT_STREAMS setting of
          its peer. The maximum concurrent streams setting only applies to streams that an endpoint initiates: a client cannot initiate
          an odd numbered streams that exceed the setting provided by a server; a server cannot initiate more even numbered streams
-         than permitted by the setting provided by the client. Streams that are half-open (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>) in any direction count toward this limit.
+         than permitted by the setting provided by the client. Streams that are half-open (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>) in any direction count toward this limit.
       </p>
       <p id="rfc.section.3.4.1.p.5">A long-lived session can exhaust the available stream identifiers. An endpoint that is unable to create a new stream identifier
          can establish a new session for any new streams.
@@ -934,29 +938,18 @@ Upgrade: HTTP/2.0
       </p>
       <p id="rfc.section.3.4.2.p.2">Senders and receivers SHOULD use best-effort to process streams in the order of highest priority to lowest priority. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: ED: toothless, useless "SHOULD": reword]</span> 
       </p>
-      <h3 id="rfc.section.3.4.3"><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;Stream headers
-      </h3>
-      <p id="rfc.section.3.4.3.p.1">Streams can carry optional sets of header fields containing metadata. After the stream has been created, and as long as the
-         sender is not closed (<a href="#StreamClose" title="Stream close">Section&nbsp;3.4.6</a>) or half-closed (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.5</a>), each side may send HEADERS frame(s) containing header data. Header data can be sent in multiple HEADERS frames, and HEADERS
-         frames may be interleaved with data frames.
-      </p>
-      <h3 id="rfc.section.3.4.4"><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;Stream data exchange
-      </h3>
-      <p id="rfc.section.3.4.4.p.1">Once a stream is created, it can be used to send arbitrary amounts of data. Generally this means that a series of data frames
-         will be sent on the stream until a frame containing the FINAL flag (<a href="#FrameHeader" title="Frame Header">Section&nbsp;3.3.1</a>) is set. Once the FINAL flag has been set on any frame, the stream is considered to be half-closed.
-      </p>
-      <h3 id="rfc.section.3.4.5"><a href="#rfc.section.3.4.5">3.4.5</a>&nbsp;<a id="StreamHalfClose" href="#StreamHalfClose">Stream half-close</a></h3>
-      <p id="rfc.section.3.4.5.p.1">When one side of the stream sends a frame with the FINAL flag set, the stream is half-closed from that endpoint. The sender
+      <h3 id="rfc.section.3.4.3"><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;<a id="StreamHalfClose" href="#StreamHalfClose">Stream half-close</a></h3>
+      <p id="rfc.section.3.4.3.p.1">When one side of the stream sends a frame with the FINAL flag set, the stream is half-closed from that endpoint. The sender
          of the FINAL flag MUST NOT send further frames on that stream. When both sides have half-closed, the stream is closed.
       </p>
-      <p id="rfc.section.3.4.5.p.2">Receivers of frames on a half-closed stream MUST handle them as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
+      <p id="rfc.section.3.4.3.p.2">Receivers of frames on a half-closed stream MUST handle them as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
       </p>
-      <p id="rfc.section.3.4.5.p.3">Streams that have never received packets can be considered to be half-closed in the direction that is silent. This allows
-         either peer to create a unidirectional stream, which does not require an explicit close from the peer that does not transmit
-         frames.
+      <p id="rfc.section.3.4.3.p.3">It is not necessary to half-close a stream if no frames have been sent. This allows an endpoint to create a unidirectional
+         stream that does not require an explicit close from the peer that does not transmit frames. Endpoints can avoid committing
+         resources for streams until the first frame is received.
       </p>
-      <h3 id="rfc.section.3.4.6"><a href="#rfc.section.3.4.6">3.4.6</a>&nbsp;<a id="StreamClose" href="#StreamClose">Stream close</a></h3>
-      <p id="rfc.section.3.4.6.p.1">Streams can be terminated in the following ways: </p>
+      <h3 id="rfc.section.3.4.4"><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;<a id="StreamClose" href="#StreamClose">Stream close</a></h3>
+      <p id="rfc.section.3.4.4.p.1">Streams can be terminated in the following ways: </p>
       <dl>
          <dt>Normal termination:</dt>
          <dd>Normal stream termination occurs when both client and server have half-closed the stream by sending a frame containing a FINAL flag (<a href="#FrameHeader" title="Frame Header">Section&nbsp;3.3.1</a>).
@@ -976,7 +969,7 @@ Upgrade: HTTP/2.0
             interrupted and may be incomplete.
          </dd>
       </dl>
-      <p id="rfc.section.3.4.6.p.2">If an endpoint receives a frame on a stream after it is closed, it MAY send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
+      <p id="rfc.section.3.4.4.p.2">If an endpoint receives a frame on a stream after it is closed, it MAY send a RST_STREAM to the sender with the status PROTOCOL_ERROR.</p>
       <h2 id="rfc.section.3.5"><a href="#rfc.section.3.5">3.5</a>&nbsp;Error Handling
       </h2>
       <p id="rfc.section.3.5.p.1">HTTP/2.0 framing permits two classes of error: </p>
@@ -1299,7 +1292,8 @@ Upgrade: HTTP/2.0
             MUST NOT respond to PING frames containing this flag.
          </dd>
       </dl>
-      <p id="rfc.section.3.8.6.p.4">The payload of a PING frame can contain any value. A PING response MUST contain the contents of the PING request.</p>
+      <p id="rfc.section.3.8.6.p.4">The PING frame MUST be sent with a stream identifier of zero.</p>
+      <p id="rfc.section.3.8.6.p.5">The payload of a PING frame can contain any value. A PING response MUST contain the contents of the PING request.</p>
       <h3 id="rfc.section.3.8.7"><a href="#rfc.section.3.8.7">3.8.7</a>&nbsp;<a id="GOAWAY" href="#GOAWAY">GOAWAY</a></h3>
       <p id="rfc.section.3.8.7.p.1">The GOAWAY frame (type=7) informs the remote side of the connection to stop creating streams on this session. It can be sent
          from the client or the server. Once sent, the sender will ignore frames sent on new streams for the remainder of the session.
