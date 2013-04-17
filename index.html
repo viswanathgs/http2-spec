@@ -795,7 +795,7 @@ Connection: Upgrade
 Upgrade: HTTP/2.0
 
 [ HTTP/2.0 session ...
-</pre> <p id="rfc.section.2.2.p.8">Once the server returns the 101 response, both the client and the server send a session header (<a href="#SessionHeader" title="Session Header">Section&nbsp;3.2</a>).
+</pre> <p id="rfc.section.2.2.p.8">The first HTTP/2.0 frame sent by the server is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). Upon receiving the 101 response, the client sents a session header (<a href="#SessionHeader" title="Session Header">Section&nbsp;3.2</a>), which includes a SETTINGS frame.
       </p>
       <h2 id="rfc.section.2.3"><a href="#rfc.section.2.3">2.3</a>&nbsp;<a id="discover-https" href="#discover-https">Starting HTTP/2.0 for "https:" URIs</a></h2>
       <p id="rfc.section.2.3.p.1">A client that makes a request to an "https:" URI without prior knowledge about support for HTTP/2.0 uses <a href="#RFC5246">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[RFC5246]</cite> with <a href="#TLSNPN">TLS-NPN</a> <cite title="Transport Layer Security (TLS) Next Protocol Negotiation Extension">[TLSNPN]</cite> extension. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: TBD, maybe ALPN]</span> 
@@ -822,16 +822,16 @@ Upgrade: HTTP/2.0
          endpoint closes the transport-level connection, it MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) frame so that the endpoints can reliably determine if messages were processed beforehand.
       </p>
       <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a id="SessionHeader" href="#SessionHeader">Session Header</a></h2>
-      <p id="rfc.section.3.2.p.1">After opening a TCP connection and performing either an HTTP/1.1 Upgrade or TLS handshake, the client sends the client session
-         header. The server replies with a server session header.
+      <p id="rfc.section.3.2.p.1">The first data sent on an HTTP/2.0 session - after opening a TCP connection and performing either an HTTP/1.1 Upgrade or TLS
+         handshake - is a session header.
       </p>
       <p id="rfc.section.3.2.p.2">The session header provides a final confirmation that both peers agree to use the HTTP/2.0 protocol. The SETTINGS frame ensures
          that client or server configuration is known as quickly as possible.
       </p>
       <p id="rfc.section.3.2.p.3">The client session header is a sequence of 25 octets (in hex notation)</p>
       <div id="rfc.figure.u.4"></div><pre class="inline">464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a</pre><p id="rfc.section.3.2.p.5">(the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client session header immediately upon receipt of a 101 Switching Protocols response (indicating a
-         successful upgrade), or after receiving a TLS Finished message from the server. If starting HTTP/2.0 with prior knowledge,
-         the client session header is sent upon connection establishment.
+         successful upgrade), or after receiving a TLS Finished message from the server. If starting an HTTP/2.0 session with prior
+         knowledge of server support for the protocol, the client session header is sent upon connection establishment.
       </p>
       <p id="rfc.section.3.2.p.6"> </p>
       <ul class="empty">
@@ -839,7 +839,7 @@ Upgrade: HTTP/2.0
             attempt to process further frames. Note that this does not address the concerns raised in <a href="#TALKING"><cite title="Talking to Yourself for Fun and Profit">[TALKING]</cite></a>.
          </li>
       </ul>
-      <p id="rfc.section.3.2.p.7">The server session header is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The server sends the server session header immediately after receiving and validating the client session header.
+      <p id="rfc.section.3.2.p.7">The server session header is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The server sends the server session header (i.e., a SETTINGS frame) as the first frame in a new session.
       </p>
       <p id="rfc.section.3.2.p.8">The client sends requests immediately after sending the session header, without waiting to receive a server session header.
          This ensures that confirming session headers does not add latency.
