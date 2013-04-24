@@ -422,7 +422,7 @@ ul p {
        content: "Belshe, et al."; 
   } 
   @bottom-center {
-       content: "Expires October 19, 2013"; 
+       content: "Expires October 26, 2013"; 
   } 
   @bottom-right {
        content: "[Page " counter(page) "]"; 
@@ -462,7 +462,7 @@ ul p {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-04-17">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-04-24">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ ul p {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: October 19, 2013</td>
+               <td class="left">Expires: October 26, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ ul p {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">April 17, 2013</td>
+               <td class="right">April 24, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -533,7 +533,7 @@ ul p {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on October 19, 2013.</p>
+      <p>This Internet-Draft will expire on October 26, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -724,7 +724,9 @@ ul p {
          <dt>endpoint:</dt>
          <dd>Either the client or server of the connection.</dd>
          <dt>frame:</dt>
-         <dd>The smallest unit of communication, each containing a frame header.</dd>
+         <dd>The smallest unit of communication within an HTTP/2.0 session, consisting of a header and a variable-length sequence of bytes
+            structured according to the frame type.
+         </dd>
          <dt>message:</dt>
          <dd>A complete sequence of frames.</dd>
          <dt>peer:</dt>
@@ -742,15 +744,17 @@ ul p {
          <dt>session error:</dt>
          <dd>An error on the HTTP/2.0 session.</dd>
          <dt>stream:</dt>
-         <dd>A bi-directional flow of bytes across a virtual channel within the HTTP/2.0 session.</dd>
+         <dd>A bi-directional flow of frames across a virtual channel within the HTTP/2.0 session.</dd>
          <dt>stream error:</dt>
          <dd>An error on the individual HTTP/2.0 stream.</dd>
       </dl>
       <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a id="starting" href="#starting">Starting HTTP/2.0</a></h1>
-      <p id="rfc.section.2.p.1">Just as HTTP/1.1 does, HTTP/2.0 uses the "http:" and "https:" URI schemes. An HTTP/2.0-capable client is therefore required
-         to discover whether the upstream server (including intermediaries) supports HTTP/2.0.
+      <p id="rfc.section.2.p.1">HTTP/2.0 uses the same "http:" and "https:" URI schemes used by HTTP/1.1. As a result, implementations processing requests
+         for a target resource URIs like "http://example.org/foo" or "https://example.com/bar" are required to first discover whether
+         the upstream server (the immediate peer to which the client wishes to establish a connection) supports HTTP/2.0.
       </p>
-      <p id="rfc.section.2.p.2">Different discovery mechanisms are defined for "http:" and "https:" URIs. Discovery for "http:" URIs is described in <a href="#discover-http" title="Starting HTTP/2.0 for &#34;http:&#34; URIs">Section&nbsp;2.2</a>; discovery for "https:" URIs is described in <a href="#discover-https" title="Starting HTTP/2.0 for &#34;https:&#34; URIs">Section&nbsp;2.3</a>.
+      <p id="rfc.section.2.p.2">The means by which support for HTTP/2.0 is determined is different for "http" and "https" URIs. Discovery for "https:" URIs
+         is described in <a href="#discover-https" title="Starting HTTP/2.0 for &#34;https:&#34; URIs">Section&nbsp;2.3</a>. Discovery for "http" URIs is described here.
       </p>
       <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;<a id="versioning" href="#versioning">HTTP/2.0 Version Identification</a></h2>
       <p id="rfc.section.2.1.p.1">The protocol defined in this document is identified using the string "HTTP/2.0". This identification is used in the HTTP/1.1
@@ -814,41 +818,44 @@ Upgrade: HTTP/2.0
       <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a>&nbsp;<a id="FramingLayer" href="#FramingLayer">HTTP/2.0 Framing Layer</a></h1>
       <h2 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1</a>&nbsp;Session
       </h2>
-      <p id="rfc.section.3.1.p.1">The HTTP/2.0 session runs atop TCP (<a href="#RFC0793"><cite title="Transmission Control Protocol">[RFC0793]</cite></a>). The client is the TCP connection initiator.
+      <p id="rfc.section.3.1.p.1">The HTTP/2.0 session is an Application Level protocol running on top of a TCP connection (<a href="#RFC0793"><cite title="Transmission Control Protocol">[RFC0793]</cite></a>). The client is the TCP connection initiator.
       </p>
-      <p id="rfc.section.3.1.p.2">HTTP/2.0 connections are persistent. That is, for best performance, it is expected that clients will not close connections
-         until the user navigates away from all Web pages referencing a connection, or until the server closes the connection. Servers
-         are encouraged to leave connections open for as long as possible, but can terminate idle connections if necessary. When either
-         endpoint closes the transport-level connection, it MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) frame so that the endpoints can reliably determine if messages were processed beforehand.
+      <p id="rfc.section.3.1.p.2">HTTP/2.0 connections are persistent. That is, for best performance, it is expected a clients will not close connections until
+         it is determined that no further communication with a server is necessary (for example, when a user navigates away from a
+         particular web page), or until the server closes the connection.
+      </p>
+      <p id="rfc.section.3.1.p.3">Servers are encouraged to maintain open connections for as long as possible, but are permitted to terminate idle connections
+         if necessary. When either endpoint chooses to close the transport-level TCP connection, the terminating endpoint MUST first
+         send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) frame so that both endpoints can reliably determine whether previously sent frames have been processed and gracefully complete
+         or terminate any necessary remaining tasks.
       </p>
       <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a id="SessionHeader" href="#SessionHeader">Session Header</a></h2>
-      <p id="rfc.section.3.2.p.1">The first data sent on an HTTP/2.0 session - after opening a TCP connection and performing either an HTTP/1.1 Upgrade or TLS
-         handshake - is a session header.
+      <p id="rfc.section.3.2.p.1">Upon establishment of a TCP connection and determination that HTTP/2.0 will be used by both peers to communicate, each endpoint
+         MUST send a session header as a final confirmation and to establish the default parameters for the HTTP/2.0 session.
       </p>
-      <p id="rfc.section.3.2.p.2">The session header provides a final confirmation that both peers agree to use the HTTP/2.0 protocol. The SETTINGS frame ensures
-         that client or server configuration is known as quickly as possible.
-      </p>
-      <p id="rfc.section.3.2.p.3">The client session header is a sequence of 25 octets (in hex notation)</p>
-      <div id="rfc.figure.u.4"></div><pre class="inline">464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a</pre><p id="rfc.section.3.2.p.5">(the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client session header immediately upon receipt of a 101 Switching Protocols response (indicating a
+      <p id="rfc.section.3.2.p.2">The client session header is a sequence of 25 octets (in hex notation)</p>
+      <div id="rfc.figure.u.4"></div><pre class="inline">464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a</pre><p id="rfc.section.3.2.p.4">(the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client session header immediately upon receipt of a 101 Switching Protocols response (indicating a
          successful upgrade), or after receiving a TLS Finished message from the server. If starting an HTTP/2.0 session with prior
          knowledge of server support for the protocol, the client session header is sent upon connection establishment.
       </p>
-      <p id="rfc.section.3.2.p.6"> </p>
+      <p id="rfc.section.3.2.p.5"> </p>
       <ul class="empty">
          <li>The client session header is selected so that a large proportion of HTTP/1.1 or HTTP/1.0 servers and intermediaries do not
             attempt to process further frames. Note that this does not address the concerns raised in <a href="#TALKING"><cite title="Talking to Yourself for Fun and Profit">[TALKING]</cite></a>.
          </li>
       </ul>
-      <p id="rfc.section.3.2.p.7">The server session header is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The server sends the server session header (i.e., a SETTINGS frame) as the first frame in a new session.
+      <p id="rfc.section.3.2.p.6">The server session header consists of just a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>) that MUST be the first frame the server sends in the HTTP/2.0 session.
       </p>
-      <p id="rfc.section.3.2.p.8">The client sends requests immediately after sending the session header, without waiting to receive a server session header.
-         This ensures that confirming session headers does not add latency.
+      <p id="rfc.section.3.2.p.7">In order to avoid unnecessary latency, clients are permitted to send additional frames to the server immediately after sending
+         the client session header, without waiting to receive the server session header. However, it is important to note that the
+         server session header SETTINGS frame might include parameters that necessarily alter how a client is expected to communicate
+         with the server.
       </p>
-      <p id="rfc.section.3.2.p.9">Both clients and servers MUST close the connection if it does not begin with a valid session header. A GOAWAY frame (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) MAY be omitted if it is clear that the peer is not using HTTP/2.0.
+      <p id="rfc.section.3.2.p.8">Clients and servers MUST terminate the TCP connection if either peer does not begin with a valid session header. A GOAWAY frame (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) MAY be omitted if it is clear that the peer is not using HTTP/2.0.
       </p>
       <h2 id="rfc.section.3.3"><a href="#rfc.section.3.3">3.3</a>&nbsp;Framing
       </h2>
-      <p id="rfc.section.3.3.p.1">Once the connection is established, clients and servers exchange HTTP/2.0 frames. Frames are the basic unit of communication.</p>
+      <p id="rfc.section.3.3.p.1">Once the HTTP/2.0 session is established, clients and servers can begin exchanging frames.</p>
       <h3 id="rfc.section.3.3.1"><a href="#rfc.section.3.3.1">3.3.1</a>&nbsp;<a id="FrameHeader" href="#FrameHeader">Frame Header</a></h3>
       <p id="rfc.section.3.3.1.p.1">HTTP/2.0 frames share a common format, consisting of 8 byte of header with between 0 and 65535 bytes of data.</p>
       <div id="rfc.figure.1"></div> <pre class="inline"> 0                   1                   2                   3
@@ -1493,55 +1500,46 @@ Upgrade: HTTP/2.0
          (see <a href="#PushResources" title="Server Push Transactions">Section&nbsp;4.3</a>). HEADERS+PRIORITY frame does not contain the FINAL flag for requests that contain a body. The body of a request follows
          as a series of DATA frames. The last DATA frame sets the FINAL flag to indicate the end of the body.
       </p>
-      <p id="rfc.section.4.2.2.p.2">The header fields included in the HEADERS+PRIORITY frame contain all of the HTTP header fields that are associated with an
-         HTTP request. The header block in HTTP/2.0 is mostly unchanged from today's HTTP header block, with the following differences: 
+      <p id="rfc.section.4.2.2.p.2">The header fields included in the HEADERS+PRIORITY frame contain all of the HTTP header fields associated with an HTTP request.
+         The definitions of these headers are largely unchanged relative to HTTP/1.1, with a few notable exceptions: 
       </p>
-      <ul class="empty">
-         <li>The following fields that are carried in the request line in HTTP/1.1 (<a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>) are defined as special-valued name-value pairs: 
-            <dl>
-               <dt>":method":</dt>
-               <dd>the HTTP method for this request (e.g. "GET", "POST", "HEAD", etc) (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p2-semantics.html#methods" title="Request Methods">Section 4</a>)
-               </dd>
-               <dt>":path":</dt>
-               <dd>":path" - the request-target for this URI with "/" prefixed (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#request.line" title="Request Line">Section 3.1.1</a>). For example, for "http://www.google.com/search?q=dogs" the path would be "/search?q=dogs". <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: what forms of the HTTPbis request-target are allowed here?]</span> 
-               </dd>
-            </dl> These header fields MUST be present in HTTP requests.
+      <ul>
+         <li>The HTTP/1.1 request-line has been split into two separate header fields named :method and :path, whose values specify the
+            HTTP method for the request and the request-target, respectively. The HTTP-version component of the request-line is removed
+            entirely from the headers.
          </li>
-         <li>In addition, the following two name-value pairs MUST be present in every request: 
-            <dl>
-               <dt>":host":</dt>
-               <dd>the host and optional port portions (see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>) of the URI for this request (e.g. "www.google.com:1234"). This header field is the same as the HTTP 'Host' header field
-                  (<a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#header.host" title="Host">Section 5.4</a>).
-               </dd>
-               <dt>":scheme":</dt>
-               <dd>the scheme portion of the URI for this request (e.g. "https")</dd>
-            </dl> 
+         <li>The host and optional port portions of the request URI (see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, Section 3.2), is specified using the new :host header field. <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: Ed. Note: it needs to be clarified whether or not this replaces the existing HTTP/1.1 Host header.]</span></li>
+         <li>A new :scheme header field has been added to specify the scheme portion of the request-target (e.g. "https")</li>
+         <li>All header field names MUST be lowercased, and the definitions of all header fields names defined by HTTP/1.1 are updated
+            to be all lowercase.
          </li>
-         <li>All header field names starting with ":" (whether defined in this document or future extensions to this document) MUST appear
-            before any other header fields.
-         </li>
-         <li>Header field names MUST be all lowercase.</li>
-         <li>The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-Encoding header fields are not valid and MUST not be sent.</li>
-         <li>User-agents MUST support gzip compression. Regardless of the Accept-Encoding sent by the user-agent, the server may always
-            send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Still valid?]</span> 
-         </li>
-         <li>If a server receives a request where the sum of the data frame payload lengths does not equal the size of the Content-Length
-            header field, the server MUST return a 400 (Bad Request) error.
-         </li>
-         <li>Although POSTs are inherently chunked, POST requests SHOULD also be accompanied by a Content-Length header field. First, it
-            informs the server of how much data to expect, which the server can used to track overall progress and provide appropriate
-            user feedback. More importantly, some HTTP server implementations fail to correctly process requests that omit the Content-Length
-            header field. Many existing clients send a Content-Length header field, which caused server implementations have come to depend
-            upon its presence.
+         <li>The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-Encoding header fields are no longer valid and MUST not be
+            sent.
          </li>
       </ul>
-      <p id="rfc.section.4.2.2.p.3">The user-agent is free to prioritize requests as it sees fit. If the user-agent cannot make progress without receiving a resource,
+      <p id="rfc.section.4.2.2.p.3">All HTTP Requests MUST include the ":method", ":path", ":host", and ":scheme" header fields.</p>
+      <p id="rfc.section.4.2.2.p.4">Header fields whose names begin with ":" (whether defined in this document or future extensions to this document) MUST appear
+         before any other header fields.
+      </p>
+      <p id="rfc.section.4.2.2.p.5">If a client sends a HEADERS+PRIORITY frame that omits a mandatory header, the server MUST reply with a HTTP 400 Bad Request
+         reply. <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
+      </p>
+      <p id="rfc.section.4.2.2.p.6">User-agents MUST support gzip compression. Regardless of the Accept-Encoding sent by the user-agent, the server may always
+         send content encoded with gzip or deflate encoding. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Still valid?]</span> 
+      </p>
+      <p id="rfc.section.4.2.2.p.7">If a server receives a request where the sum of the data frame payload lengths does not equal the size of the Content-Length
+         header field, the server MUST return a 400 (Bad Request) error.
+      </p>
+      <p id="rfc.section.4.2.2.p.8">Although POSTs are inherently chunked, POST requests SHOULD also be accompanied by a Content-Length header field. First, it
+         informs the server of how much data to expect, which the server can used to track overall progress and provide appropriate
+         user feedback. More importantly, some HTTP server implementations fail to correctly process requests that omit the Content-Length
+         header field. Many existing clients send a Content-Length header field, which caused server implementations have come to depend
+         upon its presence.
+      </p>
+      <p id="rfc.section.4.2.2.p.9">The user-agent is free to prioritize requests as it sees fit. If the user-agent cannot make progress without receiving a resource,
          it should attempt to raise the priority of that resource. Resources such as images, SHOULD generally use the lowest priority.
       </p>
-      <p id="rfc.section.4.2.2.p.4">If a client sends a HEADERS+PRIORITY frame that omits a mandatory header, the server MUST reply with a HTTP 400 Bad Request
-         reply. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
-      </p>
-      <p id="rfc.section.4.2.2.p.5">If the server receives a data frame prior to a HEADERS or HEADERS+PRIORITY frame the server MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
+      <p id="rfc.section.4.2.2.p.10">If the server receives a data frame prior to a HEADERS or HEADERS+PRIORITY frame the server MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
       <h3 id="rfc.section.4.2.3"><a href="#rfc.section.4.2.3">4.2.3</a>&nbsp;<a id="HttpResponse" href="#HttpResponse">Response</a></h3>
       <p id="rfc.section.4.2.3.p.1">The server responds to a client request with a HEADERS frame. Symmetric to the client's upload stream, server will send any

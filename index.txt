@@ -5,12 +5,12 @@
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: October 19, 2013                                    Google, Inc
+Expires: October 26, 2013                                    Google, Inc
                                                          M. Thomson, Ed.
                                                                Microsoft
                                                         A. Melnikov, Ed.
                                                                Isode Ltd
-                                                          April 17, 2013
+                                                          April 24, 2013
 
 
                 Hypertext Transfer Protocol version 2.0
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Belshe, et al.          Expires October 19, 2013                [Page 1]
+Belshe, et al.          Expires October 26, 2013                [Page 1]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -63,7 +63,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on October 19, 2013.
+   This Internet-Draft will expire on October 26, 2013.
 
 Copyright Notice
 
@@ -88,13 +88,13 @@ Table of Contents
    2.  Starting HTTP/2.0 . . . . . . . . . . . . . . . . . . . . . .   6
      2.1.  HTTP/2.0 Version Identification . . . . . . . . . . . . .   6
      2.2.  Starting HTTP/2.0 for "http:" URIs  . . . . . . . . . . .   7
-     2.3.  Starting HTTP/2.0 for "https:" URIs . . . . . . . . . . .   7
+     2.3.  Starting HTTP/2.0 for "https:" URIs . . . . . . . . . . .   8
      2.4.  Starting HTTP/2.0 with Prior Knowledge  . . . . . . . . .   8
    3.  HTTP/2.0 Framing Layer  . . . . . . . . . . . . . . . . . . .   8
      3.1.  Session . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     3.2.  Session Header  . . . . . . . . . . . . . . . . . . . . .   8
+     3.2.  Session Header  . . . . . . . . . . . . . . . . . . . . .   9
      3.3.  Framing . . . . . . . . . . . . . . . . . . . . . . . . .   9
-       3.3.1.  Frame Header  . . . . . . . . . . . . . . . . . . . .   9
+       3.3.1.  Frame Header  . . . . . . . . . . . . . . . . . . . .  10
        3.3.2.  Frame Processing  . . . . . . . . . . . . . . . . . .  11
      3.4.  Streams . . . . . . . . . . . . . . . . . . . . . . . . .  11
        3.4.1.  Stream Creation . . . . . . . . . . . . . . . . . . .  11
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Belshe, et al.          Expires October 19, 2013                [Page 2]
+Belshe, et al.          Expires October 26, 2013                [Page 2]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -138,39 +138,39 @@ Internet-Draft                  HTTP/2.0                      April 2013
        4.3.1.  Server implementation . . . . . . . . . . . . . . . .  33
        4.3.2.  Client implementation . . . . . . . . . . . . . . . .  33
    5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  34
-     5.1.  Separation of Framing Layer and Application Layer . . . .  35
+     5.1.  Separation of Framing Layer and Application Layer . . . .  34
      5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  35
      5.3.  One Connection per Domain . . . . . . . . . . . . . . . .  35
      5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  36
      5.5.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  36
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .  36
      6.1.  Use of Same-origin constraints  . . . . . . . . . . . . .  36
-     6.2.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  37
-     6.3.  Cacheability of Pushed Resources  . . . . . . . . . . . .  37
+     6.2.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  36
+     6.3.  Cacheability of Pushed Resources  . . . . . . . . . . . .  36
    7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  37
      7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  37
-     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  38
+     7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  37
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  38
      8.1.  Frame Type Registry . . . . . . . . . . . . . . . . . . .  38
-     8.2.  Error Code Registry . . . . . . . . . . . . . . . . . . .  39
+     8.2.  Error Code Registry . . . . . . . . . . . . . . . . . . .  38
      8.3.  Settings Registry . . . . . . . . . . . . . . . . . . . .  39
    9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  40
    10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  40
      10.1.  Normative References . . . . . . . . . . . . . . . . . .  40
-     10.2.  Informative References . . . . . . . . . . . . . . . . .  42
+     10.2.  Informative References . . . . . . . . . . . . . . . . .  41
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  42
-     A.1.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  42
+                publication) . . . . . . . . . . . . . . . . . . . .  41
+     A.1.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  41
      A.2.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  42
 
 
 
-Belshe, et al.          Expires October 19, 2013                [Page 3]
+Belshe, et al.          Expires October 26, 2013                [Page 3]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
-     A.3.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  43
+     A.3.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  42
      A.4.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  43
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  43
 
@@ -221,7 +221,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013                [Page 4]
+Belshe, et al.          Expires October 26, 2013                [Page 4]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -257,8 +257,9 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    endpoint:  Either the client or server of the connection.
 
-   frame:  The smallest unit of communication, each containing a frame
-      header.
+   frame:  The smallest unit of communication within an HTTP/2.0
+      session, consisting of a header and a variable-length sequence of
+      bytes structured according to the frame type.
 
    message:  A complete sequence of frames.
 
@@ -276,29 +277,31 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-
-Belshe, et al.          Expires October 19, 2013                [Page 5]
+Belshe, et al.          Expires October 26, 2013                [Page 5]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
    session error:  An error on the HTTP/2.0 session.
 
-   stream:  A bi-directional flow of bytes across a virtual channel
+   stream:  A bi-directional flow of frames across a virtual channel
       within the HTTP/2.0 session.
 
    stream error:  An error on the individual HTTP/2.0 stream.
 
 2.  Starting HTTP/2.0
 
-   Just as HTTP/1.1 does, HTTP/2.0 uses the "http:" and "https:" URI
-   schemes.  An HTTP/2.0-capable client is therefore required to
-   discover whether the upstream server (including intermediaries)
+   HTTP/2.0 uses the same "http:" and "https:" URI schemes used by HTTP/
+   1.1.  As a result, implementations processing requests for a target
+   resource URIs like "http://example.org/foo" or "https://example.com/
+   bar" are required to first discover whether the upstream server (the
+   immediate peer to which the client wishes to establish a connection)
    supports HTTP/2.0.
 
-   Different discovery mechanisms are defined for "http:" and "https:"
-   URIs.  Discovery for "http:" URIs is described in Section 2.2;
-   discovery for "https:" URIs is described in Section 2.3.
+   The means by which support for HTTP/2.0 is determined is different
+   for "http" and "https" URIs.  Discovery for "https:" URIs is
+   described in Section 2.3.  Discovery for "http" URIs is described
+   here.
 
 2.1.  HTTP/2.0 Version Identification
 
@@ -326,18 +329,19 @@ Internet-Draft                  HTTP/2.0                      April 2013
    the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
    identified using the string "HTTP-draft-03/2.0".
 
-   Non-compatible experiments that are based on these draft versions
-   MUST instead replace the string "draft" with a different identifier.
-   For example, an experimental implementation of packet mood-based
-   encoding based on draft-ietf-httpbis-http2-07 might identify itself
 
 
 
-Belshe, et al.          Expires October 19, 2013                [Page 6]
+
+Belshe, et al.          Expires October 26, 2013                [Page 6]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
+   Non-compatible experiments that are based on these draft versions
+   MUST instead replace the string "draft" with a different identifier.
+   For example, an experimental implementation of packet mood-based
+   encoding based on draft-ietf-httpbis-http2-07 might identify itself
    as "HTTP-emo-07/2.0".  Note that any label MUST conform to the
    "token" syntax defined in Section 3.2.6 of [HTTP-p1].  Experimenters
    are encouraged to coordinate their experiments on the ietf-http-
@@ -380,19 +384,21 @@ Internet-Draft                  HTTP/2.0                      April 2013
      [ HTTP/2.0 session ...
 
 
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013                [Page 7]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    The first HTTP/2.0 frame sent by the server is a SETTINGS frame
    (Section 3.8.4).  Upon receiving the 101 response, the client sents a
    session header (Section 3.2), which includes a SETTINGS frame.
 
 2.3.  Starting HTTP/2.0 for "https:" URIs
-
-
-
-
-Belshe, et al.          Expires October 19, 2013                [Page 7]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
 
    A client that makes a request to an "https:" URI without prior
    knowledge about support for HTTP/2.0 uses TLS [RFC5246] with TLS-NPN
@@ -419,36 +425,37 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 3.1.  Session
 
-   The HTTP/2.0 session runs atop TCP ([RFC0793]).  The client is the
-   TCP connection initiator.
+   The HTTP/2.0 session is an Application Level protocol running on top
+   of a TCP connection ([RFC0793]).  The client is the TCP connection
+   initiator.
 
    HTTP/2.0 connections are persistent.  That is, for best performance,
-   it is expected that clients will not close connections until the user
-   navigates away from all Web pages referencing a connection, or until
-   the server closes the connection.  Servers are encouraged to leave
-   connections open for as long as possible, but can terminate idle
-   connections if necessary.  When either endpoint closes the transport-
-   level connection, it MUST first send a GOAWAY (Section 3.8.7) frame
-   so that the endpoints can reliably determine if messages were
-   processed beforehand.
+   it is expected a clients will not close connections until it is
+   determined that no further communication with a server is necessary
+   (for example, when a user navigates away from a particular web page),
+   or until the server closes the connection.
 
-3.2.  Session Header
-
-   The first data sent on an HTTP/2.0 session - after opening a TCP
-   connection and performing either an HTTP/1.1 Upgrade or TLS handshake
-   - is a session header.
-
-   The session header provides a final confirmation that both peers
-   agree to use the HTTP/2.0 protocol.  The SETTINGS frame ensures that
-   client or server configuration is known as quickly as possible.
+   Servers are encouraged to maintain open connections for as long as
+   possible, but are permitted to terminate idle connections if
+   necessary.  When either endpoint chooses to close the transport-level
+   TCP connection, the terminating endpoint MUST first send a GOAWAY
+   (Section 3.8.7) frame so that both endpoints can reliably determine
+   whether previously sent frames have been processed and gracefully
+   complete or terminate any necessary remaining tasks.
 
 
 
-
-Belshe, et al.          Expires October 19, 2013                [Page 8]
+Belshe, et al.          Expires October 26, 2013                [Page 8]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
+
+3.2.  Session Header
+
+   Upon establishment of a TCP connection and determination that HTTP/
+   2.0 will be used by both peers to communicate, each endpoint MUST
+   send a session header as a final confirmation and to establish the
+   default parameters for the HTTP/2.0 session.
 
    The client session header is a sequence of 25 octets (in hex
    notation)
@@ -469,22 +476,35 @@ Internet-Draft                  HTTP/2.0                      April 2013
       to process further frames.  Note that this does not address the
       concerns raised in [TALKING].
 
-   The server session header is a SETTINGS frame (Section 3.8.4).  The
-   server sends the server session header (i.e., a SETTINGS frame) as
-   the first frame in a new session.
+   The server session header consists of just a SETTINGS frame
+   (Section 3.8.4) that MUST be the first frame the server sends in the
+   HTTP/2.0 session.
 
-   The client sends requests immediately after sending the session
-   header, without waiting to receive a server session header.  This
-   ensures that confirming session headers does not add latency.
+   In order to avoid unnecessary latency, clients are permitted to send
+   additional frames to the server immediately after sending the client
+   session header, without waiting to receive the server session header.
+   However, it is important to note that the server session header
+   SETTINGS frame might include parameters that necessarily alter how a
+   client is expected to communicate with the server.
 
-   Both clients and servers MUST close the connection if it does not
-   begin with a valid session header.  A GOAWAY frame (Section 3.8.7)
-   MAY be omitted if it is clear that the peer is not using HTTP/2.0.
+   Clients and servers MUST terminate the TCP connection if either peer
+   does not begin with a valid session header.  A GOAWAY frame
+   (Section 3.8.7) MAY be omitted if it is clear that the peer is not
+   using HTTP/2.0.
 
 3.3.  Framing
 
-   Once the connection is established, clients and servers exchange HTTP
-   /2.0 frames.  Frames are the basic unit of communication.
+   Once the HTTP/2.0 session is established, clients and servers can
+   begin exchanging frames.
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013                [Page 9]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
 3.3.1.  Frame Header
 
@@ -498,14 +518,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    +-+-------------+---------------+-------------------------------+
    |R|                 Stream Identifier (31)                      |
    +-+-------------------------------------------------------------+
-
-
-
-Belshe, et al.          Expires October 19, 2013                [Page 9]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    |                     Frame Data (0...)                       ...
    +---------------------------------------------------------------+
 
@@ -543,24 +555,18 @@ Internet-Draft                  HTTP/2.0                      April 2013
       A value 0 is reserved for frames that are directed at the session
       as a whole instead of a single stream.
 
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 10]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    Frame Data:  Frames contain between 0 and 65535 bytes of data.
 
    Reserved bits in the frame header MUST be set to zero when sending
    and MUST be ignored when receiving frames, unless the semantics of
    the bit are known.
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 10]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
 
 3.3.2.  Frame Processing
 
@@ -607,13 +613,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 11]
+Belshe, et al.          Expires October 26, 2013               [Page 11]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -669,7 +669,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 12]
+Belshe, et al.          Expires October 26, 2013               [Page 12]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -725,7 +725,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 13]
+Belshe, et al.          Expires October 26, 2013               [Page 13]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -781,7 +781,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 14]
+Belshe, et al.          Expires October 26, 2013               [Page 14]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 15]
+Belshe, et al.          Expires October 26, 2013               [Page 15]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -893,7 +893,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 16]
+Belshe, et al.          Expires October 26, 2013               [Page 16]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -949,7 +949,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 17]
+Belshe, et al.          Expires October 26, 2013               [Page 17]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1005,7 +1005,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 18]
+Belshe, et al.          Expires October 26, 2013               [Page 18]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1061,7 +1061,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 19]
+Belshe, et al.          Expires October 26, 2013               [Page 19]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1117,7 +1117,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 20]
+Belshe, et al.          Expires October 26, 2013               [Page 20]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 21]
+Belshe, et al.          Expires October 26, 2013               [Page 21]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 22]
+Belshe, et al.          Expires October 26, 2013               [Page 22]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 23]
+Belshe, et al.          Expires October 26, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 24]
+Belshe, et al.          Expires October 26, 2013               [Page 24]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 25]
+Belshe, et al.          Expires October 26, 2013               [Page 25]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1453,7 +1453,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 26]
+Belshe, et al.          Expires October 26, 2013               [Page 26]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 27]
+Belshe, et al.          Expires October 26, 2013               [Page 27]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 28]
+Belshe, et al.          Expires October 26, 2013               [Page 28]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
@@ -1605,70 +1605,70 @@ Internet-Draft                  HTTP/2.0                      April 2013
    indicate the end of the body.
 
    The header fields included in the HEADERS+PRIORITY frame contain all
-   of the HTTP header fields that are associated with an HTTP request.
-   The header block in HTTP/2.0 is mostly unchanged from today's HTTP
-   header block, with the following differences:
+   of the HTTP header fields associated with an HTTP request.  The
+   definitions of these headers are largely unchanged relative to HTTP/
+   1.1, with a few notable exceptions:
 
-      The following fields that are carried in the request line in HTTP/
-      1.1 ([HTTP-p1], Section 3.1.1) are defined as special-valued name-
-      value pairs:
-
-      ":method":  the HTTP method for this request (e.g.  "GET", "POST",
-            "HEAD", etc) ([HTTP-p2], Section 4)
-
-      ":path":  ":path" - the request-target for this URI with "/"
-            prefixed (see [HTTP-p1], Section 3.1.1).  For example, for
+   o  The HTTP/1.1 request-line has been split into two separate header
+      fields named :method and :path, whose values specify the HTTP
+      method for the request and the request-target, respectively.  The
+      HTTP-version component of the request-line is removed entirely
+      from the headers.
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 29]
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 29]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
 
-            "http://www.google.com/search?q=dogs" the path would be "/
-            search?q=dogs".  [[what forms of the HTTPbis request-target
-            are allowed here?]]
+   o  The host and optional port portions of the request URI (see
+      [RFC3986], Section 3.2), is specified using the new :host header
+      field.  [[Ed.  Note: it needs to be clarified whether or not this
+      replaces the existing HTTP/1.1 Host header.]]
 
-      These header fields MUST be present in HTTP requests.
+   o  A new :scheme header field has been added to specify the scheme
+      portion of the request-target (e.g.  "https")
 
-      In addition, the following two name-value pairs MUST be present in
-      every request:
+   o  All header field names MUST be lowercased, and the definitions of
+      all header fields names defined by HTTP/1.1 are updated to be all
+      lowercase.
 
-      ":host":  the host and optional port portions (see [RFC3986],
-            Section 3.2) of the URI for this request (e.g.
-            "www.google.com:1234").  This header field is the same as
-            the HTTP 'Host' header field ([HTTP-p1], Section 5.4).
+   o  The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-
+      Encoding header fields are no longer valid and MUST not be sent.
 
-      ":scheme":  the scheme portion of the URI for this request (e.g.
-            "https")
+   All HTTP Requests MUST include the ":method", ":path", ":host", and
+   ":scheme" header fields.
 
-      All header field names starting with ":" (whether defined in this
-      document or future extensions to this document) MUST appear before
-      any other header fields.
+   Header fields whose names begin with ":" (whether defined in this
+   document or future extensions to this document) MUST appear before
+   any other header fields.
 
-      Header field names MUST be all lowercase.
+   If a client sends a HEADERS+PRIORITY frame that omits a mandatory
+   header, the server MUST reply with a HTTP 400 Bad Request reply.
+   [[Ed: why PROTOCOL_ERROR on missing ":status" in the response, but
+   HTTP 400 here?]]
 
-      The Connection, Host, Keep-Alive, Proxy-Connection, and Transfer-
-      Encoding header fields are not valid and MUST not be sent.
+   User-agents MUST support gzip compression.  Regardless of the Accept-
+   Encoding sent by the user-agent, the server may always send content
+   encoded with gzip or deflate encoding.  [[Still valid?]]
 
-      User-agents MUST support gzip compression.  Regardless of the
-      Accept-Encoding sent by the user-agent, the server may always send
-      content encoded with gzip or deflate encoding.  [[Still valid?]]
+   If a server receives a request where the sum of the data frame
+   payload lengths does not equal the size of the Content-Length header
+   field, the server MUST return a 400 (Bad Request) error.
 
-      If a server receives a request where the sum of the data frame
-      payload lengths does not equal the size of the Content-Length
-      header field, the server MUST return a 400 (Bad Request) error.
-
-      Although POSTs are inherently chunked, POST requests SHOULD also
-      be accompanied by a Content-Length header field.  First, it
-      informs the server of how much data to expect, which the server
-      can used to track overall progress and provide appropriate user
-      feedback.  More importantly, some HTTP server implementations fail
-      to correctly process requests that omit the Content-Length header
-      field.  Many existing clients send a Content-Length header field,
-      which caused server implementations have come to depend upon its
-      presence.
+   Although POSTs are inherently chunked, POST requests SHOULD also be
+   accompanied by a Content-Length header field.  First, it informs the
+   server of how much data to expect, which the server can used to track
+   overall progress and provide appropriate user feedback.  More
+   importantly, some HTTP server implementations fail to correctly
+   process requests that omit the Content-Length header field.  Many
+   existing clients send a Content-Length header field, which caused
+   server implementations have come to depend upon its presence.
 
    The user-agent is free to prioritize requests as it sees fit.  If the
    user-agent cannot make progress without receiving a resource, it
@@ -1677,15 +1677,10 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-Belshe, et al.          Expires October 19, 2013               [Page 30]
+Belshe, et al.          Expires October 26, 2013               [Page 30]
 
 Internet-Draft                  HTTP/2.0                      April 2013
 
-
-   If a client sends a HEADERS+PRIORITY frame that omits a mandatory
-   header, the server MUST reply with a HTTP 400 Bad Request reply.
-   [[Ed: why PROTOCOL_ERROR on missing ":status" in the response, but
-   HTTP 400 here?]]
 
    If the server receives a data frame prior to a HEADERS or
    HEADERS+PRIORITY frame the server MUST treat this as a stream error
@@ -1731,16 +1726,17 @@ Internet-Draft                  HTTP/2.0                      April 2013
    header, the client MUST treat this as a stream error (Section 3.5.2)
    of type PROTOCOL_ERROR.
 
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 31]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    If the client receives a data frame prior to a HEADERS or
    HEADERS+PRIORITY frame the client MUST treat this as a stream error
    (Section 3.5.2) of type PROTOCOL_ERROR.
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 31]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
 4.3.  Server Push Transactions
 
@@ -1786,17 +1782,17 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Implementation note: With server push, it is theoretically possible
    for servers to push unreasonable amounts of content or resources to
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 32]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    the user-agent.  Browsers MUST implement throttles to protect against
    unreasonable push attacks.  [[Ed: insufficiently specified to
    implement; would like to remove]]
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 32]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
 4.3.1.  Server implementation
 
@@ -1842,17 +1838,17 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    1.  the resource is not being pushed
 
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 33]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    2.  the resource is being pushed, but the data has not yet arrived
 
    3.  the resource is being pushed, and the data has started to arrive
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 33]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    When a HEADERS+PRIORITY frame that contains an Associated-To-Stream-
    ID is received, the client MUST NOT [[SHOULD NOT?]] issue GET
@@ -1893,19 +1889,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 5.  Design Rationale and Notes
 
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 34]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    Authors' notes: The notes in this section have no bearing on the HTTP
    /2.0 protocol as specified within this document, and none of these
    notes should be considered authoritative about how the protocol
@@ -1914,6 +1897,14 @@ Internet-Draft                  HTTP/2.0                      April 2013
    going forward.  They may be removed before the final draft.
 
 5.1.  Separation of Framing Layer and Application Layer
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 34]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    Readers may note that this specification sometimes blends the framing
    layer (Section 3) with requirements of a specific application - HTTP
@@ -1950,18 +1941,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    slow-start), prioritization, or optimal compression when the client
    is connecting to the server through multiple channels.
 
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 35]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    Through lab measurements, we have seen consistent latency benefits by
    using fewer connections from the client.  The overall number of
    packets sent by HTTP/2.0 can be as much as 40% less than HTTP.
@@ -1975,6 +1954,13 @@ Internet-Draft                  HTTP/2.0                      April 2013
    effects of head-of-line blocking (especially in the presence of
    packet loss) is outweighed by the benefits of compression and
    prioritization.
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 35]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
 5.4.  Fixed vs Variable Length Fields
 
@@ -2010,14 +1996,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 6.1.  Use of Same-origin constraints
 
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 36]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    This specification uses the same-origin policy ([RFC6454], Section 3)
    in all cases where verification of content is required.
 
@@ -2030,6 +2008,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
    [[Issue: This is no longer true]]
 
 6.3.  Cacheability of Pushed Resources
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 36]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    Pushed resources do not have an associated request.  In order for
    existing HTTP cache control validations (such as the Vary header
@@ -2067,13 +2054,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 37]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
 7.2.  SETTINGS frame
 
    The HTTP/2.0 SETTINGS frame allows servers to store out-of-band
@@ -2084,6 +2064,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Clients implementing privacy modes can disable client-persisted
    SETTINGS storage.
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 37]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    Clients MUST clear persisted SETTINGS information when clearing the
    cookies.
@@ -2107,28 +2096,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Initial values for the "HTTP/2.0 Frame Type" registry are shown in
    Table 1.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 38]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
 
           +------------+------------------+---------------------+
           | Frame Type | Name             | Flags               |
@@ -2155,6 +2122,14 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Registrations for error codes are required to include a description
    of the error code.  An expert reviewer is advised to examine new
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 38]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
    registrations for possible duplication with existing error codes.
    Use of existing registrations is to be encouraged, but not mandated.
 
@@ -2178,14 +2153,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    This document establishes a registry for HTTP/2.0 settings.  The
    "HTTP/2.0 Settings" registry manages a 24-bit space.  The "HTTP/2.0
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 39]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    Settings" registry operates under the "Expert Review" policy
    [RFC5226].
 
@@ -2209,6 +2176,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
    Specification:  An optional reference for a specification that
       defines the setting.
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 39]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    An initial set of settings registrations can be found in
    Section 3.8.4.
@@ -2234,14 +2210,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 10.1.  Normative References
 
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 40]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    [HTTP-p1]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
               (HTTP/1.1): Message Syntax and Routing", draft-ietf-
               httpbis-p1-messaging-22 (work in progress), February 2013.
@@ -2264,6 +2232,15 @@ Internet-Draft                  HTTP/2.0                      April 2013
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
               draft-ietf-httpbis-p6-cache-22 (work in progress),
               February 2013.
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 40]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
    [HTTP-p7]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
@@ -2289,15 +2266,6 @@ Internet-Draft                  HTTP/2.0                      April 2013
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 41]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    [TLSNPN]   Langley, A., "Transport Layer Security (TLS) Next Protocol
               Negotiation Extension", draft-agl-tls-nextprotoneg-04
               (work in progress), May 2012.
@@ -2316,6 +2284,19 @@ Appendix A.  Change Log (to be removed by RFC Editor before publication)
 A.1.  Since draft-ietf-httpbis-http2-02
 
    None yet...
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 41]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
 
 A.2.  Since draft-ietf-httpbis-http2-01
 
@@ -2345,15 +2326,6 @@ A.2.  Since draft-ietf-httpbis-http2-01
 
    Altered flow control properties to include session-level limits.
 
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 42]
-
-Internet-Draft                  HTTP/2.0                      April 2013
-
-
    Added note on cacheability of pushed resources and multiple tenant
    servers.
 
@@ -2375,6 +2347,13 @@ A.3.  Since draft-ietf-httpbis-http2-00
 
    Added flow control principles (Section 3.6.1) based on [5].
 
+
+
+Belshe, et al.          Expires October 26, 2013               [Page 42]
+
+Internet-Draft                  HTTP/2.0                      April 2013
+
+
 A.4.  Since draft-mbelshe-httpbis-spdy-00
 
    Adopted as base for draft-ietf-httpbis-http2.
@@ -2395,19 +2374,6 @@ Authors' Addresses
    Google, Inc
 
    EMail: fenix@google.com
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 43]
-
-Internet-Draft                  HTTP/2.0                      April 2013
 
 
    Martin Thomson (editor)
@@ -2438,26 +2404,4 @@ Internet-Draft                  HTTP/2.0                      April 2013
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires October 19, 2013               [Page 44]
+Belshe, et al.          Expires October 26, 2013               [Page 43]
