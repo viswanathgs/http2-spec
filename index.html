@@ -846,10 +846,10 @@ Upgrade: HTTP/2.0
       </ul>
       <p id="rfc.section.3.2.p.6">The server session header consists of just a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>) that MUST be the first frame the server sends in the HTTP/2.0 session.
       </p>
-      <p id="rfc.section.3.2.p.7">In order to avoid unnecessary latency, clients are permitted to send additional frames to the server immediately after sending
-         the client session header, without waiting to receive the server session header. However, it is important to note that the
-         server session header SETTINGS frame might include parameters that necessarily alter how a client is expected to communicate
-         with the server.
+      <p id="rfc.section.3.2.p.7">To avoid unnecessary latency, clients are permitted to send additional frames to the server immediately after sending the
+         client session header, without waiting to receive the server session header. It is important to note, however, that the server
+         session header SETTINGS frame might include parameters that necessarily alter how a client is expected to communicate with
+         the server. Upon receiving the SETTINGS frame, the client is expected to honor any parameters established.
       </p>
       <p id="rfc.section.3.2.p.8">Clients and servers MUST terminate the TCP connection if either peer does not begin with a valid session header. A GOAWAY frame (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.7</a>) MAY be omitted if it is clear that the peer is not using HTTP/2.0.
       </p>
@@ -857,7 +857,7 @@ Upgrade: HTTP/2.0
       </h2>
       <p id="rfc.section.3.3.p.1">Once the HTTP/2.0 session is established, clients and servers can begin exchanging frames.</p>
       <h3 id="rfc.section.3.3.1"><a href="#rfc.section.3.3.1">3.3.1</a>&nbsp;<a id="FrameHeader" href="#FrameHeader">Frame Header</a></h3>
-      <p id="rfc.section.3.3.1.p.1">HTTP/2.0 frames share a common format, consisting of 8 byte of header with between 0 and 65535 bytes of data.</p>
+      <p id="rfc.section.3.3.1.p.1">HTTP/2.0 frames share a common base format consisting of an 8-byte header followed by 0 to 65535 bytes of data.</p>
       <div id="rfc.figure.1"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -871,7 +871,7 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.3.1.p.3">The fields of the frame header are defined as: </p>
       <dl>
          <dt>Length:</dt>
-         <dd>The 16-bit length of the frame data in bytes. The length of the frame header is not included.</dd>
+         <dd>The length of the frame data expressed as an unsigned, 16-bit integer. The 8 bytes of the frame header are not included.</dd>
          <dt>Type:</dt>
          <dd>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and data are interpreted. Implementations
             MUST ignore unsupported and unrecognized frame types.
@@ -890,70 +890,90 @@ Upgrade: HTTP/2.0
          <dt>R:</dt>
          <dd>A reserved 1-bit field. The semantics of this bit are not defined.</dd>
          <dt>Stream Identifier:</dt>
-         <dd>A 31-bit stream identifier (see <a href="#StreamCreation" title="Stream Creation">Section&nbsp;3.4.1</a>). A value 0 is reserved for frames that are directed at the session as a whole instead of a single stream.
+         <dd>A 31-bit stream identifier (see <a href="#StreamCreation" title="Stream Creation">Section&nbsp;3.4.1</a>). A value 0 is reserved for frames that are associated with the session as a whole as opposed to an individual stream.
          </dd>
-         <dt>Frame Data:</dt>
-         <dd>Frames contain between 0 and 65535 bytes of data.</dd>
       </dl>
       <p id="rfc.section.3.3.1.p.4">Reserved bits in the frame header MUST be set to zero when sending and MUST be ignored when receiving frames, unless the semantics
          of the bit are known.
       </p>
+      <p id="rfc.section.3.3.1.p.5">The structure and content of the remaining frame data is entirely dependent on the frame type.</p>
       <h3 id="rfc.section.3.3.2"><a href="#rfc.section.3.3.2">3.3.2</a>&nbsp;<a id="FrameSize" href="#FrameSize">Frame Processing</a></h3>
-      <p id="rfc.section.3.3.2.p.1">A frame of the maximum size might be too large for implementations with limited resources to process. Implementations MAY
-         choose to support frames smaller than the maximum possible size. However, implementations MUST be able to receive frames containing
-         at least 8192 octets of data.
+      <p id="rfc.section.3.3.2.p.1">Implementatins with limited resources might not be capable of processing large frame sizes. Such implementations MAY choose
+         to place additional limits on the maximum frame size. However, all implementations MUST be capable of receiving and processing
+         frames containing at least 8192 octets of data. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Ed. Question: Does this minimum include the 8-byte header or just the frame data?]</span></p>
+      <p id="rfc.section.3.3.2.p.2">An implementation MUST terminate a stream immediately if it is unable to process a frame due it's size. This is done by sending
+         an RST_STREAM frame (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.8.3</a>) containing the FRAME_TOO_LARGE error code.
       </p>
-      <p id="rfc.section.3.3.2.p.2">An implementation MUST immediately close a stream if it is unable to process a frame related to that stream due to it exceeding
-         a size limit. The implementation MUST send a RST_STREAM frame (<a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;3.8.3</a>) containing FRAME_TOO_LARGE error code if the frame size limit is exceeded.
-      </p>
-      <p id="rfc.section.3.3.2.p.3"> <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: <a href="https://github.com/http2/http2-spec/issues/28">Issue 28</a>: Need a way to signal the maximum frame size; no way to RST_STREAM on non-stream-related frames.]</span> 
+      <p id="rfc.section.3.3.2.p.3"> <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: <a href="https://github.com/http2/http2-spec/issues/28">Issue 28</a>: Need a way to signal the maximum frame size; no way to RST_STREAM on non-stream-related frames.]</span> 
       </p>
       <h2 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4</a>&nbsp;Streams
       </h2>
-      <p id="rfc.section.3.4.p.1">Streams are independent sequences of bi-directional data divided into frames with several properties: </p>
+      <p id="rfc.section.3.4.p.1">A "stream" is an independent, bi-directional sequence of frames exchanged between the client and server within an HTTP/2.0
+         session. Streams have several important characteristics: 
+      </p>
       <ul>
-         <li>Streams can be created by either the client or server.</li>
-         <li>Streams optionally carry a set of name-value header pairs.</li>
-         <li>Streams can concurrently send data interleaved with other streams.</li>
-         <li>Streams can be established and used unilaterally.</li>
-         <li>Streams can be cancelled.</li>
+         <li>Streams can be established and used unilaterally or shared by either the client or server.</li>
+         <li>Streams can be rejected or cancelled by either endpoint.</li>
+         <li>Multiple types of frames can be sent by either endpoint within a single stream.</li>
+         <li>The order in which frames are sent within a stream is significant. Recipients are required to process frames in the order
+            they are received.
+         </li>
+         <li>Streams optionally carry a set of name-value header pairs that are expressed within the headers block of HEADERS+PRIORITY,
+            HEADERS, or PUSH_PROMISE frames.
+         </li>
+         <li>A single HTTP/2.0 session can contain multiple concurrently active streams, with either endpoint interleaving frames from
+            multiple streams.
+         </li>
       </ul>
       <h3 id="rfc.section.3.4.1"><a href="#rfc.section.3.4.1">3.4.1</a>&nbsp;<a id="StreamCreation" href="#StreamCreation">Stream Creation</a></h3>
-      <p id="rfc.section.3.4.1.p.1">Use of streams does not require negotiation. A stream is not created, streams are used by sending a frame on the stream.</p>
-      <p id="rfc.section.3.4.1.p.2">Streams are identified by a 31-bit numeric identifier. Streams initiated by a client use odd numbered stream identifiers;
-         those initiated by the server use even numbered stream identifiers. A stream identifier of zero MUST NOT be used to create
+      <p id="rfc.section.3.4.1.p.1">There is no coordination or shared action between the client and server required to create a stream. Rather, new streams are
+         established by sending a frame that references a previously unused stream identifier.
+      </p>
+      <p id="rfc.section.3.4.1.p.2">All streams are identified by an unsigned 31-bit integer. Streams initiated by a client use odd numbered stream identifiers;
+         those initiated by the server use even numbered stream identifiers. A stream identifier of zero MUST NOT be used to establish
          a new stream.
       </p>
-      <p id="rfc.section.3.4.1.p.3">The stream identifier of a new stream MUST be greater than all previously streams from that endpoint, unless the stream identifier
-         was reserved (such as the promised stream identifier in a PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;3.8.5</a>) frame). An endpoint that receives an unexpected stream identifier MUST handle it as a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
+      <p id="rfc.section.3.4.1.p.3">The identifier of a newly established stream MUST be numerically greater than all previously established streams from that
+         endpoint within the HTTP/2.0 session, unless the identifier has been reserved using a PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;3.8.5</a>) frame. An endpoint that receives an unexpected stream identifier MUST terminate the stream by responding with a session error (<a href="#SessionErrorHandler" title="Session Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
-      <p id="rfc.section.3.4.1.p.4">An endpoint MUST NOT create a stream if there are open streams that exceed the SETTINGS_MAX_CONCURRENT_STREAMS setting of
-         its peer. The maximum concurrent streams setting only applies to streams that an endpoint initiates: a client cannot initiate
-         an odd numbered streams that exceed the setting provided by a server; a server cannot initiate more even numbered streams
-         than permitted by the setting provided by the client. Streams that are half-open (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>) in any direction count toward this limit.
+      <p id="rfc.section.3.4.1.p.4">A peer can limit the total number of concurrently active streams using the SETTINGS_MAX_CONCURRENT_STREAMS parameters within
+         a SETTINGS frame. The maximum concurrent streams setting is specific to each endpoint and applies only to the peer. That is,
+         clients specify the maximum number of concurrent streams the server can initiate, and servers specify the maximum number of
+         concurrent streams the client can initiate. Peer endpoints MUST NOT exceed this limit. All concurrently active streams initiated
+         by an endpoint, including streams that are half-open (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>) in any direction, count toward that endpoint's limit.
       </p>
-      <p id="rfc.section.3.4.1.p.5">A long-lived session can exhaust the available stream identifiers. An endpoint that is unable to create a new stream identifier
-         can establish a new session for any new streams.
+      <p id="rfc.section.3.4.1.p.5">Stream identifiers cannot be reused within an HTTP/2.0 session. Accordingly, long-lived sessions can cause an endpoint to
+         exhaust the available range of stream identifiers. An endpoint that is unable to establish a new stream identifier can establish
+         a new session for any new streams.
       </p>
       <p id="rfc.section.3.4.1.p.6">An endpoint can request the early termination of an unwanted stream. Upon receipt of a frame, the receiver can terminate the
          corresponding stream by sending a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type REFUSED_STREAM. This cannot prevent the initiating endpoint from sending frames for that stream prior to receiving
          this request.
       </p>
       <h3 id="rfc.section.3.4.2"><a href="#rfc.section.3.4.2">3.4.2</a>&nbsp;<a id="StreamPriority" href="#StreamPriority">Stream priority</a></h3>
-      <p id="rfc.section.3.4.2.p.1">The creator of a stream can assign a priority for that stream. Priority is represented as a 31 bit integer. 0 represents the
-         highest priority and 2<sup>31</sup>-1 represents the lowest priority.
+      <p id="rfc.section.3.4.2.p.1">The endpoint establishing a new stream can assign a priority for the stream. Priority is represented as an unsigned 31-bit
+         integer. 0 represents the highest priority and 2<sup>31</sup>-1 represents the lowest priority.
       </p>
-      <p id="rfc.section.3.4.2.p.2">Senders and receivers SHOULD use best-effort to process streams in the order of highest priority to lowest priority. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: ED: toothless, useless "SHOULD": reword]</span> 
+      <p id="rfc.section.3.4.2.p.2">The purpose of this value is to allow the initiating endpoint to request that frames for the stream be processed with higher
+         priority relative to any other concurrently active streams. That is, if an endpoint receives interleaved frames for multiple
+         streams, the endpoint ought to make a best-effort attempt at processing frames for higher priority streams before processing
+         those for lower priority streams.
+      </p>
+      <p id="rfc.section.3.4.2.p.3">Explicitly setting the priority for a stream does not guarantee any particular processing order for the stream relative to
+         any other stream. Nor is there is any mechanism provided by which the initiator of a stream can force or require a receiving
+         endpoint to process frames from one stream before processing frames from another.
       </p>
       <h3 id="rfc.section.3.4.3"><a href="#rfc.section.3.4.3">3.4.3</a>&nbsp;<a id="StreamHalfClose" href="#StreamHalfClose">Stream half-close</a></h3>
-      <p id="rfc.section.3.4.3.p.1">When one side of the stream sends a frame with the FINAL flag set, the stream is half-closed from that endpoint. The sender
-         of the FINAL flag MUST NOT send further frames on that stream. When both sides have half-closed, the stream is closed.
+      <p id="rfc.section.3.4.3.p.1">When an endpoint sends a frame for a stream with the FINAL flag set, the stream is considered to be half-closed for that endpoint.
+         Subsequent frames MUST NOT be sent by that endpoint for the half closed stream for the remaining duration of the HTTP/2.0
+         session. When both endpoints have sent frames with the FINAL flag set, the stream is considered to be fully closed.
       </p>
-      <p id="rfc.section.3.4.3.p.2">Receivers of frames on a half-closed stream MUST handle them as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
+      <p id="rfc.section.3.4.3.p.2">If an endpoint receives additional frames for a stream that was previously half-closed by the sending peer, the recipient
+         MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type STREAM_CLOSED.
       </p>
-      <p id="rfc.section.3.4.3.p.3">It is not necessary to half-close a stream if no frames have been sent. This allows an endpoint to create a unidirectional
-         stream that does not require an explicit close from the peer that does not transmit frames. Endpoints can avoid committing
-         resources for streams until the first frame is received.
+      <p id="rfc.section.3.4.3.p.3">An endpoint that has not yet half-closed a stream by sending the FINAL flag can continue sending frames on the stream.</p>
+      <p id="rfc.section.3.4.3.p.4">It is not necessary for an endpoint to half-close a stream for which it has not sent any frames. This allows endpoints to
+         utilize fully unidirectional streams that do not require explicit action or acknowledgement from the receiver.
       </p>
       <h3 id="rfc.section.3.4.4"><a href="#rfc.section.3.4.4">3.4.4</a>&nbsp;<a id="StreamClose" href="#StreamClose">Stream close</a></h3>
       <p id="rfc.section.3.4.4.p.1">Streams can be terminated in the following ways: </p>
@@ -966,8 +986,8 @@ Upgrade: HTTP/2.0
             flag is sent. The active sender on the stream MUST be prepared to receive frames after closing the stream.
          </dd>
          <dt>Abrupt termination:</dt>
-         <dd>Either the peer can send a RST_STREAM control frame at any time to terminate an active stream. RST_STREAM contains an error
-            code to indicate the reason for termination. A RST_STREAM indicates that the sender will transmit no further data on the stream
+         <dd>Either peer can send a RST_STREAM control frame at any time to terminate an active stream. RST_STREAM contains an error code
+            to indicate the reason for termination. A RST_STREAM indicates that the sender will transmit no further data on the stream
             and that the receiver is advised to cease transmission on it. <br><br> The sender of a RST_STREAM frame MUST allow for frames that have already been sent by the peer prior to the RST_STREAM being
             processed. If in-transit frames alter session state, these frames cannot be safely discarded. See Stream Error Handling (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) for more details.
          </dd>
@@ -991,7 +1011,7 @@ Upgrade: HTTP/2.0
          connection.
       </p>
       <p id="rfc.section.3.5.1.p.3">It is possible that the GOAWAY will not be reliably received by the receiving endpoint. In the event of a session error, GOAWAY
-         only provides a best-effort attempt to communicate with the peer about why the session is going down.
+         only provides a best-effort attempt to communicate with the peer about why the session is being terminated.
       </p>
       <p id="rfc.section.3.5.1.p.4">An endpoint can end a session at any time. In particular, an endpoint MAY choose to treat a stream error as a session error
          if the error is recurrent. Endpoints SHOULD send a GOAWAY frame when ending a session, as long as circumstances permit it.
