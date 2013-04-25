@@ -422,7 +422,7 @@ ul p {
        content: "Belshe, et al."; 
   } 
   @bottom-center {
-       content: "Expires October 26, 2013"; 
+       content: "Expires October 27, 2013"; 
   } 
   @bottom-right {
        content: "[Page " counter(page) "]"; 
@@ -462,7 +462,7 @@ ul p {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-04-24">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-04-25">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ ul p {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: October 26, 2013</td>
+               <td class="left">Expires: October 27, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ ul p {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">April 24, 2013</td>
+               <td class="right">April 25, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -533,7 +533,7 @@ ul p {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on October 26, 2013.</p>
+      <p>This Internet-Draft will expire on October 27, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -1263,10 +1263,11 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.4.3.p.2">The SETTINGS frame is extensible for future information which may improve client-server communications.</p>
       <h3 id="rfc.section.3.8.5"><a href="#rfc.section.3.8.5">3.8.5</a>&nbsp;<a id="PUSH_PROMISE" href="#PUSH_PROMISE">PUSH_PROMISE</a></h3>
       <p id="rfc.section.3.8.5.p.1">The PUSH_PROMISE frame (type=5) is a promise to create a stream and serve the referenced resource in the future. Minimal data
-         allowing the receiver to understand which resource(s) are to be pushed are to be included.
+         allowing the receiver to understand which resource(s) are to be pushed are to be included. <a href="#PushResources" title="Server Push Transactions">Section&nbsp;4.3</a> contains a thorough description of server push.
       </p>
       <p id="rfc.section.3.8.5.p.2">PUSH_PROMISE frames are sent on an existing stream. They declare the intent to use another stream for the pushing of a resource,
-         giving the client an opportunity to reject the pushed resources.
+         giving the client an opportunity to reject the pushed resources. Pushed resources are rejected by sending a RST_STREAM frame
+         on the promised stream.
       </p>
       <div id="rfc.figure.5"></div> <pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1575,9 +1576,6 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.4.3.p.1">HTTP/2.0 enables a server to send multiple replies to a client for a single request. The rationale for this feature is that
          sometimes a server knows that it will need to send multiple resources in response to a single request. Without server push
          features, the client must first download the primary resource, then discover the secondary resource(s), and request them.
-         Pushing of resources avoids the round-trip delay, but also creates a potential race where a server can be pushing content
-         which a user-agent is in the process of requesting. The following mechanics attempt to prevent the race condition while enabling
-         the performance benefit.
       </p>
       <p id="rfc.section.4.3.p.2">Server push is an optional feature. The SETTINGS_MAX_CONCURRENT_STREAMS setting from the client limits the number of resources
          that can be concurrently pushed by a server. Server push can be disabled by clients that do not wish to receive pushed resources
@@ -1587,18 +1585,24 @@ Upgrade: HTTP/2.0
          policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
       </p>
       <p id="rfc.section.4.3.p.4">A client that accepts pushed resources caches those resources as though they were responses to GET requests.</p>
-      <p id="rfc.section.4.3.p.5">Pushed responses are associated with a request at the HTTP/2.0 framing layer. The PUSH_PROMISE includes a stream identifier
-         for an associated request/response exchange that supplies request header fields. The pushed stream inherits all of the request
-         header fields from the associated stream with the exception of resource identification header fields (<samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp>), which are provided as part of the PUSH_PROMISE frame. Pushed resources always have an associated <samp>:method</samp> of <samp>GET</samp>. A cache MUST store these inherited and implied request header fields with the cached resource.
+      <p id="rfc.section.4.3.p.5">Pushing of resources avoids the round-trip delay, but also creates a potential race where a server can be pushing content
+         which a user-agent is in the process of requesting. The PUSH_PROMISE frame reduces the chances of this condition occurring,
+         while retaining the performance benefit.
       </p>
-      <p id="rfc.section.4.3.p.6">Implementation note: With server push, it is theoretically possible for servers to push unreasonable amounts of content or
+      <p id="rfc.section.4.3.p.6">Pushed responses are associated with a request at the HTTP/2.0 framing layer. The PUSH_PROMISE is sent on the stream for the
+         associated request, which allows a receiver to correlate the pushed resource with a request. The pushed stream inherits all
+         of the request header fields from the associated stream with the exception of resource identification header fields (<samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp>), which are provided as part of the PUSH_PROMISE frame.
+      </p>
+      <p id="rfc.section.4.3.p.7">Pushed resources always have an associated <samp>:method</samp> of <samp>GET</samp>. A cache MUST store these inherited and implied request header fields with the cached resource.
+      </p>
+      <p id="rfc.section.4.3.p.8">Implementation note: With server push, it is theoretically possible for servers to push unreasonable amounts of content or
          resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
       </p>
       <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;Server implementation
       </h3>
       <p id="rfc.section.4.3.1.p.1">A server pushes resources in association with a request from the client. Prior to closing the response stream, the server
          sends a PUSH_PROMISE for each resource that it intends to push. The PUSH_PROMISE includes header fields that allow the client
-         to identify the resource (<samp>:scheme</samp>, <samp>:host</samp>, and <samp>:port</samp>).
+         to identify the resource (<samp>:scheme</samp>, <samp>:host</samp>, and <samp>:path</samp>).
       </p>
       <p id="rfc.section.4.3.1.p.2">A server can push multiple resources in response to a request, but these can only be sent while the response stream remains
          open. A server MUST NOT send a PUSH_PROMISE on a half-closed stream.
@@ -1633,17 +1637,21 @@ Upgrade: HTTP/2.0
       </p>
       <p id="rfc.section.4.3.2.p.4">When a client receives a PUSH_PROMISE frame from the server without a the <samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp> header fields, it MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
-      <p id="rfc.section.4.3.2.p.5">To cancel individual server push streams, the client can issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL. Upon receipt, the server ceases transmission of the pushed data.
+      <p id="rfc.section.4.3.2.p.5">To cancel individual server push streams, the client can issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL. After receiving a PUSH_PROMISE frame, the client is able to cancel the pushed resource before receiving any
+         frames on the promised stream. The server ceases transmission of the pushed resource; if the server has not commenced transmission,
+         it does not start.
       </p>
       <p id="rfc.section.4.3.2.p.6">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
          any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
-      <p id="rfc.section.4.3.2.p.7">If the server sends a HEADERS frame containing header fields that duplicate values on a previous HEADERS or PUSH_PROMISE frames
+      <p id="rfc.section.4.3.2.p.7">A client can choose to time out pushed streams if the server does not provide the resource in a timely fashion. A stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL can be used to stop a timed out push.
+      </p>
+      <p id="rfc.section.4.3.2.p.8">If the server sends a HEADERS frame containing header fields that duplicate values on a previous HEADERS or PUSH_PROMISE frames
          on the same stream, the client MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
-      <p id="rfc.section.4.3.2.p.8">If the server sends a HEADERS frame after sending a data frame for the same stream, the client MAY ignore the HEADERS frame.
+      <p id="rfc.section.4.3.2.p.9">If the server sends a HEADERS frame after sending a data frame for the same stream, the client MAY ignore the HEADERS frame.
          Ignoring the HEADERS frame after a data frame prevents handling of HTTP's trailing header fields (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/22/p1-messaging.html#header.trailer" title="Trailer">Section 4.1.1</a> of <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>).
       </p>
       <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a>&nbsp;Design Rationale and Notes
