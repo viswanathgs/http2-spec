@@ -632,7 +632,7 @@ ul p {
             </ul>
          </li>
          <li><a href="#rfc.section.6">6.</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6">Security Considerations</a><ul>
-               <li><a href="#rfc.section.6.1">6.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.1">Use of Same-origin constraints</a></li>
+               <li><a href="#rfc.section.6.1">6.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.1">Server Authority and Same-Origin</a></li>
                <li><a href="#rfc.section.6.2">6.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.2">Cross-Protocol Attacks</a></li>
                <li><a href="#rfc.section.6.3">6.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.3">Cacheability of Pushed Resources</a></li>
             </ul>
@@ -1654,8 +1654,8 @@ Upgrade: HTTP/2.0
          sends a PUSH_PROMISE for each resource that it intends to push. The PUSH_PROMISE includes header fields that allow the client
          to identify the resource (<samp>:scheme</samp>, <samp>:host</samp>, and <samp>:path</samp>).
       </p>
-      <p id="rfc.section.4.3.1.p.2">A server can push multiple resources in response to a request, but these can only be sent while the response stream remains
-         open. A server MUST NOT send a PUSH_PROMISE on a half-closed stream.
+      <p id="rfc.section.4.3.1.p.2">A server can push multiple resources in response to a request, but all pushed resources MUST be promised on the response stream
+         for the associated request. A server cannot send a PUSH_PROMISE on a new stream or a half-closed stream.
       </p>
       <p id="rfc.section.4.3.1.p.3">The server SHOULD include any header fields in a PUSH_PROMISE that would allow a cache to determine if the resource is already
          cached (see <a href="#HTTP-p6"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Caching">[HTTP-p6]</cite></a>, <a href="http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-22#section-4">Section 4</a>).
@@ -1681,7 +1681,8 @@ Upgrade: HTTP/2.0
          <li>the resource is being pushed, but the data has not yet arrived</li>
          <li>the resource is being pushed, and the data has started to arrive</li>
       </ol>
-      <p id="rfc.section.4.3.2.p.2">When a PUSH_PROMISE frame that contains an Promised-Stream-ID is received, the client MUST NOT <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: SHOULD NOT?]</span> issue GET requests for the resource in the pushed stream, and instead wait for the pushed stream to arrive.
+      <p id="rfc.section.4.3.2.p.2">A client SHOULD NOT issue GET requests for a resource that has been promised. A client is instead advised to wait for the
+         pushed resource to arrive.
       </p>
       <p id="rfc.section.4.3.2.p.3">When a client receives a PUSH_PROMISE frame from the server without a the <samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp> header fields, it MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1690,7 +1691,7 @@ Upgrade: HTTP/2.0
          it does not start.
       </p>
       <p id="rfc.section.4.3.2.p.5">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
-         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
+         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.15">[<a href="#rfc.comment.15" class="smpl">rfc.comment.15</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
@@ -1766,21 +1767,29 @@ Upgrade: HTTP/2.0
       </p>
       <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a>&nbsp;Security Considerations
       </h1>
-      <h2 id="rfc.section.6.1"><a href="#rfc.section.6.1">6.1</a>&nbsp;Use of Same-origin constraints
+      <h2 id="rfc.section.6.1"><a href="#rfc.section.6.1">6.1</a>&nbsp;Server Authority and Same-Origin
       </h2>
-      <p id="rfc.section.6.1.p.1">This specification uses the same-origin policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>) in all cases where verification of content is required.
+      <p id="rfc.section.6.1.p.1">This specification uses the same-origin policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>) to determine whether an origin server is permitted to provide content.
       </p>
+      <p id="rfc.section.6.1.p.2">A server that is contacted using TLS is authenticated based on the certificate that it offers in the TLS handshake (see <a href="#RFC2818"><cite title="HTTP Over TLS">[RFC2818]</cite></a>, <a href="http://tools.ietf.org/html/rfc2818#section-3">Section 3</a>). A server is considered authoritative for an "https:" resource if it has been successfully authenticated for the domain
+         part of the origin of the resource that it is providing.
+      </p>
+      <p id="rfc.section.6.1.p.3">A server is considered authoritative for an "http:" resource if the connection is established to a resolved IP address for
+         the domain in the origin of the resource.
+      </p>
+      <p id="rfc.section.6.1.p.4">A client MUST NOT use, in any way, resources provided by a server that is not authoritative for those resources.</p>
       <h2 id="rfc.section.6.2"><a href="#rfc.section.6.2">6.2</a>&nbsp;Cross-Protocol Attacks
       </h2>
       <p id="rfc.section.6.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
          (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-         attack. <span class="comment" id="rfc.comment.17">[<a href="#rfc.comment.17" class="smpl">rfc.comment.17</a>: Issue: This is no longer true]</span> 
+         attack. <span class="comment" id="rfc.comment.16">[<a href="#rfc.comment.16" class="smpl">rfc.comment.16</a>: Issue: This is no longer true]</span> 
       </p>
       <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;Cacheability of Pushed Resources
       </h2>
-      <p id="rfc.section.6.3.p.1">Pushed resources do not have an associated request. In order for existing HTTP cache control validations (such as the Vary
-         header field) to work, all cached resources must have a set of request header fields. For this reason, caches MUST be careful
-         to inherit request header fields from the associated stream for the push. This includes the Cookie header field.
+      <p id="rfc.section.6.3.p.1">Pushed resources are synthesized responses without an explicit request; the request for a pushed resource is synthesized from
+         the request that triggered the push, plus resource identification information provided by the server. Request header fields
+         are necessary for HTTP cache control validations (such as the Vary header field) to work. For this reason, caches MUST inherit
+         request header fields from the associated stream for the push. This includes the Cookie header field.
       </p>
       <p id="rfc.section.6.3.p.2">Caching resources that are pushed is possible, based on the guidance provided by the origin server in the Cache-Control header
          field. However, this can cause issues if a single server hosts more than one tenant. For example, a server might offer multiple
@@ -1984,6 +1993,11 @@ Upgrade: HTTP/2.0
          <tr>
             <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
             <td class="top"><a href="mailto:sob@harvard.edu" title="Harvard University">Bradner, S.</a>, “<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>”, BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="RFC2818">[RFC2818]</b></td>
+            <td class="top">Rescorla, E., “<a href="http://tools.ietf.org/html/rfc2818">HTTP Over TLS</a>”, RFC&nbsp;2818, May&nbsp;2000.
             </td>
          </tr>
          <tr>
