@@ -1782,10 +1782,10 @@ Internet-Draft                  HTTP/2.0                        May 2013
    existing clients send a Content-Length header field, and some server
    implementations have come to depend upon its presence.
 
-   The user-agent is free to prioritize requests as it sees fit.  If the
-   user-agent cannot make progress without receiving a resource, it
-   should attempt to raise the priority of that resource.  Resources
-   such as images, SHOULD generally use the lowest priority.
+
+
+
+
 
 
 
@@ -1793,6 +1793,12 @@ Belshe, et al.         Expires November 22, 2013               [Page 32]
 
 Internet-Draft                  HTTP/2.0                        May 2013
 
+
+   A client provides priority in requests as a hint to the server.  A
+   server SHOULD attempt to provide responses to higher priority
+   requests before lower priority requests.  A server could send lower
+   priority responses during periods that higher priority responses are
+   unavailable to ensure better utilization of a connection.
 
    If the server receives a data frame prior to a HEADERS+PRIORITY frame
    the server MUST treat this as a stream error (Section 3.5.2) of type
@@ -1835,13 +1841,7 @@ Internet-Draft                  HTTP/2.0                        May 2013
       field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
       46>.]]
 
-   If a client receives a response with an absent or duplicated status
-   header, the client MUST treat this as a stream error (Section 3.5.2)
-   of type PROTOCOL_ERROR.
 
-   If the client receives a data frame prior to a HEADERS frame the
-   client MUST treat this as a stream error (Section 3.5.2) of type
-   PROTOCOL_ERROR.
 
 
 
@@ -1849,6 +1849,14 @@ Belshe, et al.         Expires November 22, 2013               [Page 33]
 
 Internet-Draft                  HTTP/2.0                        May 2013
 
+
+   If a client receives a response with an absent or duplicated status
+   header, the client MUST treat this as a stream error (Section 3.5.2)
+   of type PROTOCOL_ERROR.
+
+   If the client receives a data frame prior to a HEADERS frame the
+   client MUST treat this as a stream error (Section 3.5.2) of type
+   PROTOCOL_ERROR.
 
    Clients MUST support gzip compression.  Regardless of the value of
    the Accept-Encoding header field, a server MAY send responses with
@@ -1872,7 +1880,7 @@ Internet-Draft                  HTTP/2.0                        May 2013
    SETTING (Section 3.8.4) of zero.  This prevents servers from creating
    the streams necessary to push resources.
 
-   Browsers receiving a pushed response MUST validate that the server is
+   Clients receiving a pushed response MUST validate that the server is
    authorized to push the resource using the same-origin policy
    ([RFC6454], Section 3).  For example, a HTTP/2.0 connection to
    "example.com" is generally [[Ed: weaselly use of "generally", needs
@@ -1883,21 +1891,13 @@ Internet-Draft                  HTTP/2.0                        May 2013
    though they were responses to GET requests.
 
    Pushing of resources avoids the round-trip delay, but also creates a
-   potential race where a server can be pushing content which a user-
-   agent is in the process of requesting.  The PUSH_PROMISE frame
-   reduces the chances of this condition occurring, while retaining the
-   performance benefit.
+   potential race where a server can be pushing content which a client
+   is in the process of requesting.  The PUSH_PROMISE frame reduces the
+   chances of this condition occurring, while retaining the performance
+   benefit.
 
    Pushed responses are associated with a request at the HTTP/2.0
    framing layer.  The PUSH_PROMISE is sent on the stream for the
-   associated request, which allows a receiver to correlate the pushed
-   resource with a request.  The pushed stream inherits all of the
-   request header fields from the associated stream with the exception
-   of resource identification header fields (":host", ":scheme", and
-   ":path"), which are provided as part of the PUSH_PROMISE frame.
-
-
-
 
 
 
@@ -1906,15 +1906,15 @@ Belshe, et al.         Expires November 22, 2013               [Page 34]
 Internet-Draft                  HTTP/2.0                        May 2013
 
 
+   associated request, which allows a receiver to correlate the pushed
+   resource with a request.  The pushed stream inherits all of the
+   request header fields from the associated stream with the exception
+   of resource identification header fields (":host", ":scheme", and
+   ":path"), which are provided as part of the PUSH_PROMISE frame.
+
    Pushed resources always have an associated ":method" of "GET".  A
    cache MUST store these inherited and implied request header fields
    with the cached resource.
-
-   Implementation note: With server push, it is theoretically possible
-   for servers to push unreasonable amounts of content or resources to
-   the user-agent.  Browsers MUST implement throttles to protect against
-   unreasonable push attacks.  [[Ed: insufficiently specified to
-   implement; would like to remove]]
 
 4.3.1.  Server implementation
 

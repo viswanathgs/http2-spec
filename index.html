@@ -1582,8 +1582,9 @@ Upgrade: HTTP/2.0
          header field. Many existing clients send a Content-Length header field, and some server implementations have come to depend
          upon its presence.
       </p>
-      <p id="rfc.section.4.2.2.p.8">The user-agent is free to prioritize requests as it sees fit. If the user-agent cannot make progress without receiving a resource,
-         it should attempt to raise the priority of that resource. Resources such as images, SHOULD generally use the lowest priority.
+      <p id="rfc.section.4.2.2.p.8">A client provides priority in requests as a hint to the server. A server SHOULD attempt to provide responses to higher priority
+         requests before lower priority requests. A server could send lower priority responses during periods that higher priority
+         responses are unavailable to ensure better utilization of a connection.
       </p>
       <p id="rfc.section.4.2.2.p.9">If the server receives a data frame prior to a HEADERS+PRIORITY frame the server MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1629,22 +1630,19 @@ Upgrade: HTTP/2.0
          that can be concurrently pushed by a server. Server push can be disabled by clients that do not wish to receive pushed resources
          by advertising a SETTINGS_MAX_CONCURRENT_STREAMS SETTING (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>) of zero. This prevents servers from creating the streams necessary to push resources.
       </p>
-      <p id="rfc.section.4.3.p.3">Browsers receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
+      <p id="rfc.section.4.3.p.3">Clients receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
          policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
       </p>
       <p id="rfc.section.4.3.p.4">A client that accepts pushed resources caches those resources as though they were responses to GET requests.</p>
       <p id="rfc.section.4.3.p.5">Pushing of resources avoids the round-trip delay, but also creates a potential race where a server can be pushing content
-         which a user-agent is in the process of requesting. The PUSH_PROMISE frame reduces the chances of this condition occurring,
-         while retaining the performance benefit.
+         which a client is in the process of requesting. The PUSH_PROMISE frame reduces the chances of this condition occurring, while
+         retaining the performance benefit.
       </p>
       <p id="rfc.section.4.3.p.6">Pushed responses are associated with a request at the HTTP/2.0 framing layer. The PUSH_PROMISE is sent on the stream for the
          associated request, which allows a receiver to correlate the pushed resource with a request. The pushed stream inherits all
          of the request header fields from the associated stream with the exception of resource identification header fields (<samp>:host</samp>, <samp>:scheme</samp>, and <samp>:path</samp>), which are provided as part of the PUSH_PROMISE frame.
       </p>
       <p id="rfc.section.4.3.p.7">Pushed resources always have an associated <samp>:method</samp> of <samp>GET</samp>. A cache MUST store these inherited and implied request header fields with the cached resource.
-      </p>
-      <p id="rfc.section.4.3.p.8">Implementation note: With server push, it is theoretically possible for servers to push unreasonable amounts of content or
-         resources to the user-agent. Browsers MUST implement throttles to protect against unreasonable push attacks. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: insufficiently specified to implement; would like to remove]</span> 
       </p>
       <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;Server implementation
       </h3>
@@ -1689,7 +1687,7 @@ Upgrade: HTTP/2.0
          it does not start.
       </p>
       <p id="rfc.section.4.3.2.p.5">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
-         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
+         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
@@ -1780,7 +1778,7 @@ Upgrade: HTTP/2.0
       </h2>
       <p id="rfc.section.6.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
          (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-         attack. <span class="comment" id="rfc.comment.13">[<a href="#rfc.comment.13" class="smpl">rfc.comment.13</a>: Issue: This is no longer true]</span> 
+         attack. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Issue: This is no longer true]</span> 
       </p>
       <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;Cacheability of Pushed Resources
       </h2>
