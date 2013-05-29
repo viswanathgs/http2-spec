@@ -422,7 +422,7 @@ ul p {
        content: "Belshe, et al."; 
   } 
   @bottom-center {
-       content: "Expires November 29, 2013"; 
+       content: "Expires November 30, 2013"; 
   } 
   @bottom-right {
        content: "[Page " counter(page) "]"; 
@@ -462,7 +462,7 @@ ul p {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-05-28">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-05-29">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ ul p {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: November 29, 2013</td>
+               <td class="left">Expires: November 30, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ ul p {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">May 28, 2013</td>
+               <td class="right">May 29, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -533,7 +533,7 @@ ul p {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on November 29, 2013.</p>
+      <p>This Internet-Draft will expire on November 30, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -826,8 +826,8 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.2.p.1">Upon establishment of a TCP connection and determination that HTTP/2.0 will be used by both peers to communicate, each endpoint
          MUST send a connection header as a final confirmation and to establish the default parameters for the HTTP/2.0 connection.
       </p>
-      <p id="rfc.section.3.2.p.2">The client connection header is a sequence of 25 octets (in hex notation)</p>
-      <div id="rfc.figure.u.4"></div><pre class="inline">464f4f202a20485454502f322e300d0a0d0a4241520d0a0d0a</pre><p id="rfc.section.3.2.p.4">(the string <samp>FOO * HTTP/2.0\r\n\r\nBAR\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client connection header immediately upon receipt of a 101 Switching Protocols response (indicating
+      <p id="rfc.section.3.2.p.2">The client connection header is a sequence of 24 octets (in hex notation)</p>
+      <div id="rfc.figure.u.4"></div><pre class="inline">464f4f202a20485454502f322e300d0a0d0a42410d0a0d0a</pre><p id="rfc.section.3.2.p.4">(the string <samp>FOO * HTTP/2.0\r\n\r\nBA\r\n\r\n</samp>) followed by a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.4</a>). The client sends the client connection header immediately upon receipt of a 101 Switching Protocols response (indicating
          a successful upgrade), or after receiving a TLS Finished message from the server. If starting an HTTP/2.0 connection with
          prior knowledge of server support for the protocol, the client connection header is sent upon connection establishment.
       </p>
@@ -872,9 +872,9 @@ Upgrade: HTTP/2.0
             MUST ignore unsupported and unrecognized frame types.
          </dd>
          <dt>Flags:</dt>
-         <dd>An 8-bit field reserved for frame-type specific boolean flags. <br><br> The least significant bit (0x1) -- referred to generally as the "FINAL flag" -- is defined for all frame types as an indication
-            that this frame is the last the endpoint will send for the identified stream. Setting this flag causes the stream to enter
-            the half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>). Implementations MUST process this flag for all frames whose stream identifier field is not 0x0. <br><br> The remaining flags can be assigned semantics specific to the indicated frame type. Flags that have no defined semantics for
+         <dd>An 8-bit field reserved for frame-type specific boolean flags. <br><br> The least significant bit (0x1) - the FINAL bit - is defined for all frame types as an indication that this frame is the last
+            the endpoint will send for the identified stream. Setting this flag causes the stream to enter the half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>). Implementations MUST process the FINAL bit for all frames whose stream identifier field is not 0x0. The FINAL bit MUST NOT
+            be set on frames that use a stream identifier of 0. <br><br> The remaining flags can be assigned semantics specific to the indicated frame type. Flags that have no defined semantics for
             a particular frame type MUST be ignored, and MUST be left unset (0) when sending.
          </dd>
          <dt>R:</dt>
@@ -932,8 +932,8 @@ Upgrade: HTTP/2.0
          by an endpoint, including streams that are half-open (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>) in any direction, count toward that endpoint's limit.
       </p>
       <p id="rfc.section.3.4.1.p.5">Stream identifiers cannot be reused within a connection. Long-lived connections can cause an endpoint to exhaust the available
-         range of stream identifiers. An endpoint that is unable to establish a new stream identifier can establish a new connection
-         for any new streams.
+         range of stream identifiers. A client that is unable to establish a new stream identifier can establish a new connection for
+         new streams.
       </p>
       <p id="rfc.section.3.4.1.p.6">Either endpoint can request the early termination of an unwanted stream by sending an RST_STREAM frame (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) with an error code of either REFUSED_STREAM (if no frames have been processed) or CANCEL (if at least one frame has been processed).
          Such termination might not take effect immediately as the peer might have sent additional frames on the stream prior to receiving
@@ -1014,7 +1014,7 @@ Upgrade: HTTP/2.0
       </p>
       <p id="rfc.section.3.5.2.p.3">A RST_STREAM is the last frame that an endpoint can send on a stream. The peer that sends the RST_STREAM frame MUST be prepared
          to receive any frames that were sent or enqueued for sending by the remote peer. These frames can be ignored, except where
-         they modify connection state (such as that for header compression).
+         they modify connection state (such as the state maintained for header compression (<a href="#HeaderBlock" title="Header Blocks">Section&nbsp;3.7</a>)).
       </p>
       <p id="rfc.section.3.5.2.p.4">Normally, an endpoint SHOULD NOT send more than one RST_STREAM frame for any stream. However, an endpoint MAY send additional
          RST_STREAM frames if it receives frames on a closed stream after more than a round trip time. This behavior is permitted to
@@ -1050,6 +1050,8 @@ Upgrade: HTTP/2.0
          <dd>The endpoint is refusing the stream before processing its payload.</dd>
          <dt>CANCEL (8):</dt>
          <dd>Used by the creator of a stream to indicate that the stream is no longer needed.</dd>
+         <dt>COMPRESSION_ERROR (9):</dt>
+         <dd>The endpoint is unable to maintain the compression context for the connection.</dd>
       </dl>
       <h2 id="rfc.section.3.6"><a href="#rfc.section.3.6">3.6</a>&nbsp;<a id="flowcontrol" href="#flowcontrol">Stream Flow Control</a></h2>
       <p id="rfc.section.3.6.p.1">Using streams for multiplexing introduces contention over use of the TCP connection, resulting in blocked streams. A flow
@@ -1113,6 +1115,9 @@ Upgrade: HTTP/2.0
          header fields, which are name-value pairs. Headers are compressed using black magic.
       </p>
       <p id="rfc.section.3.7.p.2">Compression of header fields is a work in progress, as is the format of this block.</p>
+      <p id="rfc.section.3.7.p.3">The contents of header blocks MUST be processed by the compression context, even if stream has been reset or the frame is
+         discarded. If header blocks cannot be processed, the receiver MUST treat the connection with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type COMPRESSION_ERROR.
+      </p>
       <h2 id="rfc.section.3.8"><a href="#rfc.section.3.8">3.8</a>&nbsp;<a id="frame-types" href="#frame-types">Frame Types</a></h2>
       <p id="rfc.section.3.8.p.1">This specification defines a number of frame types, each identified by a unique 8-bit type code. Each frame type serves a
          distinct purpose either in the establishment and management of the connection as a whole, or of individual streams.
@@ -1143,7 +1148,8 @@ Upgrade: HTTP/2.0
 </pre><p class="figure">Figure 2: HEADERS+PRIORITY Frame Payload</p>
       <p id="rfc.section.3.8.2.p.3">The HEADERS+PRIORITY frame is identical to the HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>), preceded by a single reserved bit and a 31-bit priority; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;3.4.2</a>.
       </p>
-      <p id="rfc.section.3.8.2.p.4">HEADERS+PRIORITY uses exactly the same flags as the HEADERS frame. See HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>) for any flags.
+      <p id="rfc.section.3.8.2.p.4">HEADERS+PRIORITY uses the same flags as the HEADERS frame, except that a HEADERS+PRIORITY frame with a CONTINUES bit MUST
+         be followed by another HEADERS+PRIORITY frame. See HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>) for any flags.
       </p>
       <p id="rfc.section.3.8.2.p.5">HEADERS+PRIORITY frames MUST be associated with a stream. If a HEADERS+PRIORITY frame is received whose stream identifier
          field is 0x0, the recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
@@ -1192,9 +1198,7 @@ Upgrade: HTTP/2.0
          or new values for parameters whose values have already been established. Only the most recent value provided setting value
          applies.
       </p>
-      <p id="rfc.section.3.8.4.p.6">Because the SETTINGS frame is not associated with any particular stream, the FINAL flag is ignored. Additional type-specific
-         flags for the SETTINGS frame are: 
-      </p>
+      <p id="rfc.section.3.8.4.p.6">The SETTINGS frame defines the following flag: </p>
       <dl>
          <dt>CLEAR_PERSISTED (0x2):</dt>
          <dd>Bit 2 being set indicates a request to clear any previously persisted settings before processing the settings. Clients MUST
@@ -1327,7 +1331,8 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.5.p.5">The state of promised streams is bound to the state of the original associated stream on which the PUSH_PROMISE frame were
          sent. If the originating stream state changes to fully closed, all associated promised streams fully close as well. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Ed. Note: We need clarification on this point. How synchronized are the lifecycles of streams and associated promised streams?]</span> 
       </p>
-      <p id="rfc.section.3.8.5.p.6">PUSH_PROMISE uses exactly the same flags as the HEADERS frame. See HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>) for any flags.
+      <p id="rfc.section.3.8.5.p.6">PUSH_PROMISE uses the same flags as the HEADERS frame, except that a PUSH_PROMISE frame with a CONTINUES bit MUST be followed
+         by another PUSH_PROMISE frame. See HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.8</a>) for any flags.
       </p>
       <p id="rfc.section.3.8.5.p.7">Promised streams are not required to be used in order promised. The PUSH_PROMISE only reserves stream identifiers for later
          use.
@@ -1413,12 +1418,11 @@ Upgrade: HTTP/2.0
       </p>
       <p id="rfc.section.3.8.8.p.2">Additional type-specific flags for the HEADERS frame are: </p>
       <dl>
-         <dt>HDR_CONTINUES (0x2):</dt>
-         <dd>Bit 2 being set indicates that this frame does not contain the entire payload necessary to interpret the HEADERS data. The
-            payload in any series of headers frames is only interpretable when HDR_CONTINUES has NOT been set, and then only when concatenated
-            with the payload from the unbroken series of HEADERS frames where HDR_CONTINUES was set. When this bit is set for a HEADERS
-            frame on a particular stream (A), HEADERS frames MUST NOT be sent on other streams until a HEADERS frame has been sent on
-            the same stream (A) where the HDR_CONTINUES bit is unset.
+         <dt>CONTINUES (0x2):</dt>
+         <dd>The CONTINUES bit indicates that this frame does not contain the entire payload necessary to provide a complete set of headers. <br><br> The payload for a complete set of headers is provided by a sequence of HEADERS frames, terminated by a HEADERS frame without
+            the CONTINUES bit. Once the sequence terminates, the payload of all HEADERS frames are concatenated and interpreted as a single
+            block. <br><br> A HEADERS frame that includes a CONTINUES bit MUST be followed by a HEADERS frame for the same stream. A receiver MUST treat
+            the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
          </dd>
       </dl>
       <p id="rfc.section.3.8.8.p.3">The payload of a HEADERS frame contains a Headers Block (<a href="#HeaderBlock" title="Header Blocks">Section&nbsp;3.7</a>).
@@ -2053,7 +2057,7 @@ Upgrade: HTTP/2.0
          <address class="vcard"><span class="vcardline"><span class="fn">Roberto Peon</span><span class="n hidden"><span class="family-name">Peon</span><span class="given-name">Roberto</span></span></span><span class="org vcardline">Google, Inc</span><span class="vcardline">Email: <a href="mailto:fenix@google.com"><span class="email">fenix@google.com</span></a></span></address>
          <address class="vcard"><span class="vcardline"><span class="fn">Martin Thomson</span>
                (editor)
-               <span class="n hidden"><span class="family-name">Thomson</span><span class="given-name">Martin</span></span></span><span class="org vcardline">Microsoft</span><span class="adr"><span class="street-address vcardline">3210 Porter Drive</span><span class="vcardline"><span class="locality">Palo Alto</span>, <span class="postal-code">94043</span></span><span class="country-name vcardline">US</span></span><span class="vcardline">Email: <a href="mailto:martin.thomson@skype.net"><span class="email">martin.thomson@skype.net</span></a></span></address>
+               <span class="n hidden"><span class="family-name">Thomson</span><span class="given-name">Martin</span></span></span><span class="org vcardline">Microsoft</span><span class="adr"><span class="street-address vcardline">3210 Porter Drive</span><span class="vcardline"><span class="locality">Palo Alto</span>, <span class="postal-code">94304</span></span><span class="country-name vcardline">US</span></span><span class="vcardline">Email: <a href="mailto:martin.thomson@skype.net"><span class="email">martin.thomson@skype.net</span></a></span></address>
          <address class="vcard"><span class="vcardline"><span class="fn">Alexey Melnikov</span>
                (editor)
                <span class="n hidden"><span class="family-name">Melnikov</span><span class="given-name">Alexey</span></span></span><span class="org vcardline">Isode Ltd</span><span class="adr"><span class="street-address vcardline">5 Castle Business Village</span><span class="street-address vcardline">36 Station Road</span><span class="vcardline"><span class="locality">Hampton</span>, <span class="region">Middlesex</span>&nbsp;<span class="postal-code">TW12 2BX</span></span><span class="country-name vcardline">UK</span></span><span class="vcardline">Email: <a href="mailto:Alexey.Melnikov@isode.com"><span class="email">Alexey.Melnikov@isode.com</span></a></span></address>
