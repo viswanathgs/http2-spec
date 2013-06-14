@@ -997,7 +997,7 @@ Upgrade: HTTP/2.0
       </ul>
       <h3 id="rfc.section.3.5.1"><a href="#rfc.section.3.5.1">3.5.1</a>&nbsp;<a id="ConnectionErrorHandler" href="#ConnectionErrorHandler">Connection Error Handling</a></h3>
       <p id="rfc.section.3.5.1.p.1">A connection error is any error which prevents further processing of the framing layer or which corrupts any connection state.</p>
-      <p id="rfc.section.3.5.1.p.2">An endpoint that encounters a connection error MUST first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.8</a>) frame with the stream identifier of the last stream that it successfully received from its peer. The GOAWAY frame includes
+      <p id="rfc.section.3.5.1.p.2">An endpoint that encounters a connection error SHOULD first send a GOAWAY (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;3.8.8</a>) frame with the stream identifier of the last stream that it successfully received from its peer. The GOAWAY frame includes
          an error code that indicates why the connection is terminating. After sending the GOAWAY frame, the endpoint MUST close the
          TCP connection.
       </p>
@@ -1391,10 +1391,10 @@ Upgrade: HTTP/2.0
          not processed by the sender and the receiver may treat the streams as though they had never been created at all (hence the
          receiver may want to re-create the streams later on a new connection).
       </p>
-      <p id="rfc.section.3.8.8.p.3">Endpoints should always send a GOAWAY frame before closing a connection so that the remote can know whether a stream has been
-         partially processed or not. (For example, if an HTTP client sends a POST at the same time that a server closes a connection,
+      <p id="rfc.section.3.8.8.p.3">Endpoints SHOULD always send a GOAWAY frame before closing a connection so that the remote can know whether a stream has been
+         partially processed or not. For example, if an HTTP client sends a POST at the same time that a server closes a connection,
          the client cannot know if the server started to process that POST request if the server does not send a GOAWAY frame to indicate
-         where it stopped working).
+         where it stopped working. An endpoint might choose to close a connection without sending GOAWAY for misbehaving peers.
       </p>
       <p id="rfc.section.3.8.8.p.4">After sending a GOAWAY frame, the sender can ignore frames for new streams.</p>
       <p id="rfc.section.3.8.8.p.5"> <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Issue: connection state that is established by those "ignored" frames cannot be ignored without the state in the two peers
