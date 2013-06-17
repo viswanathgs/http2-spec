@@ -114,10 +114,10 @@ Belshe, et al.         Expires December 19, 2013                [Page 2]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-       3.6.1.  Flow Control Principles . . . . . . . . . . . . . . .  16
+       3.6.1.  Flow Control Principles . . . . . . . . . . . . . . .  17
        3.6.2.  Appropriate Use of Flow Control . . . . . . . . . . .  18
      3.7.  Header Blocks . . . . . . . . . . . . . . . . . . . . . .  18
-     3.8.  Frame Types . . . . . . . . . . . . . . . . . . . . . . .  18
+     3.8.  Frame Types . . . . . . . . . . . . . . . . . . . . . . .  19
        3.8.1.  DATA Frames . . . . . . . . . . . . . . . . . . . . .  19
        3.8.2.  HEADERS+PRIORITY  . . . . . . . . . . . . . . . . . .  19
        3.8.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . .  20
@@ -866,7 +866,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
       than the maximum size that it supports.
 
    REFUSED_STREAM (7):  The endpoint refuses the stream prior to
-      performing any application processing.
+      performing any application processing, see Section 4.2.4 for
+      details.
 
    CANCEL (8):  Used by the endpoint to indicate that the stream is no
       longer needed.
@@ -884,12 +885,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
    HTTP/2.0 provides for flow control through use of the WINDOW_UPDATE
    (Section 3.8.10) frame type.
 
-3.6.1.  Flow Control Principles
 
-   Experience with TCP congestion control has shown that algorithms can
-   evolve over time to become more sophisticated without requiring
-   protocol changes.  TCP congestion control and its evolution is
-   clearly different from HTTP/2.0 flow control, though the evolution of
+
+
+
+
 
 
 
@@ -898,6 +898,12 @@ Belshe, et al.         Expires December 19, 2013               [Page 16]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+3.6.1.  Flow Control Principles
+
+   Experience with TCP congestion control has shown that algorithms can
+   evolve over time to become more sophisticated without requiring
+   protocol changes.  TCP congestion control and its evolution is
+   clearly different from HTTP/2.0 flow control, though the evolution of
    TCP congestion control algorithms shows that a similar approach could
    be feasible for HTTP/2.0 flow control.
 
@@ -940,12 +946,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
        specify how a sender chooses to send packets.  Implementations
        are able to select any algorithm that suits their needs.
 
-   Implementations are also responsible for managing how requests and
-   responses are sent based on priority; choosing how to avoid head of
-   line blocking for requests; and managing the creation of new streams.
-   Algorithm choices for these could interact with any flow control
-   algorithm.
-
 
 
 
@@ -953,6 +953,12 @@ Belshe, et al.         Expires December 19, 2013               [Page 17]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   Implementations are also responsible for managing how requests and
+   responses are sent based on priority; choosing how to avoid head of
+   line blocking for requests; and managing the creation of new streams.
+   Algorithm choices for these could interact with any flow control
+   algorithm.
 
 3.6.2.  Appropriate Use of Flow Control
 
@@ -996,12 +1002,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    connection with a connection error (Section 3.5.1) of type
    COMPRESSION_ERROR.
 
-3.8.  Frame Types
-
-   This specification defines a number of frame types, each identified
-   by a unique 8-bit type code.  Each frame type serves a distinct
-   purpose either in the establishment and management of the connection
-   as a whole, or of individual streams.
 
 
 
@@ -1009,6 +1009,13 @@ Belshe, et al.         Expires December 19, 2013               [Page 18]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+3.8.  Frame Types
+
+   This specification defines a number of frame types, each identified
+   by a unique 8-bit type code.  Each frame type serves a distinct
+   purpose either in the establishment and management of the connection
+   as a whole, or of individual streams.
 
    The transmission of specific frame types can alter the state of a
    connection.  If endpoints fail to maintain a synchronized view of the
@@ -1051,13 +1058,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    (Section 3.8.9), preceded by a single reserved bit and a 31-bit
    priority; see Section 3.4.2.
 
-   HEADERS+PRIORITY uses the same flags as the HEADERS frame, except
-   that a HEADERS+PRIORITY frame with a CONTINUES bit MUST be followed
-   by another HEADERS+PRIORITY frame.  See HEADERS frame (Section 3.8.9)
-   for any flags.
-
-   HEADERS+PRIORITY frames MUST be associated with a stream.  If a
-   HEADERS+PRIORITY frame is received whose stream identifier field is
 
 
 
@@ -1066,6 +1066,13 @@ Belshe, et al.         Expires December 19, 2013               [Page 19]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+   HEADERS+PRIORITY uses the same flags as the HEADERS frame, except
+   that a HEADERS+PRIORITY frame with a CONTINUES bit MUST be followed
+   by another HEADERS+PRIORITY frame.  See HEADERS frame (Section 3.8.9)
+   for any flags.
+
+   HEADERS+PRIORITY frames MUST be associated with a stream.  If a
+   HEADERS+PRIORITY frame is received whose stream identifier field is
    0x0, the recipient MUST respond with a connection error
    (Section 3.5.1) of type PROTOCOL_ERROR.
 
@@ -1107,13 +1114,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                         Error Code (32)                       |
-   +---------------------------------------------------------------+
-
-                         RST_STREAM Frame Payload
-
-   The RST_STREAM frame contains a single unsigned, 32-bit integer
-   identifying the error code (Section 3.5.3).  The error code indicates
-   why the stream is being terminated.
 
 
 
@@ -1121,6 +1121,14 @@ Belshe, et al.         Expires December 19, 2013               [Page 20]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   +---------------------------------------------------------------+
+
+                         RST_STREAM Frame Payload
+
+   The RST_STREAM frame contains a single unsigned, 32-bit integer
+   identifying the error code (Section 3.5.3).  The error code indicates
+   why the stream is being terminated.
 
    No type-flags are defined.
 
@@ -1163,20 +1171,19 @@ Internet-Draft                  HTTP/2.0                       June 2013
    for the same ID, it MUST ignore all values for that ID except the
    first one.
 
-   Over the lifetime of a connection, an endpoint MAY send multiple
-   SETTINGS frames containing previously unspecified parameters or new
-   values for parameters whose values have already been established.
-   Only the most recent value provided setting value applies.
-
-   The SETTINGS frame defines the following flag:
-
-
 
 
 Belshe, et al.         Expires December 19, 2013               [Page 21]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   Over the lifetime of a connection, an endpoint MAY send multiple
+   SETTINGS frames containing previously unspecified parameters or new
+   values for parameters whose values have already been established.
+   Only the most recent value provided setting value applies.
+
+   The SETTINGS frame defines the following flag:
 
    CLEAR_PERSISTED (0x2):  Bit 2 being set indicates a request to clear
       any previously persisted settings before processing the settings.
@@ -1219,13 +1226,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 3.8.5.2.  Setting Persistence
 
-   [[Note that persistence of settings is under discussion in the WG and
-   might be removed in a future version of this document.]]
-
-
-
-
-
 
 
 
@@ -1233,6 +1233,9 @@ Belshe, et al.         Expires December 19, 2013               [Page 22]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   [[Note that persistence of settings is under discussion in the WG and
+   might be removed in a future version of this document.]]
 
    A server endpoint can request that configuration parameters sent to a
    client in a SETTINGS frame are to be persisted by the client across
@@ -1280,15 +1283,15 @@ Internet-Draft                  HTTP/2.0                       June 2013
       is recommended that this value be no smaller than 100, so as to
       not unnecessarily limit parallelism.
 
-   SETTINGS_INITIAL_WINDOW_SIZE (7):  indicates the sender's initial
-      stream window size (in bytes) for new streams.
-
 
 
 Belshe, et al.         Expires December 19, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   SETTINGS_INITIAL_WINDOW_SIZE (7):  indicates the sender's initial
+      stream window size (in bytes) for new streams.
 
    SETTINGS_FLOW_CONTROL_OPTIONS (10):  indicates that streams directed
       to the sender will not be subject to flow control.  The least
@@ -1335,9 +1338,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    promised streams fully close as well.  [[Ed.  Note: We need
    clarification on this point.  How synchronized are the lifecycles of
    streams and associated promised streams?]]
-
-
-
 
 
 
