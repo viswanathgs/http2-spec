@@ -5,12 +5,12 @@
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: December 17, 2013                                   Google, Inc
+Expires: December 19, 2013                                   Google, Inc
                                                          M. Thomson, Ed.
                                                                Microsoft
                                                         A. Melnikov, Ed.
                                                                Isode Ltd
-                                                           June 15, 2013
+                                                           June 17, 2013
 
 
                 Hypertext Transfer Protocol version 2.0
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 1]
+Belshe, et al.         Expires December 19, 2013                [Page 1]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -63,7 +63,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 17, 2013.
+   This Internet-Draft will expire on December 19, 2013.
 
 Copyright Notice
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 2]
+Belshe, et al.         Expires December 19, 2013                [Page 2]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -134,46 +134,47 @@ Internet-Draft                  HTTP/2.0                       June 2013
        4.2.1.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . .  32
        4.2.2.  Request . . . . . . . . . . . . . . . . . . . . . . .  32
        4.2.3.  Response  . . . . . . . . . . . . . . . . . . . . . .  33
-     4.3.  Server Push Transactions  . . . . . . . . . . . . . . . .  34
-       4.3.1.  Server implementation . . . . . . . . . . . . . . . .  35
-       4.3.2.  Client implementation . . . . . . . . . . . . . . . .  36
-   5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  37
-     5.1.  Separation of Framing Layer and Application Layer . . . .  37
-     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  38
-     5.3.  One Connection per Domain . . . . . . . . . . . . . . . .  38
+       4.2.4.  Automatically Retrying Requests in HTTP/2.0 . . . . .  34
+     4.3.  Server Push Transactions  . . . . . . . . . . . . . . . .  35
+       4.3.1.  Server implementation . . . . . . . . . . . . . . . .  36
+       4.3.2.  Client implementation . . . . . . . . . . . . . . . .  37
+   5.  Design Rationale and Notes  . . . . . . . . . . . . . . . . .  38
+     5.1.  Separation of Framing Layer and Application Layer . . . .  38
+     5.2.  Error handling - Framing Layer  . . . . . . . . . . . . .  39
+     5.3.  One Connection per Domain . . . . . . . . . . . . . . . .  39
      5.4.  Fixed vs Variable Length Fields . . . . . . . . . . . . .  39
-     5.5.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  39
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  39
-     6.1.  Server Authority and Same-Origin  . . . . . . . . . . . .  39
+     5.5.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  40
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .  40
+     6.1.  Server Authority and Same-Origin  . . . . . . . . . . . .  40
      6.2.  Cross-Protocol Attacks  . . . . . . . . . . . . . . . . .  40
-     6.3.  Cacheability of Pushed Resources  . . . . . . . . . . . .  40
-   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  40
-     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  40
+     6.3.  Cacheability of Pushed Resources  . . . . . . . . . . . .  41
+   7.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  41
+     7.1.  Long Lived Connections  . . . . . . . . . . . . . . . . .  41
      7.2.  SETTINGS frame  . . . . . . . . . . . . . . . . . . . . .  41
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  41
-     8.1.  Frame Type Registry . . . . . . . . . . . . . . . . . . .  41
-     8.2.  Error Code Registry . . . . . . . . . . . . . . . . . . .  42
-     8.3.  Settings Registry . . . . . . . . . . . . . . . . . . . .  42
-   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  43
-   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  43
-     10.1.  Normative References . . . . . . . . . . . . . . . . . .  43
-     10.2.  Informative References . . . . . . . . . . . . . . . . .  44
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  42
+     8.1.  Frame Type Registry . . . . . . . . . . . . . . . . . . .  42
+     8.2.  Error Code Registry . . . . . . . . . . . . . . . . . . .  43
+     8.3.  Settings Registry . . . . . . . . . . . . . . . . . . . .  43
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  44
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  44
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .  44
+     10.2.  Informative References . . . . . . . . . . . . . . . . .  45
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  45
-     A.1.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  45
-     A.2.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  45
+     A.1.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  46
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 3]
+Belshe, et al.         Expires December 19, 2013                [Page 3]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-     A.3.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  45
-     A.4.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  46
-     A.5.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  46
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  46
+     A.2.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  46
+     A.3.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  46
+     A.4.  Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  47
+     A.5.  Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  47
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  47
 
 1.  Introduction
 
@@ -216,16 +217,17 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 1.1.  Document Organization
 
-   The HTTP/2.0 Specification is split into three parts: starting HTTP/
-   2.0 (Section 2), which covers how a HTTP/2.0 connection is initiated;
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 4]
+
+Belshe, et al.         Expires December 19, 2013                [Page 4]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+   The HTTP/2.0 Specification is split into three parts: starting HTTP/
+   2.0 (Section 2), which covers how a HTTP/2.0 connection is initiated;
    a framing layer (Section 3), which multiplexes a single TCP
    connection into independent frames of various types; and an HTTP
    layer (Section 4), which specifies the mechanism for expressing HTTP
@@ -272,15 +274,15 @@ Internet-Draft                  HTTP/2.0                       June 2013
    stream:  A bi-directional flow of frames across a virtual channel
       within the HTTP/2.0 connection.
 
-   stream error:  An error on the individual HTTP/2.0 stream.
 
 
 
-
-Belshe, et al.         Expires December 17, 2013                [Page 5]
+Belshe, et al.         Expires December 19, 2013                [Page 5]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   stream error:  An error on the individual HTTP/2.0 stream.
 
 2.  Starting HTTP/2.0
 
@@ -328,16 +330,16 @@ Internet-Draft                  HTTP/2.0                       June 2013
    MUST instead replace the string "draft" with a different identifier.
    For example, an experimental implementation of packet mood-based
    encoding based on draft-ietf-httpbis-http2-07 might identify itself
-   as "HTTP-emo-07/2.0".  Note that any label MUST conform to the
-   "token" syntax defined in Section 3.2.6 of [HTTP-p1].  Experimenters
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 6]
+Belshe, et al.         Expires December 19, 2013                [Page 6]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+   as "HTTP-emo-07/2.0".  Note that any label MUST conform to the
+   "token" syntax defined in Section 3.2.6 of [HTTP-p1].  Experimenters
    are encouraged to coordinate their experiments on the ietf-http-
    wg@w3.org mailing list.
 
@@ -387,9 +389,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-
-
-Belshe, et al.         Expires December 17, 2013                [Page 7]
+Belshe, et al.         Expires December 19, 2013                [Page 7]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -445,7 +445,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 8]
+Belshe, et al.         Expires December 19, 2013                [Page 8]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -501,7 +501,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013                [Page 9]
+Belshe, et al.         Expires December 19, 2013                [Page 9]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -557,7 +557,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 10]
+Belshe, et al.         Expires December 19, 2013               [Page 10]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -613,7 +613,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 11]
+Belshe, et al.         Expires December 19, 2013               [Page 11]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -669,7 +669,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 12]
+Belshe, et al.         Expires December 19, 2013               [Page 12]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -725,7 +725,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 13]
+Belshe, et al.         Expires December 19, 2013               [Page 13]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -781,7 +781,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 14]
+Belshe, et al.         Expires December 19, 2013               [Page 14]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 15]
+Belshe, et al.         Expires December 19, 2013               [Page 15]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -865,8 +865,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
    FRAME_TOO_LARGE (6):  The endpoint received a frame that was larger
       than the maximum size that it supports.
 
-   REFUSED_STREAM (7):  The endpoint is refusing the stream before
-      processing its payload.
+   REFUSED_STREAM (7):  The endpoint refuses the stream prior to
+      performing any application processing.
 
    CANCEL (8):  Used by the endpoint to indicate that the stream is no
       longer needed.
@@ -893,7 +893,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 16]
+Belshe, et al.         Expires December 19, 2013               [Page 16]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -949,7 +949,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 17]
+Belshe, et al.         Expires December 19, 2013               [Page 17]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1005,7 +1005,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 18]
+Belshe, et al.         Expires December 19, 2013               [Page 18]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1061,7 +1061,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 19]
+Belshe, et al.         Expires December 19, 2013               [Page 19]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1117,7 +1117,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 20]
+Belshe, et al.         Expires December 19, 2013               [Page 20]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 21]
+Belshe, et al.         Expires December 19, 2013               [Page 21]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 22]
+Belshe, et al.         Expires December 19, 2013               [Page 22]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 23]
+Belshe, et al.         Expires December 19, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 24]
+Belshe, et al.         Expires December 19, 2013               [Page 24]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 25]
+Belshe, et al.         Expires December 19, 2013               [Page 25]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1453,7 +1453,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 26]
+Belshe, et al.         Expires December 19, 2013               [Page 26]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 27]
+Belshe, et al.         Expires December 19, 2013               [Page 27]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 28]
+Belshe, et al.         Expires December 19, 2013               [Page 28]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1621,7 +1621,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 29]
+Belshe, et al.         Expires December 19, 2013               [Page 29]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1677,7 +1677,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 30]
+Belshe, et al.         Expires December 19, 2013               [Page 30]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1733,7 +1733,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 31]
+Belshe, et al.         Expires December 19, 2013               [Page 31]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1789,7 +1789,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 32]
+Belshe, et al.         Expires December 19, 2013               [Page 32]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1845,7 +1845,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 33]
+Belshe, et al.         Expires December 19, 2013               [Page 33]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
@@ -1894,18 +1894,48 @@ Internet-Draft                  HTTP/2.0                       June 2013
    gzip or deflate encoding.  A compressed response MUST still bear an
    appropriate Content-Encoding header field.
 
-4.3.  Server Push Transactions
+4.2.4.  Automatically Retrying Requests in HTTP/2.0
 
-   HTTP/2.0 enables a server to send multiple replies to a client for a
-   single request.  The rationale for this feature is that sometimes a
+   In HTTP/1.1, an HTTP client is unable to retry a non-idempotent
+   request when an error occurs, because there is no means to determine
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 34]
+Belshe, et al.         Expires December 19, 2013               [Page 34]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+   the nature of the error.  It is possible that some server processing
+   occurred prior to the error, which could result in undesirable
+   effects if the request were reattempted.
+
+   HTTP/2.0 provides two mechanisms for providing a guarantee to a
+   client that a request has not been processed:
+
+   o  The GOAWAY frame indicates the highest stream number that might
+      have been processed.  Requests on streams with higher numbers are
+      therefore guaranteed to be safe to retry.
+
+   o  The REFUSED_STREAM error code can be included in a RST_STREAM
+      frame to indicate that the stream is being closed prior to any
+      processing having occurred.  Any request that was sent on the
+      reset stream can be safely retried.
+
+   In both cases, clients MAY automatically retry all requests,
+   including those with non-idempotent methods.
+
+   In addition to these mechanisms, the PING frame provides a way for a
+   client to easily test a connection.  Connections that remain idle can
+   become broken as some middleboxes (for instance, network address
+   translators, or load balancers) silently discard connection bindings.
+   The PING frame allows a client to safely test whether a connection is
+   still active without sending a request.
+
+4.3.  Server Push Transactions
+
+   HTTP/2.0 enables a server to send multiple replies to a client for a
+   single request.  The rationale for this feature is that sometimes a
    server knows that it will need to send multiple resources in response
    to a single request.  Without server push features, the client must
    first download the primary resource, then discover the secondary
@@ -1918,6 +1948,19 @@ Internet-Draft                  HTTP/2.0                       June 2013
    pushed resources by advertising a SETTINGS_MAX_CONCURRENT_STREAMS
    SETTING (Section 3.8.5) of zero.  This prevents servers from creating
    the streams necessary to push resources.
+
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 35]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    Clients receiving a pushed response MUST validate that the server is
    authorized to push the resource using the same-origin policy
@@ -1955,13 +1998,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    PUSH_PROMISE includes header fields that allow the client to identify
    the resource (":scheme", ":host", and ":path").
 
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 35]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    A server can push multiple resources in response to a request, but
    all pushed resources MUST be promised on the response stream for the
    associated request.  A server cannot send a PUSH_PROMISE on a new
@@ -1970,6 +2006,17 @@ Internet-Draft                  HTTP/2.0                       June 2013
    The server SHOULD include any header fields in a PUSH_PROMISE that
    would allow a cache to determine if the resource is already cached
    (see [HTTP-p6], Section 4).
+
+
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 36]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    After sending a PUSH_PROMISE, the server commences transmission of a
    pushed resource.  A pushed resource uses a server-initiated stream.
@@ -2011,19 +2058,21 @@ Internet-Draft                  HTTP/2.0                       June 2013
    the ":host", ":scheme", and ":path" header fields, it MUST treat this
    as a stream error (Section 3.5.2) of type PROTOCOL_ERROR.
 
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 36]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    To cancel individual server push streams, the client can issue a
    stream error (Section 3.5.2) of type CANCEL.  After receiving a
    PUSH_PROMISE frame, the client is able to cancel the pushed resource
    before receiving any frames on the promised stream.  The server
    ceases transmission of the pushed resource; if the server has not
    commenced transmission, it does not start.
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 37]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    To cancel all server push streams related to a request, the client
    may issue a stream error (Section 3.5.2) of type CANCEL on the
@@ -2066,19 +2115,20 @@ Internet-Draft                  HTTP/2.0                       June 2013
    streams and the definition of the HEADERS which are very similar to
    HTTP, and other areas as well.
 
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 37]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    This blending is intentional - the primary goal of this protocol is
    to create a low-latency protocol for use with HTTP.  Isolating the
    two layers is convenient for description of the protocol and how it
    relates to existing HTTP implementations.  However, the ability to
    reuse the HTTP/2.0 framing layer is a non goal.
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 38]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
 5.2.  Error handling - Framing Layer
 
@@ -2117,19 +2167,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    packet loss) is outweighed by the benefits of compression and
    prioritization.
 
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 38]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
 5.4.  Fixed vs Variable Length Fields
 
    HTTP/2.0 favors use of fixed length 32bit fields in cases where
@@ -2141,6 +2178,14 @@ Internet-Draft                  HTTP/2.0                       June 2013
    overhead of HTTP/2.0 frames is generally quite low.  Each data frame
    is only an 8 byte overhead for a 1452 byte payload (~0.6%).  At the
    time of this writing, bandwidth is already plentiful, and there is a
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 39]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
+
    strong trend indicating that bandwidth will continue to increase.
    With an average worldwide bandwidth of 1Mbps, and assuming that a
    variable length encoding could reduce the overhead by 50%, the
@@ -2178,14 +2223,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    connection is established to a resolved IP address for the domain in
    the origin of the resource.
 
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 39]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    A client MUST NOT use, in any way, resources provided by a server
    that is not authoritative for those resources.
 
@@ -2196,6 +2233,14 @@ Internet-Draft                  HTTP/2.0                       June 2013
    (except the handshake itself), making it difficult for attackers to
    control the data which could be used in a cross-protocol attack.
    [[Issue: This is no longer true]]
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 40]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
 6.3.  Cacheability of Pushed Resources
 
@@ -2234,14 +2279,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    expose private information.  For example, a user using a browser
    hours after the previous user stopped using that browser may be able
    to learn about what the previous user was doing.  This is a problem
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 40]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
@@ -2252,6 +2289,14 @@ Internet-Draft                  HTTP/2.0                       June 2013
    server on the client.  Although this is intended only to be used to
    reduce latency, renegade servers could use it as a mechanism to store
    identifying information about the client in future requests.
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 41]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    Clients implementing privacy modes can disable client-persisted
    SETTINGS storage.
@@ -2290,19 +2335,24 @@ Internet-Draft                  HTTP/2.0                       June 2013
           | 5          | PUSH_PROMISE     | CONTINUES(2)        |
           | 6          | PING             | PONG(2)             |
           | 7          | GOAWAY           | -                   |
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 41]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
           | 8          | HEADERS          | CONTINUES(2)        |
           | 9          | WINDOW_UPDATE    | END_FLOW_CONTROL(2) |
           +------------+------------------+---------------------+
 
                                   Table 1
+
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 42]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
 8.2.  Error Code Registry
 
@@ -2346,20 +2396,19 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    New registrations are advised to provide the following information:
 
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 42]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    Setting:  The 24-bit setting value.
 
    Name:  A name for the setting.  Specifying a name is optional.
 
    Flags:  Any setting-specific flags that apply, including their value
       and semantics.
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 43]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    Description:  A description of the setting.  This might include the
       range of values, any applicable units and how to act upon a value
@@ -2402,14 +2451,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Conditional Requests",
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 43]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
               draft-ietf-httpbis-p4-conditional-22 (work in progress),
               February 2013.
 
@@ -2417,6 +2458,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
               "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
               draft-ietf-httpbis-p5-range-22 (work in progress),
               February 2013.
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 44]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
@@ -2459,18 +2507,20 @@ Internet-Draft                  HTTP/2.0                       June 2013
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance ", RFC 1323, May 1992.
 
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 44]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    [TALKING]  Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C.
               Jackson, "Talking to Yourself for Fun and Profit ", 2011,
               <http://w2spconf.com/2011/papers/websocket.pdf>.
 
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 45]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
 A.1.  Since draft-ietf-httpbis-http2-03
 
@@ -2515,17 +2565,18 @@ A.3.  Since draft-ietf-httpbis-http2-01
    Restructured frame header.  Removed distinction between data and
    control frames.
 
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 45]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    Altered flow control properties to include session-level limits.
 
    Added note on cacheability of pushed resources and multiple tenant
    servers.
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 46]
+
+Internet-Draft                  HTTP/2.0                       June 2013
+
 
    Changed protocol label form based on discussions.
 
@@ -2567,17 +2618,6 @@ Authors' Addresses
    EMail: fenix@google.com
 
 
-
-
-
-
-
-
-Belshe, et al.         Expires December 17, 2013               [Page 46]
-
-Internet-Draft                  HTTP/2.0                       June 2013
-
-
    Martin Thomson (editor)
    Microsoft
    3210 Porter Drive
@@ -2585,6 +2625,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
    US
 
    EMail: martin.thomson@skype.net
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 47]
+
+Internet-Draft                  HTTP/2.0                       June 2013
 
 
    Alexey Melnikov (editor)
@@ -2628,4 +2675,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 
 
-Belshe, et al.         Expires December 17, 2013               [Page 47]
+
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires December 19, 2013               [Page 48]

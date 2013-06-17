@@ -422,7 +422,7 @@ ul p {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires December 17, 2013";
+       content: "Expires December 19, 2013";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -462,7 +462,7 @@ ul p {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-06-15">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-06-17">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ ul p {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: December 17, 2013</td>
+               <td class="left">Expires: December 19, 2013</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ ul p {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">June 15, 2013</td>
+               <td class="right">June 17, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -533,7 +533,7 @@ ul p {
          documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
          in progress”.
       </p>
-      <p>This Internet-Draft will expire on December 17, 2013.</p>
+      <p>This Internet-Draft will expire on December 19, 2013.</p>
       <h1><a id="rfc.copyrightnotice" href="#rfc.copyrightnotice">Copyright Notice</a></h1>
       <p>Copyright © 2013 IETF Trust and the persons identified as the document authors. All rights reserved.</p>
       <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of publication of this document. Please review these documents carefully, as they describe your rights
@@ -615,6 +615,7 @@ ul p {
                      <li><a href="#rfc.section.4.2.1">4.2.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.4.2.1">HTTP Header Fields and HTTP/2.0 Headers</a></li>
                      <li><a href="#rfc.section.4.2.2">4.2.2</a>&nbsp;&nbsp;&nbsp;<a href="#HttpRequest">Request</a></li>
                      <li><a href="#rfc.section.4.2.3">4.2.3</a>&nbsp;&nbsp;&nbsp;<a href="#HttpResponse">Response</a></li>
+                     <li><a href="#rfc.section.4.2.4">4.2.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.4.2.4">Automatically Retrying Requests in HTTP/2.0</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.4.3">4.3</a>&nbsp;&nbsp;&nbsp;<a href="#PushResources">Server Push Transactions</a><ul>
@@ -1050,7 +1051,7 @@ Upgrade: HTTP/2.0
          <dt>FRAME_TOO_LARGE (6):</dt>
          <dd>The endpoint received a frame that was larger than the maximum size that it supports.</dd>
          <dt>REFUSED_STREAM (7):</dt>
-         <dd>The endpoint is refusing the stream before processing its payload.</dd>
+         <dd>The endpoint refuses the stream prior to performing any application processing.</dd>
          <dt>CANCEL (8):</dt>
          <dd>Used by the endpoint to indicate that the stream is no longer needed.</dd>
          <dt>COMPRESSION_ERROR (9):</dt>
@@ -1627,6 +1628,27 @@ Upgrade: HTTP/2.0
       </p>
       <p id="rfc.section.4.2.3.p.5">Clients MUST support gzip compression. Regardless of the value of the Accept-Encoding header field, a server MAY send responses
          with gzip or deflate encoding. A compressed response MUST still bear an appropriate Content-Encoding header field.
+      </p>
+      <h3 id="rfc.section.4.2.4"><a href="#rfc.section.4.2.4">4.2.4</a>&nbsp;Automatically Retrying Requests in HTTP/2.0
+      </h3>
+      <p id="rfc.section.4.2.4.p.1">In HTTP/1.1, an HTTP client is unable to retry a non-idempotent request when an error occurs, because there is no means to
+         determine the nature of the error. It is possible that some server processing occurred prior to the error, which could result
+         in undesirable effects if the request were reattempted.
+      </p>
+      <p id="rfc.section.4.2.4.p.2">HTTP/2.0 provides two mechanisms for providing a guarantee to a client that a request has not been processed: </p>
+      <ul>
+         <li>The GOAWAY frame indicates the highest stream number that might have been processed. Requests on streams with higher numbers
+            are therefore guaranteed to be safe to retry.
+         </li>
+         <li>The REFUSED_STREAM error code can be included in a RST_STREAM frame to indicate that the stream is being closed prior to any
+            processing having occurred. Any request that was sent on the reset stream can be safely retried.
+         </li>
+      </ul>
+      <p id="rfc.section.4.2.4.p.3">In both cases, clients MAY automatically retry all requests, including those with non-idempotent methods.</p>
+      <p id="rfc.section.4.2.4.p.4">In addition to these mechanisms, the PING frame provides a way for a client to easily test a connection. Connections that
+         remain idle can become broken as some middleboxes (for instance, network address translators, or load balancers) silently
+         discard connection bindings. The PING frame allows a client to safely test whether a connection is still active without sending
+         a request.
       </p>
       <h2 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3</a>&nbsp;<a id="PushResources" href="#PushResources">Server Push Transactions</a></h2>
       <p id="rfc.section.4.3.p.1">HTTP/2.0 enables a server to send multiple replies to a client for a single request. The rationale for this feature is that
