@@ -755,7 +755,7 @@ ul p {
       </p>
       <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;<a id="versioning" href="#versioning">HTTP/2.0 Version Identification</a></h2>
       <p id="rfc.section.2.1.p.1">The protocol defined in this document is identified using the string "HTTP/2.0". This identification is used in the HTTP/1.1
-         Upgrade header field, in the <a href="#TLSALPN">TLS application layer protocol negotiation extension</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> field and other places where protocol identification is required.
+         Upgrade header field, in the <a href="#TLSALPN">TLS application layer protocol negotiation extension</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> field, and other places where protocol identification is required.
       </p>
       <p id="rfc.section.2.1.p.2">Negotiating "HTTP/2.0" implies the use of the transport, security, framing and message semantics described in this document.</p>
       <p id="rfc.section.2.1.p.3"> <span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: Editor's Note: please remove the following text prior to the publication of a final version of this document.]</span> 
@@ -782,12 +782,21 @@ ul p {
 Host: server.example.com
 Connection: Upgrade
 Upgrade: HTTP/2.0
-</pre><p id="rfc.section.2.2.p.4">A server that does not support HTTP/2.0 can respond to the request as though the Upgrade header field were absent:</p>
+</pre><p id="rfc.section.2.2.p.4">Requests that contain a request entity body MUST be sent in their entirely before the client can send HTTP/2.0 frames. This
+         means that a large request entity can block the use of the connection until it is completely sent. 
+      </p>
+      <ul class="empty">
+         <li>If concurrency of an initial request with subsequent tests is important, a small request can be used to perform the upgrade
+            to HTTP/2.0, at the cost of an additional round trip.
+         </li>
+      </ul>
+      <p id="rfc.section.2.2.p.5">A server that does not support HTTP/2.0 can respond to the request as though the Upgrade header field were absent:</p>
       <div id="rfc.figure.u.2"></div><pre class="text">HTTP/1.1 200 OK
 Content-length: 243
 Content-type: text/html
-      ...
-</pre><p id="rfc.section.2.2.p.6">A server that supports HTTP/2.0 can accept the upgrade with a 101 (Switching Protocols) status code. After the empty line
+
+...
+</pre><p id="rfc.section.2.2.p.7">A server that supports HTTP/2.0 can accept the upgrade with a 101 (Switching Protocols) status code. After the empty line
          that terminates the 101 response, the server can begin sending HTTP/2.0 frames. These frames MUST include a response to the
          request that initiated the Upgrade.
       </p>
@@ -796,7 +805,11 @@ Connection: Upgrade
 Upgrade: HTTP/2.0
 
 [ HTTP/2.0 connection ...
-</pre><p id="rfc.section.2.2.p.8">The first HTTP/2.0 frame sent by the server is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.5</a>). Upon receiving the 101 response, the client sends a connection header (<a href="#ConnectionHeader" title="Connection Header">Section&nbsp;3.2</a>), which includes a SETTINGS frame.
+</pre><p id="rfc.section.2.2.p.9">The first HTTP/2.0 frame sent by the server is a SETTINGS frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.5</a>). Upon receiving the 101 response, the client sends a connection header (<a href="#ConnectionHeader" title="Connection Header">Section&nbsp;3.2</a>), which includes a SETTINGS frame.
+      </p>
+      <p id="rfc.section.2.2.p.10">The HTTP/1.1 request that is sent prior to upgrade is associated with stream 1 and is assigned the highest possible priority.
+         Stream 1 is implicitly half-closed from the client toward the server, since the request is completed as an HTTP/1.1 request.
+         After commencing the HTTP/2.0 connection, stream 1 is used for the response.
       </p>
       <h2 id="rfc.section.2.3"><a href="#rfc.section.2.3">2.3</a>&nbsp;<a id="discover-https" href="#discover-https">Starting HTTP/2.0 for "https:" URIs</a></h2>
       <p id="rfc.section.2.3.p.1">A client that makes a request to an "https:" URI without prior knowledge about support for HTTP/2.0 uses <a href="#RFC5246">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[RFC5246]</cite> with the <a href="#TLSALPN">application layer protocol negotiation extension</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite>.
