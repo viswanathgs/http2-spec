@@ -1234,19 +1234,17 @@ Upgrade: HTTP/2.0
          with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
       <h4 id="rfc.section.3.8.5.1"><a href="#rfc.section.3.8.5.1">3.8.5.1</a>&nbsp;<a id="SettingFormat" href="#SettingFormat">Setting Format</a></h4>
-      <p id="rfc.section.3.8.5.1.p.1">The payload of a SETTINGS frame consists of zero or more settings. Each setting consists of an 8-bit flags field specifying
-         per-item instructions, an unsigned 24-bit setting identifier, and an unsigned 32-bit value.
+      <p id="rfc.section.3.8.5.1.p.1">The payload of a SETTINGS frame consists of zero or more settings. Each setting consists of an 8-bit reserved field, an unsigned
+         24-bit setting identifier, and an unsigned 32-bit value.
       </p>
       <div id="rfc.figure.5"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|SettingFlags(8)|             Setting Identifier (24)           |
+|  Reserved(8)  |             Setting Identifier (24)           |
 +---------------+-----------------------------------------------+
 |                        Value (32)                             |
 +---------------------------------------------------------------+
 </pre><p class="figure">Figure 5: Setting Format</p>
-      <p id="rfc.section.3.8.5.1.p.3">There currently are no defined flags. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Ed. Note: Can we drop flags on individual settings]</span> 
-      </p>
       <h4 id="rfc.section.3.8.5.2"><a href="#rfc.section.3.8.5.2">3.8.5.2</a>&nbsp;<a id="SettingValues" href="#SettingValues">Defined Settings</a></h4>
       <p id="rfc.section.3.8.5.2.p.1">The following settings are defined: </p>
       <dl>
@@ -1292,7 +1290,7 @@ Upgrade: HTTP/2.0
          recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
       <p id="rfc.section.3.8.6.p.5">The state of promised streams is bound to the state of the original associated stream on which the PUSH_PROMISE frame were
-         sent. If the originating stream state changes to fully closed, all associated promised streams fully close as well. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Ed. Note: We need clarification on this point. How synchronized are the lifecycles of streams and associated promised streams?]</span> 
+         sent. If the originating stream state changes to fully closed, all associated promised streams fully close as well. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Ed. Note: We need clarification on this point. How synchronized are the lifecycles of streams and associated promised streams?]</span> 
       </p>
       <p id="rfc.section.3.8.6.p.6">PUSH_PROMISE uses the same flags as the HEADERS frame, except that a PUSH_PROMISE frame with a CONTINUES bit MUST be followed
          by another PUSH_PROMISE frame. See HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;3.8.9</a>) for any flags.
@@ -1343,7 +1341,7 @@ Upgrade: HTTP/2.0
          where it stopped working. An endpoint might choose to close a connection without sending GOAWAY for misbehaving peers.
       </p>
       <p id="rfc.section.3.8.8.p.4">After sending a GOAWAY frame, the sender can ignore frames for new streams.</p>
-      <p id="rfc.section.3.8.8.p.5"> <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Issue: connection state that is established by those "ignored" frames cannot be ignored without the state in the two peers
+      <p id="rfc.section.3.8.8.p.5"> <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Issue: connection state that is established by those "ignored" frames cannot be ignored without the state in the two peers
             becoming unsynchronized.]</span> 
       </p>
       <div id="rfc.figure.7"></div><pre class="inline"> 0                   1                   2                   3
@@ -1536,7 +1534,7 @@ Upgrade: HTTP/2.0
             HTTP method for the request and the request-target, respectively. The HTTP-version component of the request-line is removed
             entirely from the headers.
          </li>
-         <li>The host and optional port portions of the request URI (see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, Section 3.2), is specified using the new :host header field. <span class="comment" id="rfc.comment.7">[<a href="#rfc.comment.7" class="smpl">rfc.comment.7</a>: Ed. Note: it needs to be clarified whether or not this replaces the existing HTTP/1.1 Host header.]</span></li>
+         <li>The host and optional port portions of the request URI (see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, Section 3.2), is specified using the new :host header field. <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Ed. Note: it needs to be clarified whether or not this replaces the existing HTTP/1.1 Host header.]</span></li>
          <li>A new :scheme header field has been added to specify the scheme portion of the request-target (e.g. "https")</li>
          <li>All header field names MUST be lowercased, and the definitions of all header field names defined by HTTP/1.1 are updated to
             be all lowercase.
@@ -1550,7 +1548,7 @@ Upgrade: HTTP/2.0
          before any other header fields.
       </p>
       <p id="rfc.section.4.2.2.p.5">If a client sends a HEADERS+PRIORITY frame that omits a mandatory header, the server MUST reply with a HTTP 400 Bad Request
-         reply. <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
+         reply. <span class="comment" id="rfc.comment.7">[<a href="#rfc.comment.7" class="smpl">rfc.comment.7</a>: Ed: why PROTOCOL_ERROR on missing ":status" in the response, but HTTP 400 here?]</span> 
       </p>
       <p id="rfc.section.4.2.2.p.6">If a server receives a request where the sum of the data frame payload lengths does not equal the size of the Content-Length
          header field, the server MUST return a 400 (Bad Request) error.
@@ -1590,7 +1588,7 @@ Upgrade: HTTP/2.0
             size of an entity prior to receiving all the data frames. This can help in, for example, reporting progress.
          </li>
          <li>If a client receives a response where the sum of the data frame payload length does not equal the size of the Content-Length
-            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
+            header field, the client MUST ignore the content length header field. <span class="comment" id="rfc.comment.8">[<a href="#rfc.comment.8" class="smpl">rfc.comment.8</a>: Ed: See <a href="https://github.com/http2/http2-spec/issues/46">issue 46</a>.]</span> 
          </li>
       </ul>
       <p id="rfc.section.4.2.3.p.3">If a client receives a response with an absent or duplicated status header, the client MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type PROTOCOL_ERROR.
@@ -1630,7 +1628,7 @@ Upgrade: HTTP/2.0
          by advertising a SETTINGS_MAX_CONCURRENT_STREAMS SETTING (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;3.8.5</a>) of zero. This prevents servers from creating the streams necessary to push resources.
       </p>
       <p id="rfc.section.4.3.p.3">Clients receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
-         policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+         policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.9">[<a href="#rfc.comment.9" class="smpl">rfc.comment.9</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
       </p>
       <p id="rfc.section.4.3.p.4">A client that accepts pushed resources caches those resources as though they were responses to GET requests.</p>
       <p id="rfc.section.4.3.p.5">Pushing of resources avoids the round-trip delay, but also creates a potential race where a server can be pushing content
@@ -1686,7 +1684,7 @@ Upgrade: HTTP/2.0
          it does not start.
       </p>
       <p id="rfc.section.4.3.2.p.5">To cancel all server push streams related to a request, the client may issue a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) of type CANCEL on the associated-stream-id. By cancelling that stream, the server MUST immediately stop sending frames for
-         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
+         any streams with in-association-to for the original stream. <span class="comment" id="rfc.comment.10">[<a href="#rfc.comment.10" class="smpl">rfc.comment.10</a>: Ed: Triggering side-effects on stream reset is going to be problematic for the framing layer. Purely from a design perspective,
             it's a layering violation. More practically speaking, the base request stream might already be removed. Special handling logic
             would be required.]</span> 
       </p>
@@ -1777,7 +1775,7 @@ Upgrade: HTTP/2.0
       </h2>
       <p id="rfc.section.6.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
          (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-         attack. <span class="comment" id="rfc.comment.12">[<a href="#rfc.comment.12" class="smpl">rfc.comment.12</a>: Issue: This is no longer true]</span> 
+         attack. <span class="comment" id="rfc.comment.11">[<a href="#rfc.comment.11" class="smpl">rfc.comment.11</a>: Issue: This is no longer true]</span> 
       </p>
       <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;Cacheability of Pushed Resources
       </h2>

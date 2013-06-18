@@ -126,7 +126,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
        3.8.6.  PUSH_PROMISE  . . . . . . . . . . . . . . . . . . . .  23
        3.8.7.  PING  . . . . . . . . . . . . . . . . . . . . . . . .  24
        3.8.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . .  25
-       3.8.9.  HEADERS . . . . . . . . . . . . . . . . . . . . . . .  27
+       3.8.9.  HEADERS . . . . . . . . . . . . . . . . . . . . . . .  26
        3.8.10. WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . .  27
    4.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  31
      4.1.  Connection Management . . . . . . . . . . . . . . . . . .  31
@@ -1218,14 +1218,14 @@ Internet-Draft                  HTTP/2.0                       June 2013
 3.8.5.1.  Setting Format
 
    The payload of a SETTINGS frame consists of zero or more settings.
-   Each setting consists of an 8-bit flags field specifying per-item
-   instructions, an unsigned 24-bit setting identifier, and an unsigned
-   32-bit value.
+   Each setting consists of an 8-bit reserved field, an unsigned 24-bit
+   setting identifier, and an unsigned 32-bit value.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |SettingFlags(8)|             Setting Identifier (24)           |
+   |  Reserved(8)  |             Setting Identifier (24)           |
+   +---------------+-----------------------------------------------+
 
 
 
@@ -1234,14 +1234,10 @@ Belshe, et al.         Expires December 20, 2013               [Page 22]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-   +---------------+-----------------------------------------------+
    |                        Value (32)                             |
    +---------------------------------------------------------------+
 
                               Setting Format
-
-   There currently are no defined flags.  [[Ed.  Note: Can we drop flags
-   on individual settings]]
 
 3.8.5.2.  Defined Settings
 
@@ -1283,14 +1279,16 @@ Internet-Draft                  HTTP/2.0                       June 2013
    |                    Header Block (*)                         ...
    +---------------------------------------------------------------+
 
+                        PUSH_PROMISE Payload Format
+
+
+
 
 
 Belshe, et al.         Expires December 20, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-                        PUSH_PROMISE Payload Format
 
    The payload of a PUSH_PROMISE includes a "Promised-Stream-ID".  This
    unsigned 31-bit integer identifies the stream the endpoint intends to
@@ -1338,6 +1336,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
    flag set and precisely the same sequence of octets back to the sender
    as soon as possible.
 
+   Processing of PING frames SHOULD be performed with the highest
+   priority if there are additional frames waiting to be processed.
 
 
 
@@ -1345,9 +1345,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 24]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   Processing of PING frames SHOULD be performed with the highest
-   priority if there are additional frames waiting to be processed.
 
    The PING frame defines one type-specific flag:
 
@@ -1394,6 +1391,9 @@ Internet-Draft                  HTTP/2.0                       June 2013
    After sending a GOAWAY frame, the sender can ignore frames for new
    streams.
 
+   [[Issue: connection state that is established by those "ignored"
+   frames cannot be ignored without the state in the two peers becoming
+   unsynchronized.]]
 
 
 
@@ -1401,10 +1401,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 25]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   [[Issue: connection state that is established by those "ignored"
-   frames cannot be ignored without the state in the two peers becoming
-   unsynchronized.]]
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1450,6 +1446,10 @@ Internet-Draft                  HTTP/2.0                       June 2013
    The GOAWAY frame also contains a 32-bit error code (Section 3.5.3)
    that contains the reason for closing the connection.
 
+3.8.9.  HEADERS
+
+
+
 
 
 
@@ -1457,8 +1457,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 26]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-3.8.9.  HEADERS
 
    The HEADERS frame (type=0x8) provides header fields for a stream.
    Any number of HEADERS frames can may be sent on an existing stream at
@@ -1506,6 +1504,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
    by any receiver can indirectly cause the propagation of flow control
    information toward the original sender.
 
+   Flow control only applies to frames that are identified as being
+   subject to flow control.  Of the frame types defined in this
 
 
 
@@ -1514,8 +1514,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 27]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-   Flow control only applies to frames that are identified as being
-   subject to flow control.  Of the frame types defined in this
    document, this includes only DATA frame.  Frames that are exempt from
    flow control MUST be accepted and processed, unless the receiver is
    unable to assign resources to handling the frame.  A receiver MAY
@@ -1562,6 +1560,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    After sending a flow controlled frame, the sender reduces the space
    available in both windows by the length of the transmitted frame.
+
+
 
 
 
