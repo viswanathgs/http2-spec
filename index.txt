@@ -119,7 +119,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
      3.7.  Header Blocks . . . . . . . . . . . . . . . . . . . . . .  19
      3.8.  Frame Types . . . . . . . . . . . . . . . . . . . . . . .  19
        3.8.1.  DATA Frames . . . . . . . . . . . . . . . . . . . . .  19
-       3.8.2.  HEADERS+PRIORITY  . . . . . . . . . . . . . . . . . .  20
+       3.8.2.  HEADERS+PRIORITY  . . . . . . . . . . . . . . . . . .  19
        3.8.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . .  20
        3.8.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . .  21
        3.8.5.  SETTINGS  . . . . . . . . . . . . . . . . . . . . . .  21
@@ -128,7 +128,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
        3.8.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . .  25
        3.8.9.  HEADERS . . . . . . . . . . . . . . . . . . . . . . .  26
        3.8.10. WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . .  27
-   4.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  31
+   4.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  30
      4.1.  Connection Management . . . . . . . . . . . . . . . . . .  31
      4.2.  HTTP Request/Response . . . . . . . . . . . . . . . . . .  31
        4.2.1.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . .  31
@@ -881,15 +881,15 @@ Internet-Draft                  HTTP/2.0                       June 2013
    FLOW_CONTROL_ERROR (3):  The endpoint detected that its peer violated
       the flow control protocol.
 
-   INVALID_STREAM (4):  The endpoint received a frame for an inactive
-      stream.
-
    STREAM_CLOSED (5):  The endpoint received a frame after a stream was
       half-closed.
 
    FRAME_TOO_LARGE (6):  The endpoint received a frame that was larger
       than the maximum size that it supports.
 
+   REFUSED_STREAM (7):  The endpoint refuses the stream prior to
+      performing any application processing, see Section 4.2.4 for
+      details.
 
 
 
@@ -897,10 +897,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 16]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   REFUSED_STREAM (7):  The endpoint refuses the stream prior to
-      performing any application processing, see Section 4.2.4 for
-      details.
 
    CANCEL (8):  Used by the endpoint to indicate that the stream is no
       longer needed.
@@ -945,7 +941,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
        control preferences as a receiver and abide by the flow control
        limits set by their peer when sending.
 
+   4.  The initial value for the flow control window is 65536 bytes for
+       both new streams and the overall connection.
 
+   5.  The frame type determines whether flow control applies to a
+       frame.  Of the frames specified in this document, only data
 
 
 
@@ -954,11 +954,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 17]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-   4.  The initial value for the flow control window is 65536 bytes for
-       both new streams and the overall connection.
-
-   5.  The frame type determines whether flow control applies to a
-       frame.  Of the frames specified in this document, only data
        frames are subject to flow control; all other frame types do not
        consume space in the advertised flow control window.  This
        ensures that important control frames are not blocked by flow
@@ -1002,6 +997,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
    network resources if flow control is enabled without knowledge of the
    bandwidth-delay product (see [RFC1323]).
 
+   Even with full awareness of the current bandwidth-delay product,
+   implementation of flow control is difficult.  However, it can ensure
+   that constrained resources are protected without any reduction in
+   connection utilization.
+
 
 
 
@@ -1009,11 +1009,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 18]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   Even with full awareness of the current bandwidth-delay product,
-   implementation of flow control is difficult.  However, it can ensure
-   that constrained resources are protected without any reduction in
-   connection utilization.
 
 3.7.  Header Blocks
 
@@ -1055,7 +1050,12 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    The DATA frame does not define any type-specific flags.
 
+   DATA frames MUST be associated with a stream.  If a DATA frame is
+   received whose stream identifier field is 0x0, the recipient MUST
+   respond with a connection error (Section 3.5.1) of type
+   PROTOCOL_ERROR.
 
+3.8.2.  HEADERS+PRIORITY
 
 
 
@@ -1065,13 +1065,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 19]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   DATA frames MUST be associated with a stream.  If a DATA frame is
-   received whose stream identifier field is 0x0, the recipient MUST
-   respond with a connection error (Section 3.5.1) of type
-   PROTOCOL_ERROR.
-
-3.8.2.  HEADERS+PRIORITY
 
    The HEADERS+PRIORITY frame (type=0x1) allows the sender to set header
    fields and stream priority at the same time.
@@ -1115,17 +1108,19 @@ Internet-Draft                  HTTP/2.0                       June 2013
    |X|                   Priority (31)                             |
    +-+-------------------------------------------------------------+
 
+                          PRIORITY Frame Payload
+
+   The payload of a PRIORITY frame contains a single reserved bit and a
+   31-bit priority.
+
+
+
 
 
 Belshe, et al.         Expires December 20, 2013               [Page 20]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-                          PRIORITY Frame Payload
-
-   The payload of a PRIORITY frame contains a single reserved bit and a
-   31-bit priority.
 
    The PRIORITY frame is associated with an existing stream.  If a
    PRIORITY frame is received with a stream identifier of 0x0, the
@@ -1170,6 +1165,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 3.8.5.  SETTINGS
 
+   The SETTINGS frame (type=0x4) conveys configuration parameters that
+   affect how endpoints communicate.  The parameters are either
+   constraints on peer behavior or preferences.
+
+
 
 
 
@@ -1177,10 +1177,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 21]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   The SETTINGS frame (type=0x4) conveys configuration parameters that
-   affect how endpoints communicate.  The parameters are either
-   constraints on peer behavior or preferences.
 
    SETTINGS frames MUST be sent at the start of a connection, and MAY be
    sent at any other time by either endpoint over the lifetime of the
@@ -1226,6 +1222,10 @@ Internet-Draft                  HTTP/2.0                       June 2013
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |  Reserved(8)  |             Setting Identifier (24)           |
    +---------------+-----------------------------------------------+
+   |                        Value (32)                             |
+   +---------------------------------------------------------------+
+
+                              Setting Format
 
 
 
@@ -1233,11 +1233,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 22]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   |                        Value (32)                             |
-   +---------------------------------------------------------------+
-
-                              Setting Format
 
 3.8.5.2.  Defined Settings
 
@@ -1281,6 +1276,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
                         PUSH_PROMISE Payload Format
 
+   The payload of a PUSH_PROMISE includes a "Promised-Stream-ID".  This
+   unsigned 31-bit integer identifies the stream the endpoint intends to
+   start sending frames for.  The promised stream identifier MUST be a
+   valid choice for the next stream sent by the sender (see new stream
+   identifier (Section 3.4.1)).
 
 
 
@@ -1289,12 +1289,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 23]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   The payload of a PUSH_PROMISE includes a "Promised-Stream-ID".  This
-   unsigned 31-bit integer identifies the stream the endpoint intends to
-   start sending frames for.  The promised stream identifier MUST be a
-   valid choice for the next stream sent by the sender (see new stream
-   identifier (Section 3.4.1)).
 
    PUSH_PROMISE frames MUST be associated with an existing stream.  If
    the stream identifier field specifies the value 0x0, a recipient MUST
@@ -1339,18 +1333,18 @@ Internet-Draft                  HTTP/2.0                       June 2013
    Processing of PING frames SHOULD be performed with the highest
    priority if there are additional frames waiting to be processed.
 
+   The PING frame defines one type-specific flag:
+
+   PONG (0x2):  Bit 2 being set indicates that this PING frame is a PING
+      response.  An endpoint MUST set this flag in PING responses.  An
+      endpoint MUST NOT respond to PING frames containing this flag.
+
 
 
 Belshe, et al.         Expires December 20, 2013               [Page 24]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   The PING frame defines one type-specific flag:
-
-   PONG (0x2):  Bit 2 being set indicates that this PING frame is a PING
-      response.  An endpoint MUST set this flag in PING responses.  An
-      endpoint MUST NOT respond to PING frames containing this flag.
 
    PING frames are not associated with any individual stream.  If a PING
    frame is received with a stream identifier field value other than
@@ -1395,6 +1389,12 @@ Internet-Draft                  HTTP/2.0                       June 2013
    frames cannot be ignored without the state in the two peers becoming
    unsynchronized.]]
 
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |X|                  Last-Stream-ID (31)                        |
+   +-+-------------------------------------------------------------+
+
 
 
 Belshe, et al.         Expires December 20, 2013               [Page 25]
@@ -1402,11 +1402,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 25]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |X|                  Last-Stream-ID (31)                        |
-   +-+-------------------------------------------------------------+
    |                      Error Code (32)                          |
    +---------------------------------------------------------------+
 
@@ -1448,6 +1443,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 3.8.9.  HEADERS
 
+   The HEADERS frame (type=0x8) provides header fields for a stream.
+   Any number of HEADERS frames can may be sent on an existing stream at
+   any time.
+
+   Additional type-specific flags for the HEADERS frame are:
 
 
 
@@ -1457,12 +1457,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 26]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   The HEADERS frame (type=0x8) provides header fields for a stream.
-   Any number of HEADERS frames can may be sent on an existing stream at
-   any time.
-
-   Additional type-specific flags for the HEADERS frame are:
 
    CONTINUES (0x2):  The CONTINUES bit indicates that this frame does
       not contain the entire payload necessary to provide a complete set
@@ -1506,6 +1500,12 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    Flow control only applies to frames that are identified as being
    subject to flow control.  Of the frame types defined in this
+   document, this includes only DATA frame.  Frames that are exempt from
+   flow control MUST be accepted and processed, unless the receiver is
+   unable to assign resources to handling the frame.  A receiver MAY
+   respond with a stream error (Section 3.5.2) or connection error
+   (Section 3.5.1) of type FLOW_CONTROL_ERROR if it is unable accept a
+   frame.
 
 
 
@@ -1513,13 +1513,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 27]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   document, this includes only DATA frame.  Frames that are exempt from
-   flow control MUST be accepted and processed, unless the receiver is
-   unable to assign resources to handling the frame.  A receiver MAY
-   respond with a stream error (Section 3.5.2) or connection error
-   (Section 3.5.1) of type FLOW_CONTROL_ERROR if it is unable accept a
-   frame.
 
    The following additional flags are defined for the WINDOW_UPDATE
    frame:
@@ -1561,6 +1554,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
    After sending a flow controlled frame, the sender reduces the space
    available in both windows by the length of the transmitted frame.
 
+   The receiver of a frame sends a WINDOW_UPDATE frame as it consumes
+   data and frees up space in flow control windows.  Separate
+   WINDOW_UPDATE frames are sent for the stream and connection level
+   flow control windows.
+
+   A sender that receives a WINDOW_UPDATE frame updates the
+   corresponding window by the amount specified in the frame.
 
 
 
@@ -1569,14 +1569,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 28]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   The receiver of a frame sends a WINDOW_UPDATE frame as it consumes
-   data and frees up space in flow control windows.  Separate
-   WINDOW_UPDATE frames are sent for the stream and connection level
-   flow control windows.
-
-   A sender that receives a WINDOW_UPDATE frame updates the
-   corresponding window by the amount specified in the frame.
 
    A sender MUST NOT allow a flow control window to exceed 2^31 - 1
    bytes.  If a sender receives a WINDOW_UPDATE that causes a flow
@@ -1618,6 +1610,14 @@ Internet-Draft                  HTTP/2.0                       June 2013
    controlled frames until it receives WINDOW_UPDATE frames that cause
    the flow control window to become positive.
 
+   For example, if the server sets the initial window size to be 16KB,
+   and the client sends 64KB immediately on connection establishment,
+   the client will recalculate the available flow control window to be
+   -48KB on receipt of the SETTINGS frame.  The client retains a
+   negative flow control window until WINDOW_UPDATE frames restore the
+   window to being positive, after which the client can resume sending.
+
+
 
 
 
@@ -1625,13 +1625,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 29]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   For example, if the server sets the initial window size to be 16KB,
-   and the client sends 64KB immediately on connection establishment,
-   the client will recalculate the available flow control window to be
-   -48KB on receipt of the SETTINGS frame.  The client retains a
-   negative flow control window until WINDOW_UPDATE frames restore the
-   window to being positive, after which the client can resume sending.
 
 3.8.10.3.  Reducing the Stream Window Size
 
@@ -1673,6 +1666,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
    set.  The payload of a WINDOW_UPDATE frame that has the
    END_FLOW_CONTROL flag set is ignored.
 
+   Flow control cannot be enabled again once disabled.  Any attempt to
+   re-enable flow control - by sending a WINDOW_UPDATE or by clearing
+   the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be
+   rejected with a FLOW_CONTROL_ERROR error code.
+
+4.  HTTP Message Exchanges
+
 
 
 
@@ -1681,13 +1681,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 30]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   Flow control cannot be enabled again once disabled.  Any attempt to
-   re-enable flow control - by sending a WINDOW_UPDATE or by clearing
-   the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be
-   rejected with a FLOW_CONTROL_ERROR error code.
-
-4.  HTTP Message Exchanges
 
    HTTP/2.0 is intended to be as compatible as possible with current
    web-based applications.  This means that, from the perspective of the
@@ -1730,6 +1723,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
    series of DATA frames.  The last DATA frame sets the FINAL flag to
    indicate the end of the body.
 
+   The header fields included in the HEADERS+PRIORITY frame contain all
+   of the HTTP header fields associated with an HTTP request.  The
+   definitions of these headers are largely unchanged relative to HTTP/
+   1.1, with a few notable exceptions:
+
+   o  The HTTP/1.1 request-line has been split into two separate header
+      fields named :method and :path, whose values specify the HTTP
 
 
 
@@ -1738,13 +1738,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 31]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
-   The header fields included in the HEADERS+PRIORITY frame contain all
-   of the HTTP header fields associated with an HTTP request.  The
-   definitions of these headers are largely unchanged relative to HTTP/
-   1.1, with a few notable exceptions:
-
-   o  The HTTP/1.1 request-line has been split into two separate header
-      fields named :method and :path, whose values specify the HTTP
       method for the request and the request-target, respectively.  The
       HTTP-version component of the request-line is removed entirely
       from the headers.
@@ -1786,6 +1779,13 @@ Internet-Draft                  HTTP/2.0                       June 2013
    overall progress and provide appropriate user feedback.  More
    importantly, some HTTP server implementations fail to correctly
    process requests that omit the Content-Length header field.  Many
+   existing clients send a Content-Length header field, and some server
+   implementations have come to depend upon its presence.
+
+
+
+
+
 
 
 
@@ -1793,9 +1793,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 32]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-   existing clients send a Content-Length header field, and some server
-   implementations have come to depend upon its presence.
 
    A client provides priority in requests as a hint to the server.  A
    server SHOULD attempt to provide responses to higher priority
@@ -1838,8 +1835,11 @@ Internet-Draft                  HTTP/2.0                       June 2013
       an entity prior to receiving all the data frames.  This can help
       in, for example, reporting progress.
 
-
-
+      If a client receives a response where the sum of the data frame
+      payload length does not equal the size of the Content-Length
+      header field, the client MUST ignore the content length header
+      field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
+      46>.]]
 
 
 
@@ -1849,12 +1849,6 @@ Belshe, et al.         Expires December 20, 2013               [Page 33]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
-
-      If a client receives a response where the sum of the data frame
-      payload length does not equal the size of the Content-Length
-      header field, the client MUST ignore the content length header
-      field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
-      46>.]]
 
    If a client receives a response with an absent or duplicated status
    header, the client MUST treat this as a stream error (Section 3.5.2)
@@ -1898,6 +1892,12 @@ Internet-Draft                  HTTP/2.0                       June 2013
    translators, or load balancers) silently discard connection bindings.
    The PING frame allows a client to safely test whether a connection is
    still active without sending a request.
+
+
+
+
+
+
 
 
 
