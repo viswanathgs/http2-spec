@@ -1305,11 +1305,12 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.7.p.1">The PING frame (type=0x6) is a mechanism for measuring a minimal round-trip time from the sender, as well as determining whether
          an idle connection is still functional. PING frames can be sent from any endpoint.
       </p>
-      <p id="rfc.section.3.8.7.p.2">In addition to the frame header, PING frames MUST contain 8 additional octets of opaque data. A sender can utilize this payload
-         in any manner it wishes but MUST include the octets even if they are unused. Receivers of a PING send a response PING frame
-         with the PONG flag set and precisely the same sequence of octets back to the sender as soon as possible.
+      <p id="rfc.section.3.8.7.p.2">In addition to the frame header, PING frames MUST contain 8 octets of data in the payload. A sender can include any value
+         it chooses and use those bytes in any fashion.
       </p>
-      <p id="rfc.section.3.8.7.p.3">Processing of PING frames SHOULD be performed with the highest priority if there are additional frames waiting to be processed.</p>
+      <p id="rfc.section.3.8.7.p.3">Receivers of a PING frame that does not include a PONG flag MUST send a PING frame with the PONG flag set in response, with
+         an identical payload. PING responses SHOULD given higher priority than any other frame.
+      </p>
       <p id="rfc.section.3.8.7.p.4">The PING frame defines one type-specific flag: </p>
       <dl>
          <dt>PONG (0x2):</dt>
@@ -1319,6 +1320,8 @@ Upgrade: HTTP/2.0
       </dl>
       <p id="rfc.section.3.8.7.p.5">PING frames are not associated with any individual stream. If a PING frame is received with a stream identifier field value
          other than 0x0, the recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
+      </p>
+      <p id="rfc.section.3.8.7.p.6">Receipt of a PING frame with a length field value other than 8 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
       <h3 id="rfc.section.3.8.8"><a href="#rfc.section.3.8.8">3.8.8</a>&nbsp;<a id="GOAWAY" href="#GOAWAY">GOAWAY</a></h3>
       <p id="rfc.section.3.8.8.p.1">The GOAWAY frame (type=0x7) informs the remote peer to stop creating streams on this connection. It can be sent from the client

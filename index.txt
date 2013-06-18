@@ -128,7 +128,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
        3.8.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . .  25
        3.8.9.  HEADERS . . . . . . . . . . . . . . . . . . . . . . .  26
        3.8.10. WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . .  27
-   4.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  30
+   4.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  31
      4.1.  Connection Management . . . . . . . . . . . . . . . . . .  31
      4.2.  HTTP Request/Response . . . . . . . . . . . . . . . . . .  31
        4.2.1.  HTTP Header Fields and HTTP/2.0 Headers . . . . . . .  31
@@ -1323,21 +1323,21 @@ Internet-Draft                  HTTP/2.0                       June 2013
    idle connection is still functional.  PING frames can be sent from
    any endpoint.
 
-   In addition to the frame header, PING frames MUST contain 8
-   additional octets of opaque data.  A sender can utilize this payload
-   in any manner it wishes but MUST include the octets even if they are
-   unused.  Receivers of a PING send a response PING frame with the PONG
-   flag set and precisely the same sequence of octets back to the sender
-   as soon as possible.
+   In addition to the frame header, PING frames MUST contain 8 octets of
+   data in the payload.  A sender can include any value it chooses and
+   use those bytes in any fashion.
 
-   Processing of PING frames SHOULD be performed with the highest
-   priority if there are additional frames waiting to be processed.
+   Receivers of a PING frame that does not include a PONG flag MUST send
+   a PING frame with the PONG flag set in response, with an identical
+   payload.  PING responses SHOULD given higher priority than any other
+   frame.
 
    The PING frame defines one type-specific flag:
 
    PONG (0x2):  Bit 2 being set indicates that this PING frame is a PING
       response.  An endpoint MUST set this flag in PING responses.  An
       endpoint MUST NOT respond to PING frames containing this flag.
+
 
 
 
@@ -1350,6 +1350,10 @@ Internet-Draft                  HTTP/2.0                       June 2013
    frame is received with a stream identifier field value other than
    0x0, the recipient MUST respond with a connection error
    (Section 3.5.1) of type PROTOCOL_ERROR.
+
+   Receipt of a PING frame with a length field value other than 8 MUST
+   be treated as a connection error (Section 3.5.1) of type
+   PROTOCOL_ERROR.
 
 3.8.8.  GOAWAY
 
@@ -1389,11 +1393,7 @@ Internet-Draft                  HTTP/2.0                       June 2013
    frames cannot be ignored without the state in the two peers becoming
    unsynchronized.]]
 
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |X|                  Last-Stream-ID (31)                        |
-   +-+-------------------------------------------------------------+
+
 
 
 
@@ -1402,6 +1402,11 @@ Belshe, et al.         Expires December 20, 2013               [Page 25]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |X|                  Last-Stream-ID (31)                        |
+   +-+-------------------------------------------------------------+
    |                      Error Code (32)                          |
    +---------------------------------------------------------------+
 
@@ -1443,11 +1448,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
 3.8.9.  HEADERS
 
-   The HEADERS frame (type=0x8) provides header fields for a stream.
-   Any number of HEADERS frames can may be sent on an existing stream at
-   any time.
-
-   Additional type-specific flags for the HEADERS frame are:
 
 
 
@@ -1457,6 +1457,12 @@ Belshe, et al.         Expires December 20, 2013               [Page 26]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   The HEADERS frame (type=0x8) provides header fields for a stream.
+   Any number of HEADERS frames can may be sent on an existing stream at
+   any time.
+
+   Additional type-specific flags for the HEADERS frame are:
 
    CONTINUES (0x2):  The CONTINUES bit indicates that this frame does
       not contain the entire payload necessary to provide a complete set
@@ -1500,12 +1506,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
 
    Flow control only applies to frames that are identified as being
    subject to flow control.  Of the frame types defined in this
-   document, this includes only DATA frame.  Frames that are exempt from
-   flow control MUST be accepted and processed, unless the receiver is
-   unable to assign resources to handling the frame.  A receiver MAY
-   respond with a stream error (Section 3.5.2) or connection error
-   (Section 3.5.1) of type FLOW_CONTROL_ERROR if it is unable accept a
-   frame.
 
 
 
@@ -1513,6 +1513,13 @@ Belshe, et al.         Expires December 20, 2013               [Page 27]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   document, this includes only DATA frame.  Frames that are exempt from
+   flow control MUST be accepted and processed, unless the receiver is
+   unable to assign resources to handling the frame.  A receiver MAY
+   respond with a stream error (Section 3.5.2) or connection error
+   (Section 3.5.1) of type FLOW_CONTROL_ERROR if it is unable accept a
+   frame.
 
    The following additional flags are defined for the WINDOW_UPDATE
    frame:
@@ -1554,13 +1561,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    After sending a flow controlled frame, the sender reduces the space
    available in both windows by the length of the transmitted frame.
 
-   The receiver of a frame sends a WINDOW_UPDATE frame as it consumes
-   data and frees up space in flow control windows.  Separate
-   WINDOW_UPDATE frames are sent for the stream and connection level
-   flow control windows.
-
-   A sender that receives a WINDOW_UPDATE frame updates the
-   corresponding window by the amount specified in the frame.
 
 
 
@@ -1569,6 +1569,14 @@ Belshe, et al.         Expires December 20, 2013               [Page 28]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   The receiver of a frame sends a WINDOW_UPDATE frame as it consumes
+   data and frees up space in flow control windows.  Separate
+   WINDOW_UPDATE frames are sent for the stream and connection level
+   flow control windows.
+
+   A sender that receives a WINDOW_UPDATE frame updates the
+   corresponding window by the amount specified in the frame.
 
    A sender MUST NOT allow a flow control window to exceed 2^31 - 1
    bytes.  If a sender receives a WINDOW_UPDATE that causes a flow
@@ -1610,14 +1618,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    controlled frames until it receives WINDOW_UPDATE frames that cause
    the flow control window to become positive.
 
-   For example, if the server sets the initial window size to be 16KB,
-   and the client sends 64KB immediately on connection establishment,
-   the client will recalculate the available flow control window to be
-   -48KB on receipt of the SETTINGS frame.  The client retains a
-   negative flow control window until WINDOW_UPDATE frames restore the
-   window to being positive, after which the client can resume sending.
-
-
 
 
 
@@ -1625,6 +1625,13 @@ Belshe, et al.         Expires December 20, 2013               [Page 29]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   For example, if the server sets the initial window size to be 16KB,
+   and the client sends 64KB immediately on connection establishment,
+   the client will recalculate the available flow control window to be
+   -48KB on receipt of the SETTINGS frame.  The client retains a
+   negative flow control window until WINDOW_UPDATE frames restore the
+   window to being positive, after which the client can resume sending.
 
 3.8.10.3.  Reducing the Stream Window Size
 
@@ -1666,13 +1673,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    set.  The payload of a WINDOW_UPDATE frame that has the
    END_FLOW_CONTROL flag set is ignored.
 
-   Flow control cannot be enabled again once disabled.  Any attempt to
-   re-enable flow control - by sending a WINDOW_UPDATE or by clearing
-   the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be
-   rejected with a FLOW_CONTROL_ERROR error code.
-
-4.  HTTP Message Exchanges
-
 
 
 
@@ -1681,6 +1681,13 @@ Belshe, et al.         Expires December 20, 2013               [Page 30]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   Flow control cannot be enabled again once disabled.  Any attempt to
+   re-enable flow control - by sending a WINDOW_UPDATE or by clearing
+   the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be
+   rejected with a FLOW_CONTROL_ERROR error code.
+
+4.  HTTP Message Exchanges
 
    HTTP/2.0 is intended to be as compatible as possible with current
    web-based applications.  This means that, from the perspective of the
@@ -1723,13 +1730,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    series of DATA frames.  The last DATA frame sets the FINAL flag to
    indicate the end of the body.
 
-   The header fields included in the HEADERS+PRIORITY frame contain all
-   of the HTTP header fields associated with an HTTP request.  The
-   definitions of these headers are largely unchanged relative to HTTP/
-   1.1, with a few notable exceptions:
-
-   o  The HTTP/1.1 request-line has been split into two separate header
-      fields named :method and :path, whose values specify the HTTP
 
 
 
@@ -1738,6 +1738,13 @@ Belshe, et al.         Expires December 20, 2013               [Page 31]
 Internet-Draft                  HTTP/2.0                       June 2013
 
 
+   The header fields included in the HEADERS+PRIORITY frame contain all
+   of the HTTP header fields associated with an HTTP request.  The
+   definitions of these headers are largely unchanged relative to HTTP/
+   1.1, with a few notable exceptions:
+
+   o  The HTTP/1.1 request-line has been split into two separate header
+      fields named :method and :path, whose values specify the HTTP
       method for the request and the request-target, respectively.  The
       HTTP-version component of the request-line is removed entirely
       from the headers.
@@ -1779,13 +1786,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    overall progress and provide appropriate user feedback.  More
    importantly, some HTTP server implementations fail to correctly
    process requests that omit the Content-Length header field.  Many
-   existing clients send a Content-Length header field, and some server
-   implementations have come to depend upon its presence.
-
-
-
-
-
 
 
 
@@ -1793,6 +1793,9 @@ Belshe, et al.         Expires December 20, 2013               [Page 32]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+   existing clients send a Content-Length header field, and some server
+   implementations have come to depend upon its presence.
 
    A client provides priority in requests as a hint to the server.  A
    server SHOULD attempt to provide responses to higher priority
@@ -1835,11 +1838,8 @@ Internet-Draft                  HTTP/2.0                       June 2013
       an entity prior to receiving all the data frames.  This can help
       in, for example, reporting progress.
 
-      If a client receives a response where the sum of the data frame
-      payload length does not equal the size of the Content-Length
-      header field, the client MUST ignore the content length header
-      field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
-      46>.]]
+
+
 
 
 
@@ -1849,6 +1849,12 @@ Belshe, et al.         Expires December 20, 2013               [Page 33]
 
 Internet-Draft                  HTTP/2.0                       June 2013
 
+
+      If a client receives a response where the sum of the data frame
+      payload length does not equal the size of the Content-Length
+      header field, the client MUST ignore the content length header
+      field.  [[Ed: See <https://github.com/http2/http2-spec/issues/
+      46>.]]
 
    If a client receives a response with an absent or duplicated status
    header, the client MUST treat this as a stream error (Section 3.5.2)
@@ -1892,12 +1898,6 @@ Internet-Draft                  HTTP/2.0                       June 2013
    translators, or load balancers) silently discard connection bindings.
    The PING frame allows a client to safely test whether a connection is
    still active without sending a request.
-
-
-
-
-
-
 
 
 
