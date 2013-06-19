@@ -887,10 +887,8 @@ Upgrade: HTTP/2.0
             MUST ignore unsupported and unrecognized frame types.
          </dd>
          <dt>Flags:</dt>
-         <dd>An 8-bit field reserved for frame-type specific boolean flags. <br><br> The least significant bit (0x1) - the END_STREAM bit - is defined for all frame types as an indication that this frame is
-            the last the endpoint will send for the identified stream. Setting this flag causes the stream to enter the half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>). Implementations MUST process the END_STREAM bit for all frames whose stream identifier field is not 0x0. The END_STREAM
-            bit MUST NOT be set on frames that use a stream identifier of 0. <br><br> The remaining flags can be assigned semantics specific to the indicated frame type. Flags that have no defined semantics for
-            a particular frame type MUST be ignored, and MUST be left unset (0) when sending.
+         <dd>An 8-bit field reserved for frame-type specific boolean flags. <br><br> Flags are assigned semantics specific to the indicated frame type. Flags that have no defined semantics for a particular frame
+            type MUST be ignored, and MUST be left unset (0) when sending.
          </dd>
          <dt>R:</dt>
          <dd>A reserved 1-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
@@ -1150,7 +1148,15 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.1.p.1">DATA frames (type=0x0) convey arbitrary, variable-length sequences of octets associated with a stream. One or more DATA frames
          are used, for instance, to carry HTTP request or response payloads.
       </p>
-      <p id="rfc.section.3.8.1.p.2">The DATA frame does not define any type-specific flags.</p>
+      <p id="rfc.section.3.8.1.p.2">The DATA frame defines the following flags: </p>
+      <dl>
+         <dt>END_STREAM (0x1):</dt>
+         <dd>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
+            flag causes the stream to enter the half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>).
+         </dd>
+         <dt>RESERVED (0x2):</dt>
+         <dd>Bit 2 is reserved for future use.</dd>
+      </dl>
       <p id="rfc.section.3.8.1.p.3">DATA frames MUST be associated with a stream. If a DATA frame is received whose stream identifier field is 0x0, the recipient
          MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1185,7 +1191,7 @@ Upgrade: HTTP/2.0
 +-+-------------------------------------------------------------+
 </pre><p class="figure">Figure 3: PRIORITY Frame Payload</p>
       <p id="rfc.section.3.8.3.p.3">The payload of a PRIORITY frame contains a single reserved bit and a 31-bit priority.</p>
-      <p id="rfc.section.3.8.3.p.4">The PRIORITY frame does not define any type-specific flags.</p>
+      <p id="rfc.section.3.8.3.p.4">The PRIORITY frame does not define any flags.</p>
       <p id="rfc.section.3.8.3.p.5">The PRIORITY frame is associated with an existing stream. If a PRIORITY frame is received with a stream identifier of 0x0,
          the recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
       </p>
@@ -1231,7 +1237,7 @@ Upgrade: HTTP/2.0
          or new values for parameters whose values have already been established. Only the most recent value provided setting value
          applies.
       </p>
-      <p id="rfc.section.3.8.5.p.6">The SETTINGS frame does not have any frame specific flags.</p>
+      <p id="rfc.section.3.8.5.p.6">The SETTINGS frame does not define any flags.</p>
       <p id="rfc.section.3.8.5.p.7">SETTINGS frames always apply to a connection, never a single stream. The stream identifier for a settings frame MUST be zero.
          If an endpoint receives a SETTINGS frame whose stream identifier field is anything other than 0x0, the endpoint MUST respond
          with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type PROTOCOL_ERROR.
@@ -1316,10 +1322,10 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.7.p.3">Receivers of a PING frame that does not include a PONG flag MUST send a PING frame with the PONG flag set in response, with
          an identical payload. PING responses SHOULD given higher priority than any other frame.
       </p>
-      <p id="rfc.section.3.8.7.p.4">The PING frame defines one type-specific flag: </p>
+      <p id="rfc.section.3.8.7.p.4">The PING frame defines the following flags: </p>
       <dl>
-         <dt>PONG (0x2):</dt>
-         <dd>Bit 2 being set indicates that this PING frame is a PING response. An endpoint MUST set this flag in PING responses. An endpoint
+         <dt>PONG (0x1):</dt>
+         <dd>Bit 1 being set indicates that this PING frame is a PING response. An endpoint MUST set this flag in PING responses. An endpoint
             MUST NOT respond to PING frames containing this flag.
          </dd>
       </dl>
@@ -1358,7 +1364,7 @@ Upgrade: HTTP/2.0
 |                      Error Code (32)                          |
 +---------------------------------------------------------------+
 </pre><p class="figure">Figure 7: GOAWAY Payload Format</p>
-      <p id="rfc.section.3.8.8.p.7">The GOAWAY frame does not define any type-specific flags.</p>
+      <p id="rfc.section.3.8.8.p.7">The GOAWAY frame does not define any flags.</p>
       <p id="rfc.section.3.8.8.p.8">The GOAWAY frame applies to the connection, not a specific stream. The stream identifier MUST be zero.</p>
       <p id="rfc.section.3.8.8.p.9">The last stream identifier in the GOAWAY frame contains the highest numbered stream identifier for which the sender of the
          GOAWAY frame has received frames on and might have taken some action on. All streams up to and including the identified stream
@@ -1384,9 +1390,15 @@ Upgrade: HTTP/2.0
       <p id="rfc.section.3.8.9.p.1">The HEADERS frame (type=0x8) provides header fields for a stream. Any number of HEADERS frames can may be sent on an existing
          stream at any time.
       </p>
-      <p id="rfc.section.3.8.9.p.2">Additional type-specific flags for the HEADERS frame are: </p>
+      <p id="rfc.section.3.8.9.p.2">The HEADERS frame defines the following flags: </p>
       <dl>
-         <dt>END_HEADERS (0x2):</dt>
+         <dt>END_STREAM (0x1):</dt>
+         <dd>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
+            flag causes the stream to enter the half-closed state (<a href="#StreamHalfClose" title="Stream half-close">Section&nbsp;3.4.3</a>).
+         </dd>
+         <dt>RESERVED (0x2):</dt>
+         <dd>Bit 2 is reserved for future use.</dd>
+         <dt>END_HEADERS (0x4):</dt>
          <dd>The END_HEADERS bit indicates that this frame contains the entire payload necessary to provide a complete set of headers. <br><br> The payload for a complete set of headers is provided by a sequence of HEADERS frames, terminated by a HEADERS frame with
             the END_HEADERS flag set. Once the sequence terminates, the payload of all HEADERS frames are concatenated and interpreted
             as a single block. <br><br> A HEADERS frame without the END_HEADERS flag set MUST be followed by a HEADERS frame for the same stream. A receiver MUST
@@ -1411,10 +1423,10 @@ Upgrade: HTTP/2.0
          document, this includes only DATA frame. Frames that are exempt from flow control MUST be accepted and processed, unless the
          receiver is unable to assign resources to handling the frame. A receiver MAY respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) or connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type FLOW_CONTROL_ERROR if it is unable accept a frame.
       </p>
-      <p id="rfc.section.3.8.10.p.5">The following additional flags are defined for the WINDOW_UPDATE frame: </p>
+      <p id="rfc.section.3.8.10.p.5">The WINDOW_UPDATE frame defines the following flags: </p>
       <dl>
-         <dt>END_FLOW_CONTROL (0x2):</dt>
-         <dd>Bit 2 being set indicates that flow control for the identified stream or connection has been ended; subsequent frames do not
+         <dt>END_FLOW_CONTROL (0x1):</dt>
+         <dd>Bit 1 being set indicates that flow control for the identified stream or connection has been ended; subsequent frames do not
             need to be flow controlled.
          </dd>
       </dl>
@@ -1837,12 +1849,12 @@ Upgrade: HTTP/2.0
                <tr>
                   <td class="left">0</td>
                   <td class="left">DATA</td>
-                  <td class="left">-</td>
+                  <td class="left">END_STREAM(1)</td>
                </tr>
                <tr>
                   <td class="left">1</td>
                   <td class="left">HEADERS+PRIORITY</td>
-                  <td class="left">END_HEADERS(2)</td>
+                  <td class="left">END_STREAM(1), END_HEADERS(4)</td>
                </tr>
                <tr>
                   <td class="left">2</td>
@@ -1862,12 +1874,12 @@ Upgrade: HTTP/2.0
                <tr>
                   <td class="left">5</td>
                   <td class="left">PUSH_PROMISE</td>
-                  <td class="left">END_HEADERS(2)</td>
+                  <td class="left">END_STREAM(1), END_HEADERS(4)</td>
                </tr>
                <tr>
                   <td class="left">6</td>
                   <td class="left">PING</td>
-                  <td class="left">PONG(2)</td>
+                  <td class="left">PONG(1)</td>
                </tr>
                <tr>
                   <td class="left">7</td>
@@ -1877,12 +1889,12 @@ Upgrade: HTTP/2.0
                <tr>
                   <td class="left">8</td>
                   <td class="left">HEADERS</td>
-                  <td class="left">END_HEADERS(2)</td>
+                  <td class="left">END_STREAM(1), END_HEADERS(4)</td>
                </tr>
                <tr>
                   <td class="left">9</td>
                   <td class="left">WINDOW_UPDATE</td>
-                  <td class="left">END_FLOW_CONTROL(2)</td>
+                  <td class="left">END_FLOW_CONTROL(1)</td>
                </tr>
             </tbody>
          </table>
