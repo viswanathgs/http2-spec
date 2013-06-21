@@ -674,6 +674,7 @@ ul p {
                <li><a href="#rfc.figure.5">Figure 5: Setting Format</a></li>
                <li><a href="#rfc.figure.6">Figure 6: PUSH_PROMISE Payload Format</a></li>
                <li><a href="#rfc.figure.7">Figure 7: GOAWAY Payload Format</a></li>
+               <li><a href="#rfc.figure.8">Figure 8: WINDOW_UPDATE Payload Format</a></li>
             </ul>
          </li>
       </ul>
@@ -1420,18 +1421,24 @@ Upgrade: HTTP/2.0
          document, this includes only DATA frame. Frames that are exempt from flow control MUST be accepted and processed, unless the
          receiver is unable to assign resources to handling the frame. A receiver MAY respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;3.5.2</a>) or connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;3.5.1</a>) of type FLOW_CONTROL_ERROR if it is unable accept a frame.
       </p>
-      <p id="rfc.section.3.8.9.p.5">The WINDOW_UPDATE frame defines the following flags: </p>
+      <div id="rfc.figure.8"></div><pre class="inline"> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|X|                Delta-Window-Size (31)                       |
++-+-------------------------------------------------------------+
+</pre><p class="figure">Figure 8: WINDOW_UPDATE Payload Format</p>
+      <p id="rfc.section.3.8.9.p.6">The payload of a WINDOW_UPDATE frame is an unsigned 31-bit integer indicating the additional number of bytes that the sender
+         can transmit in addition to the existing flow control window. The legal range for this field is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes; the most significant bit of this value is reserved.
+      </p>
+      <p id="rfc.section.3.8.9.p.7">The WINDOW_UPDATE frame defines the following flags: </p>
       <dl>
          <dt>END_FLOW_CONTROL (0x1):</dt>
          <dd>Bit 1 being set indicates that flow control for the identified stream or connection has been ended; subsequent frames do not
             need to be flow controlled.
          </dd>
       </dl>
-      <p id="rfc.section.3.8.9.p.6">The WINDOW_UPDATE frame can be specific to a stream or to the entire connection. In the former case, the frame's stream identifier
+      <p id="rfc.section.3.8.9.p.8">The WINDOW_UPDATE frame can be specific to a stream or to the entire connection. In the former case, the frame's stream identifier
          indicates the affected stream; in the latter, the value "0" indicates that the entire connection is the subject of the frame.
-      </p>
-      <p id="rfc.section.3.8.9.p.7">The payload of a WINDOW_UPDATE frame is a 32-bit value indicating the additional number of bytes that the sender can transmit
-         in addition to the existing flow control window. The legal range for this field is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes; the most significant bit of this value is reserved.
       </p>
       <h4 id="rfc.section.3.8.9.1"><a href="#rfc.section.3.8.9.1">3.8.9.1</a>&nbsp;The Flow Control Window
       </h4>
