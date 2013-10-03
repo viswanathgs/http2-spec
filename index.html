@@ -636,7 +636,7 @@ samp, tt, code, pre {
                      <li><a href="#rfc.section.8.2.2">8.2.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.8.2.2">Push Responses</a></li>
                   </ul>
                </li>
-               <li><a href="#rfc.section.8.3">8.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.8.3">The CONNECT Method</a></li>
+               <li><a href="#rfc.section.8.3">8.3</a>&nbsp;&nbsp;&nbsp;<a href="#CONNECT">The CONNECT Method</a></li>
             </ul>
          </li>
          <li><a href="#rfc.section.9">9.</a>&nbsp;&nbsp;&nbsp;<a href="#HttpExtra">Additional HTTP Requirements/Considerations</a><ul>
@@ -773,7 +773,7 @@ samp, tt, code, pre {
       <div id="Overview">
          <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a href="#Overview">HTTP/2.0 Protocol Overview</a></h1>
          <p id="rfc.section.2.p.1">HTTP/2.0 provides an optimized transport for HTTP semantics.</p>
-         <p id="rfc.section.2.p.2">An HTTP/2.0 connection is an application level protocol running on top of a TCP connection (<a href="#RFC0793"><cite title="Transmission Control Protocol">[RFC0793]</cite></a>). The client is the TCP connection initiator.
+         <p id="rfc.section.2.p.2">An HTTP/2.0 connection is an application level protocol running on top of a TCP connection (<a href="#TCP"><cite title="Transmission Control Protocol">[TCP]</cite></a>). The client is the TCP connection initiator.
          </p>
          <p id="rfc.section.2.p.3">This document describes the HTTP/2.0 protocol using a logical structure that is formed of three parts: framing, streams, and
             application mapping. This structure is provided primarily as an aid to specification, implementations are free to diverge
@@ -1789,6 +1789,9 @@ Upgrade: HTTP/2.0
             <dd>Used by the endpoint to indicate that the stream is no longer needed.</dd>
             <dt id="COMPRESSION_ERROR">COMPRESSION_ERROR (9):</dt>
             <dd>The endpoint is unable to maintain the compression context for the connection.</dd>
+            <dt id="CONNECT_ERROR">CONNECT_ERROR (10):</dt>
+            <dd>The connection established in response to a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>) was reset or abnormally closed.
+            </dd>
          </dl>
       </div>
       <div id="HTTPLayer">
@@ -1920,9 +1923,8 @@ Upgrade: HTTP/2.0
                         is an OPTIONS request for '*', in which case the <samp>:path</samp> header field MUST include '*'.
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields. An intermediary MUST ensure that
-                     requests that it forwards are correct. A server MUST treat the absence of any of these header fields, presence of multiple
-                     values, or an invalid value as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An intermediary MUST ensure that requests that it forwards are correct. A server MUST treat the absence of any of these
+                     header fields, presence of multiple values, or an invalid value as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                   <p id="rfc.section.8.1.2.1.p.2">HTTP/2.0 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
                   <p id="rfc.section.8.1.2.1.p.3">All HTTP Requests that include a body can include a <samp>content-length</samp> header field. If a server receives a request where the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths does not equal the value of the <samp>content-length</samp> header field, the server MUST return a 400 (Bad Request) error.
@@ -2015,26 +2017,34 @@ Upgrade: HTTP/2.0
                </p>
             </div>
          </div>
-         <div>
-            <h2 id="rfc.section.8.3"><a href="#rfc.section.8.3">8.3</a>&nbsp;The CONNECT Method
-            </h2>
-            <p id="rfc.section.8.3.p.1">The HTTP pseudo-method <a href="#HTTP-p2">CONNECT</a> <cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite> is used to convert an HTTP/1.1 connection into a tunnel to a remote host. CONNECT is primarily used with HTTP proxies to established
-               a TLS session with a server for the purposes of interacting with <samp>https</samp> resources.
+         <div id="CONNECT">
+            <h2 id="rfc.section.8.3"><a href="#rfc.section.8.3">8.3</a>&nbsp;<a href="#CONNECT">The CONNECT Method</a></h2>
+            <p id="rfc.section.8.3.p.1">The HTTP pseudo-method CONNECT (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#CONNECT" title="CONNECT">Section 4.3.6</a>) is used to convert an HTTP/1.1 connection into a tunnel to a remote host. CONNECT is primarily used with HTTP proxies to
+               established a TLS session with a server for the purposes of interacting with <samp>https</samp> resources.
             </p>
             <p id="rfc.section.8.3.p.2">In HTTP/2.0, the CONNECT method is used to establish a tunnel over a single HTTP/2.0 stream to a remote host. The HTTP header
                mapping works as mostly as defined in Request Header Fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>), with a few differences. Specifically: 
             </p>
             <ul>
-               <li>The :method header value is CONNECT</li>
-               <li>The :scheme header field MUST be omitted.</li>
-               <li>The :host header MAY be sent. It exists for backwards compatibility with HTTP/1.1 implementations where the Host header may
-                  not match the host indicated in the authority specified in the request-target of the CONNECT request.
+               <li>The <samp>:method</samp> header field is set to <samp>CONNECT</samp>.
                </li>
-               <li>The :path header value contains the authority-form of the request-target of CONNECT requests.</li>
+               <li>The <samp>:scheme</samp> header field MUST be omitted.
+               </li>
+               <li>The <samp>:host</samp> header field MAY be sent. It exists for backwards compatibility with HTTP/1.1 implementations where the Host header may not
+                  match the host indicated in the authority specified in the request-target of the CONNECT request. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Unjustified: what value does :host provide?]</span> 
+               </li>
+               <li>The <samp>:path</samp> header field contains the authority-form of the request-target of CONNECT requests (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>).
+               </li>
             </ul>
-            <p id="rfc.section.8.3.p.3">After successfully establishing a CONNECT tunnel over a stream, the stream DATA frames comprise the data of the bidirectional
-               tunnel. Each direction of the tunnel is closed via the END_STREAM flag, similar to how TCP closes each direction with its
-               FIN flag. RST_STREAM abnormally terminates the tunnel, similar to how TCP RSTs abnormally terminate the connection.
+            <p id="rfc.section.8.3.p.3">A proxy that supports CONNECT, establishes a <a href="#TCP">TCP connection</a> <cite title="Transmission Control Protocol">[TCP]</cite> to the server identified in the <samp>:path</samp> header field. Once this connection is successfully established, the proxy sends a <a href="#HEADERS" class="smpl">HEADERS</a> frame containing a 2xx series status code, as defined in <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#CONNECT" title="CONNECT">Section 4.3.6</a>.
+            </p>
+            <p id="rfc.section.8.3.p.4">After the initial <a href="#HEADERS" class="smpl">HEADERS</a> frame sent by each peer, all subsequent <a href="#DATA" class="smpl">DATA</a> frames correspond to data sent on the TCP connection. The payload of any <a href="#DATA" class="smpl">DATA</a> frames sent by the client are transmitted by the proxy to the TCP server; data received from the TCP server is assembled into <a href="#DATA" class="smpl">DATA</a> frames by the proxy. Frame types other than <a href="#DATA" class="smpl">DATA</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> MUST NOT be sent on a connected stream, and MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) if received.
+            </p>
+            <p id="rfc.section.8.3.p.5">The TCP connection can be closed by either peer. The END_STREAM flag on a <a href="#DATA" class="smpl">DATA</a> frame is treated as being equivalent to the TCP FIN bit. A client is expected to send a <a href="#DATA" class="smpl">DATA</a> frame with the END_STREAM flag set after receiving a frame bearing the END_STREAM flag. A proxy that receives a <a href="#DATA" class="smpl">DATA</a> frame with the END_STREAM flag set sends the attached data with the FIN bit set on the last TCP segment. A proxy that receives
+               a TCP segment with the FIN bit set sends a <a href="#DATA" class="smpl">DATA</a> frame with the END_STREAM flag set. Note that the final TCP segment or <a href="#DATA" class="smpl">DATA</a> frame could be empty.
+            </p>
+            <p id="rfc.section.8.3.p.6">A TCP connection error is signaled with <a href="#RST_STREAM" class="smpl">RST_STREAM</a>. A proxy treats any error in the TCP connection, which includes receiving a TCP segment with the RST bit set, as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#CONNECT_ERROR" class="smpl">CONNECT_ERROR</a>. Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it detects an error with the stream or the HTTP/2.0
+               connection.
             </p>
          </div>
       </div>
@@ -2062,7 +2072,7 @@ Upgrade: HTTP/2.0
          <div>
             <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;Use of TLS Features
             </h2>
-            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
+            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
                   of early drafts.]</span> 
             </p>
             <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2.0 clients MUST indicate the target domain name when negotiating TLS.
@@ -2108,7 +2118,7 @@ Upgrade: HTTP/2.0
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
@@ -2397,11 +2407,6 @@ Upgrade: HTTP/2.0
             </td>
          </tr>
          <tr>
-            <td class="reference"><b id="RFC0793">[RFC0793]</b></td>
-            <td class="top">Postel, J., “<a href="http://tools.ietf.org/html/rfc793">Transmission Control Protocol</a>”, STD&nbsp;7, RFC&nbsp;793, September&nbsp;1981.
-            </td>
-         </tr>
-         <tr>
             <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
             <td class="top"><a href="mailto:sob@harvard.edu" title="Harvard University">Bradner, S.</a>, “<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>”, BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997.
             </td>
@@ -2434,6 +2439,11 @@ Upgrade: HTTP/2.0
          <tr>
             <td class="reference"><b id="RFC6454">[RFC6454]</b></td>
             <td class="top">Barth, A., “<a href="http://tools.ietf.org/html/rfc6454">The Web Origin Concept</a>”, RFC&nbsp;6454, December&nbsp;2011.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="TCP">[TCP]</b></td>
+            <td class="top">Postel, J., “<a href="http://tools.ietf.org/html/rfc793">Transmission Control Protocol</a>”, STD&nbsp;7, RFC&nbsp;793, September&nbsp;1981.
             </td>
          </tr>
          <tr>
@@ -2495,7 +2505,7 @@ Upgrade: HTTP/2.0
          <h1 id="rfc.section.A" class="np"><a href="#rfc.section.A">A.</a>&nbsp;<a href="#change.log">Change Log (to be removed by RFC Editor before publication)</a></h1>
          <div id="changes.since.draft-ietf-httpbis-http2-06">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-06">Since draft-ietf-httpbis-http2-06</a></h2>
-            <p id="rfc.section.A.1.p.1">None (yet).</p>
+            <p id="rfc.section.A.1.p.1">Adding definition for CONNECT method.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-05">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-05">Since draft-ietf-httpbis-http2-05</a></h2>
