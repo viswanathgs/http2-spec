@@ -153,12 +153,12 @@ Internet-Draft                  HTTP/2.0                    October 2013
      9.3.  Frame Size Limits for HTTP  . . . . . . . . . . . . . . .  49
      9.4.  GZip Content-Encoding . . . . . . . . . . . . . . . . . .  49
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  49
-     10.1.  Server Authority and Same-Origin . . . . . . . . . . . .  50
+     10.1.  Server Authority and Same-Origin . . . . . . . . . . . .  49
      10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  50
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  50
      10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  51
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  51
-   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  52
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  51
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  52
      12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  52
      12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  53
@@ -170,9 +170,9 @@ Belshe, et al.           Expires April 10, 2014                 [Page 3]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-     12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  54
+     12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  53
      12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  54
-   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  55
+   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  54
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  55
      14.1.  Normative References . . . . . . . . . . . . . . . . . .  55
      14.2.  Informative References . . . . . . . . . . . . . . . . .  57
@@ -1179,10 +1179,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
    Explicitly setting the priority for a stream does not guarantee any
-   particular processing or transmision order for the stream relative to
-   any other stream.  Nor is there any mechanism provided by which the
-   initiator of a stream can force or require a receiving endpoint to
-   process concurrent streams in a particular order.
+   particular processing or transmission order for the stream relative
+   to any other stream.  Nor is there any mechanism provided by which
+   the initiator of a stream can force or require a receiving endpoint
+   to process concurrent streams in a particular order.
 
    Unless explicitly specified in the HEADERS [HEADERS] frame
    (Section 6.2) during stream creation, the default stream priority is
@@ -2636,9 +2636,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    are transmitted by the proxy to the TCP server; data received from
    the TCP server is assembled into DATA [DATA] frames by the proxy.
-   Frame types other than DATA [DATA] or RST_STREAM [RST_STREAM] MUST
-   NOT be sent on a connected stream, and MUST be treated as a stream
-   error (Section 5.4.2) if received.
+   Frame types other than DATA [DATA] or stream management frames
+   (RST_STREAM [RST_STREAM], WINDOW_UPDATE [WINDOW_UPDATE], and PRIORITY
+   [PRIORITY]) MUST NOT be sent on a connected stream, and MUST be
+   treated as a stream error (Section 5.4.2) if received.
 
    The TCP connection can be closed by either peer.  The END_STREAM flag
    on a DATA [DATA] frame is treated as being equivalent to the TCP FIN
@@ -2681,7 +2682,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    Servers are encouraged to maintain open connections for as long as
    possible, but are permitted to terminate idle connections if
    necessary.  When either endpoint chooses to close the transport-level
-   TCP connection, the terminating endpoint SHOULD first send a GOAWAY
 
 
 
@@ -2690,6 +2690,7 @@ Belshe, et al.           Expires April 10, 2014                [Page 48]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   TCP connection, the terminating endpoint SHOULD first send a GOAWAY
    [GOAWAY] (Section 6.8) frame so that both endpoints can reliably
    determine whether previously sent frames have been processed and
    gracefully complete or terminate any necessary remaining tasks.
@@ -2733,8 +2734,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 10.  Security Considerations
 
-
-
+10.1.  Server Authority and Same-Origin
 
 
 
@@ -2745,8 +2745,6 @@ Belshe, et al.           Expires April 10, 2014                [Page 49]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-10.1.  Server Authority and Same-Origin
 
    This specification uses the same-origin policy ([RFC6454], Section 3)
    to determine whether an origin server is permitted to provide
@@ -2791,8 +2789,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
    including carriage return (U+000D) or line feed (U+000A) MUST NOT be
    translated verbatim, as stipulated in [HTTP-p1], Section 3.2.4.
 
-
-
+   Translation from HTTP/1.x to HTTP/2.0 does not produce the same
+   opportunity to an attacker.  Intermediaries that perform translation
+   to HTTP/2.0 MUST remove any instances of the "obs-fold" production
+   from header field values.
 
 
 
@@ -2801,11 +2801,6 @@ Belshe, et al.           Expires April 10, 2014                [Page 50]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   Translation from HTTP/1.x to HTTP/2.0 does not produce the same
-   opportunity to an attacker.  Intermediaries that perform translation
-   to HTTP/2.0 MUST remove any instances of the "obs-fold" production
-   from header field values.
 
 10.4.  Cacheability of Pushed Resources
 
@@ -2845,19 +2840,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
-
-
-
-
-
-
-
-
-Belshe, et al.           Expires April 10, 2014                [Page 51]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
 12.  IANA Considerations
 
    A string for identifying HTTP/2.0 is entered into the "Application
@@ -2867,6 +2849,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
    This document establishes registries for frame types, error codes and
    settings.  These new registries are entered in a new "Hypertext
    Transfer Protocol (HTTP) 2.0 Parameters" section.
+
+
+
+
+Belshe, et al.           Expires April 10, 2014                [Page 51]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
 
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
@@ -2906,14 +2896,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    | 0       | DATA [DATA]        | END_STREAM(1)           | Section  |
    |         |                    |                         | 6.1      |
    | 1       | HEADERS [HEADERS]  | END_STREAM(1),          | Section  |
-
-
-
-Belshe, et al.           Expires April 10, 2014                [Page 52]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
    |         |                    | END_HEADERS(4),         | 6.2      |
    |         |                    | PRIORITY(8)             |          |
    | 2       | PRIORITY           | -                       | Section  |
@@ -2924,6 +2906,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
    |         | [SETTINGS]         |                         | 6.5      |
    | 5       | PUSH_PROMISE       | END_PUSH_PROMISE(4)     | Section  |
    |         | [PUSH_PROMISE]     |                         | 6.6      |
+
+
+
+Belshe, et al.           Expires April 10, 2014                [Page 52]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    | 6       | PING [PING]        | PONG(1)                 | Section  |
    |         |                    |                         | 6.7      |
    | 7       | GOAWAY [GOAWAY]    | -                       | Section  |
@@ -2963,13 +2953,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    An initial set of error code registrations can be found in Section 7.
 
-
-
-Belshe, et al.           Expires April 10, 2014                [Page 53]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
 12.4.  Settings Registry
 
    This document establishes a registry for HTTP/2.0 settings.  The
@@ -2979,6 +2962,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    Registrations for settings are required to include a description of
    the setting.  An expert reviewer is advised to examine new
+
+
+
+Belshe, et al.           Expires April 10, 2014                [Page 53]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    registrations for possible duplication with existing settings.  Use
    of existing registrations is to be encouraged, but not mandated.
 
@@ -3019,17 +3010,21 @@ Internet-Draft                  HTTP/2.0                    October 2013
    Related information:  This header field is only used by an HTTP/2.0
       client for Upgrade-based negotiation.
 
+13.  Acknowledgements
+
+   This document includes substantial input from the following
+   individuals:
+
+
+
+
+
 
 
 Belshe, et al.           Expires April 10, 2014                [Page 54]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-13.  Acknowledgements
-
-   This document includes substantial input from the following
-   individuals:
 
    o  Adam Langley, Wan-Teh Chang, Jim Morrison, Mark Nottingham, Alyssa
       Wilk, Costin Manolache, William Chan, Vitaliy Lvin, Joe Chan, Adam
@@ -3073,6 +3068,11 @@ Internet-Draft                  HTTP/2.0                    October 2013
               draft-ietf-httpbis-p5-range-24 (work in progress),
               September 2013.
 
+   [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
+              Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
+              draft-ietf-httpbis-p6-cache-24 (work in progress), July
+              2013.
+
 
 
 
@@ -3081,11 +3081,6 @@ Belshe, et al.           Expires April 10, 2014                [Page 55]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
-              Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
-              draft-ietf-httpbis-p6-cache-24 (work in progress), July
-              2013.
 
    [HTTP-p7]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
@@ -3129,6 +3124,11 @@ Internet-Draft                  HTTP/2.0                    October 2013
               "Transport Layer Security (TLS) Application Layer Protocol
               Negotiation Extension", draft-ietf-tls-applayerprotoneg-01
               (work in progress), April 2013.
+
+
+
+
+
 
 
 
