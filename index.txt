@@ -30,10 +30,6 @@ Abstract
    1.1 message format or protocol.  HTTP's existing semantics remain
    unchanged.
 
-   This version of the draft has been marked for implementation.
-   Interoperability testing will occur in the HTTP/2.0 interim in
-   Zurich, CH, starting 2014-01-22.
-
 Editorial Note (To be removed by RFC Editor)
 
    Discussion of this draft takes place on the HTTPBIS working group
@@ -49,6 +45,10 @@ Status of This Memo
    This Internet-Draft is submitted in full conformance with the
    provisions of BCP 78 and BCP 79.
 
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
 
 
 
@@ -57,11 +57,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 1]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   Internet-Drafts are working documents of the Internet Engineering
-   Task Force (IETF).  Note that other groups may also distribute
-   working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at http://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
@@ -93,7 +88,7 @@ Table of Contents
    2.  HTTP/2.0 Protocol Overview  . . . . . . . . . . . . . . . . .   6
      2.1.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . .   6
      2.2.  HTTP Multiplexing . . . . . . . . . . . . . . . . . . . .   6
-     2.3.  HTTP Semantics  . . . . . . . . . . . . . . . . . . . . .   7
+     2.3.  HTTP Semantics  . . . . . . . . . . . . . . . . . . . . .   6
    3.  Starting HTTP/2.0 . . . . . . . . . . . . . . . . . . . . . .   7
      3.1.  HTTP/2.0 Version Identification . . . . . . . . . . . . .   7
      3.2.  Starting HTTP/2.0 for "http" URIs . . . . . . . . . . . .   8
@@ -106,6 +101,11 @@ Table of Contents
      4.2.  Frame Size  . . . . . . . . . . . . . . . . . . . . . . .  12
      4.3.  Header Compression and Decompression  . . . . . . . . . .  13
    5.  Streams and Multiplexing  . . . . . . . . . . . . . . . . . .  14
+     5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  14
+       5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  18
+       5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  19
+     5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  19
+       5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  20
 
 
 
@@ -114,11 +114,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 2]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-     5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  14
-       5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  18
-       5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  19
-     5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  19
-       5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  20
        5.2.2.  Appropriate Use of Flow Control . . . . . . . . . . .  21
      5.3.  Stream priority . . . . . . . . . . . . . . . . . . . . .  21
      5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  22
@@ -162,6 +157,11 @@ Internet-Draft                  HTTP/2.0                    October 2013
      10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  50
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  50
      10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  51
+   11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  51
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  51
+     12.1.  Registration of HTTP/2.0 Identification String . . . . .  52
+     12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  52
+     12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  53
 
 
 
@@ -170,11 +170,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 3]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-   11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  51
-   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  51
-     12.1.  Registration of HTTP/2.0 Identification String . . . . .  52
-     12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  52
-     12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  53
      12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  53
      12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  54
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  54
@@ -218,6 +213,11 @@ Internet-Draft                  HTTP/2.0                    October 2013
    This document addresses these issues by defining an optimized mapping
    of HTTP's semantics to an underlying connection.  Specifically, it
    allows interleaving of request and response messages on the same
+   connection and uses an efficient coding for HTTP header fields.  It
+   also allows prioritization of requests, letting more important
+   requests complete more quickly, further improving perceived
+   performance.
+
 
 
 
@@ -225,11 +225,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 4]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   connection and uses an efficient coding for HTTP header fields.  It
-   also allows prioritization of requests, letting more important
-   requests complete more quickly, further improving perceived
-   performance.
 
    The resulting protocol is designed to be more friendly to the
    network, because fewer TCP connections can be used, in comparison to
@@ -275,16 +270,17 @@ Internet-Draft                  HTTP/2.0                    October 2013
       connection, consisting of a header and a variable-length sequence
       of bytes structured according to the frame type.
 
+   peer:  An endpoint.  When discussing a particular endpoint, "peer"
+      refers to the endpoint that is remote to the primary subject of
+      discussion.
+
+
 
 
 Belshe, et al.           Expires April 13, 2014                 [Page 5]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   peer:  An endpoint.  When discussing a particular endpoint, "peer"
-      refers to the endpoint that is remote to the primary subject of
-      discussion.
 
    receiver:  An endpoint that is receiving frames.
 
@@ -330,6 +326,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
    In order to maintain independent streams, flow control and
    prioritization are necessary.
 
+2.3.  HTTP Semantics
+
+
+
 
 
 
@@ -337,8 +337,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 6]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-2.3.  HTTP Semantics
 
    HTTP/2.0 defines how HTTP requests and responses are mapped to
    streams (see Section 8.1) and introduces a new interaction model,
@@ -386,6 +384,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    Implementations of draft versions of the protocol MUST add the string
    "-draft-" and the corresponding draft number to the identifier before
+   the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
+   identified using the string "HTTP-draft-03/2.0".
 
 
 
@@ -393,9 +393,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 7]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
-   identified using the string "HTTP-draft-03/2.0".
 
    Non-compatible experiments that are based on these draft versions
    MUST instead replace the string "draft" with a different identifier.
@@ -443,6 +440,9 @@ Internet-Draft                  HTTP/2.0                    October 2013
      ...
 
 
+   A server that supports HTTP/2.0 accepts the upgrade with a 101
+   (Switching Protocols) status code.  After the empty line that
+
 
 
 Belshe, et al.           Expires April 13, 2014                 [Page 8]
@@ -450,8 +450,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 8]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-   A server that supports HTTP/2.0 accepts the upgrade with a 101
-   (Switching Protocols) status code.  After the empty line that
    terminates the 101 response, the server can begin sending HTTP/2.0
    frames.  These frames MUST include a response to the request that
    initiated the Upgrade.
@@ -498,6 +496,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    o  SETTINGS_MAX_CONCURRENT_STREAMS
 
+   o  SETTINGS_INITIAL_WINDOW_SIZE
+
 
 
 
@@ -505,8 +505,6 @@ Belshe, et al.           Expires April 13, 2014                 [Page 9]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
-
-   o  SETTINGS_INITIAL_WINDOW_SIZE
 
    As a hop-by-hop header field, the "Connection" header field MUST
    include a value of "HTTP2-Settings" in addition to "Upgrade" when
@@ -553,6 +551,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
    notation are:
 
    505249202a20485454502f322e300d0a0d0a534d0d0a0d0a
+
+
 
 
 
@@ -3122,8 +3122,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    [TLSALPN]  Friedl, S.F., Popov, A., Langley, A., and E. Stephan,
               "Transport Layer Security (TLS) Application Layer Protocol
-              Negotiation Extension", draft-ietf-tls-applayerprotoneg-01
-              (work in progress), April 2013.
+              Negotiation Extension", draft-ietf-tls-applayerprotoneg-02
+              (work in progress), September 2013.
 
 
 
