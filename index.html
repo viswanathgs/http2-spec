@@ -1335,8 +1335,8 @@ Upgrade: HTTP/2.0
                <dt>RESERVED (0x2):</dt>
                <dd>Bit 2 is reserved for future use.</dd>
                <dt>END_HEADERS (0x4):</dt>
-               <dd>The END_HEADERS bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
-                  set of headers. <br><br> The payload for a complete header block is provided by a sequence of that starts with a HEADERS frame, followed by zero or
+               <dd>Bit 3 being set indicates that this frame ends the sequence of header block fragments necessary to provide a complete set
+                  of headers. <br><br> The payload for a complete header block is provided by a sequence of that starts with a HEADERS frame, followed by zero or
                   more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. The sequence is terminated by a frame with the END_HEADERS flag set. Once the sequence terminates, the payload of
                   all HEADERS and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames are concatenated and interpreted as a single block. <br><br> A HEADERS frame without the END_HEADERS flag set MUST be followed by a <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame for the same stream. A receiver MUST treat the receipt of any other type of frame or a frame on a different stream as
                   a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
@@ -1924,8 +1924,9 @@ Upgrade: HTTP/2.0
                         is an OPTIONS request for '*', in which case the <samp>:path</samp> header field MUST include '*'.
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An intermediary MUST ensure that requests that it forwards are correct. A server MUST treat the absence of any of these
-                     header fields, presence of multiple values, or an invalid value as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory colon headers is malformed. Intermediaries that do not interpret requests MAY forward
+                     a malformed request. Implementations that detect malformed requests need to ensure that the stream ends, however a server
+                     MAY send an HTTP response prior to closing or resetting the stream.
                   </p>
                   <p id="rfc.section.8.1.2.1.p.2">HTTP/2.0 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
                   <p id="rfc.section.8.1.2.1.p.3">All HTTP Requests that include a body can include a <samp>content-length</samp> header field. If a server receives a request where the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths does not equal the value of the <samp>content-length</samp> header field, the server MUST return a 400 (Bad Request) error.
@@ -1933,8 +1934,8 @@ Upgrade: HTTP/2.0
                </div>
                <div id="HttpResponse">
                   <h4 id="rfc.section.8.1.2.2"><a href="#rfc.section.8.1.2.2">8.1.2.2</a>&nbsp;<a href="#HttpResponse">Response Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses. An intermediary MUST ensure that it does not forward responses with
-                     absent or invalid values. A client MUST treat the absence of the <samp>:status</samp> header field, the presence of multiple values, or an invalid value as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p id="rfc.section.8.1.2.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses. Intermediaries that do not interpret requests MAY forward a response
+                     that is malformed in this fashion. Clients MUST NOT accept a malformed response.
                   </p>
                   <p id="rfc.section.8.1.2.2.p.2">HTTP/2.0 does not define a way to carry the version or reason phrase that is included in an HTTP/1.1 status line.</p>
                </div>
