@@ -5,12 +5,12 @@
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: April 11, 2014                                      Google, Inc
+Expires: April 13, 2014                                      Google, Inc
                                                          M. Thomson, Ed.
                                                                Microsoft
                                                         A. Melnikov, Ed.
                                                                Isode Ltd
-                                                        October 08, 2013
+                                                        October 10, 2013
 
 
                 Hypertext Transfer Protocol version 2.0
@@ -30,6 +30,10 @@ Abstract
    1.1 message format or protocol.  HTTP's existing semantics remain
    unchanged.
 
+   This version of the draft has been marked for implementation.
+   Interoperability testing will occur in the HTTP/2.0 interim in
+   Zurich, CH, starting 2014-01-22.
+
 Editorial Note (To be removed by RFC Editor)
 
    Discussion of this draft takes place on the HTTPBIS working group
@@ -45,25 +49,26 @@ Status of This Memo
    This Internet-Draft is submitted in full conformance with the
    provisions of BCP 78 and BCP 79.
 
+
+
+
+
+Belshe, et al.           Expires April 13, 2014                 [Page 1]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
    Drafts is at http://datatracker.ietf.org/drafts/current/.
-
-
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 1]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 11, 2014.
+   This Internet-Draft will expire on April 13, 2014.
 
 Copyright Notice
 
@@ -88,7 +93,7 @@ Table of Contents
    2.  HTTP/2.0 Protocol Overview  . . . . . . . . . . . . . . . . .   6
      2.1.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . .   6
      2.2.  HTTP Multiplexing . . . . . . . . . . . . . . . . . . . .   6
-     2.3.  HTTP Semantics  . . . . . . . . . . . . . . . . . . . . .   6
+     2.3.  HTTP Semantics  . . . . . . . . . . . . . . . . . . . . .   7
    3.  Starting HTTP/2.0 . . . . . . . . . . . . . . . . . . . . . .   7
      3.1.  HTTP/2.0 Version Identification . . . . . . . . . . . . .   7
      3.2.  Starting HTTP/2.0 for "http" URIs . . . . . . . . . . . .   8
@@ -101,19 +106,19 @@ Table of Contents
      4.2.  Frame Size  . . . . . . . . . . . . . . . . . . . . . . .  12
      4.3.  Header Compression and Decompression  . . . . . . . . . .  13
    5.  Streams and Multiplexing  . . . . . . . . . . . . . . . . . .  14
+
+
+
+Belshe, et al.           Expires April 13, 2014                 [Page 2]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
      5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  14
        5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  18
        5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  19
      5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  19
        5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  20
-
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 2]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
        5.2.2.  Appropriate Use of Flow Control . . . . . . . . . . .  21
      5.3.  Stream priority . . . . . . . . . . . . . . . . . . . . .  21
      5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  22
@@ -157,19 +162,19 @@ Internet-Draft                  HTTP/2.0                    October 2013
      10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  50
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  50
      10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  51
+
+
+
+Belshe, et al.           Expires April 13, 2014                 [Page 3]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  51
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  51
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  52
      12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  52
      12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  53
-
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 3]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
      12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  53
      12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  54
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  54
@@ -213,18 +218,18 @@ Internet-Draft                  HTTP/2.0                    October 2013
    This document addresses these issues by defining an optimized mapping
    of HTTP's semantics to an underlying connection.  Specifically, it
    allows interleaving of request and response messages on the same
+
+
+
+Belshe, et al.           Expires April 13, 2014                 [Page 4]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    connection and uses an efficient coding for HTTP header fields.  It
    also allows prioritization of requests, letting more important
    requests complete more quickly, further improving perceived
    performance.
-
-
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 4]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
 
    The resulting protocol is designed to be more friendly to the
    network, because fewer TCP connections can be used, in comparison to
@@ -270,17 +275,16 @@ Internet-Draft                  HTTP/2.0                    October 2013
       connection, consisting of a header and a variable-length sequence
       of bytes structured according to the frame type.
 
-   peer:  An endpoint.  When discussing a particular endpoint, "peer"
-      refers to the endpoint that is remote to the primary subject of
-      discussion.
 
 
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 5]
+Belshe, et al.           Expires April 13, 2014                 [Page 5]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   peer:  An endpoint.  When discussing a particular endpoint, "peer"
+      refers to the endpoint that is remote to the primary subject of
+      discussion.
 
    receiver:  An endpoint that is receiving frames.
 
@@ -326,17 +330,15 @@ Internet-Draft                  HTTP/2.0                    October 2013
    In order to maintain independent streams, flow control and
    prioritization are necessary.
 
-2.3.  HTTP Semantics
 
 
 
-
-
-
-Belshe, et al.           Expires April 11, 2014                 [Page 6]
+Belshe, et al.           Expires April 13, 2014                 [Page 6]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+2.3.  HTTP Semantics
 
    HTTP/2.0 defines how HTTP requests and responses are mapped to
    streams (see Section 8.1) and introduces a new interaction model,
@@ -384,15 +386,16 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    Implementations of draft versions of the protocol MUST add the string
    "-draft-" and the corresponding draft number to the identifier before
-   the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
-   identified using the string "HTTP-draft-03/2.0".
 
 
 
-Belshe, et al.           Expires April 11, 2014                 [Page 7]
+Belshe, et al.           Expires April 13, 2014                 [Page 7]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   the separator ('/').  For example, draft-ietf-httpbis-http2-03 is
+   identified using the string "HTTP-draft-03/2.0".
 
    Non-compatible experiments that are based on these draft versions
    MUST instead replace the string "draft" with a different identifier.
@@ -440,16 +443,15 @@ Internet-Draft                  HTTP/2.0                    October 2013
      ...
 
 
-   A server that supports HTTP/2.0 accepts the upgrade with a 101
-   (Switching Protocols) status code.  After the empty line that
 
 
-
-Belshe, et al.           Expires April 11, 2014                 [Page 8]
+Belshe, et al.           Expires April 13, 2014                 [Page 8]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   A server that supports HTTP/2.0 accepts the upgrade with a 101
+   (Switching Protocols) status code.  After the empty line that
    terminates the 101 response, the server can begin sending HTTP/2.0
    frames.  These frames MUST include a response to the request that
    initiated the Upgrade.
@@ -496,15 +498,15 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    o  SETTINGS_MAX_CONCURRENT_STREAMS
 
-   o  SETTINGS_INITIAL_WINDOW_SIZE
 
 
 
-
-Belshe, et al.           Expires April 11, 2014                 [Page 9]
+Belshe, et al.           Expires April 13, 2014                 [Page 9]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   o  SETTINGS_INITIAL_WINDOW_SIZE
 
    As a hop-by-hop header field, the "Connection" header field MUST
    include a value of "HTTP2-Settings" in addition to "Upgrade" when
@@ -555,9 +557,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-
-
-Belshe, et al.           Expires April 11, 2014                [Page 10]
+Belshe, et al.           Expires April 13, 2014                [Page 10]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -613,7 +613,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 11]
+Belshe, et al.           Expires April 13, 2014                [Page 11]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -669,7 +669,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 12]
+Belshe, et al.           Expires April 13, 2014                [Page 12]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -725,7 +725,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 13]
+Belshe, et al.           Expires April 13, 2014                [Page 13]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -781,7 +781,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 14]
+Belshe, et al.           Expires April 13, 2014                [Page 14]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 15]
+Belshe, et al.           Expires April 13, 2014                [Page 15]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -893,7 +893,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 16]
+Belshe, et al.           Expires April 13, 2014                [Page 16]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -949,7 +949,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 17]
+Belshe, et al.           Expires April 13, 2014                [Page 17]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1005,7 +1005,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 18]
+Belshe, et al.           Expires April 13, 2014                [Page 18]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1061,7 +1061,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 19]
+Belshe, et al.           Expires April 13, 2014                [Page 19]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1117,7 +1117,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 20]
+Belshe, et al.           Expires April 13, 2014                [Page 20]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 21]
+Belshe, et al.           Expires April 13, 2014                [Page 21]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 22]
+Belshe, et al.           Expires April 13, 2014                [Page 22]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 23]
+Belshe, et al.           Expires April 13, 2014                [Page 23]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 24]
+Belshe, et al.           Expires April 13, 2014                [Page 24]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 25]
+Belshe, et al.           Expires April 13, 2014                [Page 25]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1453,7 +1453,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 26]
+Belshe, et al.           Expires April 13, 2014                [Page 26]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 27]
+Belshe, et al.           Expires April 13, 2014                [Page 27]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 28]
+Belshe, et al.           Expires April 13, 2014                [Page 28]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1621,7 +1621,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 29]
+Belshe, et al.           Expires April 13, 2014                [Page 29]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1677,7 +1677,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 30]
+Belshe, et al.           Expires April 13, 2014                [Page 30]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1733,7 +1733,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 31]
+Belshe, et al.           Expires April 13, 2014                [Page 31]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1789,7 +1789,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 32]
+Belshe, et al.           Expires April 13, 2014                [Page 32]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1845,7 +1845,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 33]
+Belshe, et al.           Expires April 13, 2014                [Page 33]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1901,7 +1901,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 34]
+Belshe, et al.           Expires April 13, 2014                [Page 34]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1957,7 +1957,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 35]
+Belshe, et al.           Expires April 13, 2014                [Page 35]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2013,7 +2013,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 36]
+Belshe, et al.           Expires April 13, 2014                [Page 36]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2069,7 +2069,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 37]
+Belshe, et al.           Expires April 13, 2014                [Page 37]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2125,7 +2125,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 38]
+Belshe, et al.           Expires April 13, 2014                [Page 38]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2181,7 +2181,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 39]
+Belshe, et al.           Expires April 13, 2014                [Page 39]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2237,7 +2237,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 40]
+Belshe, et al.           Expires April 13, 2014                [Page 40]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2293,7 +2293,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 41]
+Belshe, et al.           Expires April 13, 2014                [Page 41]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2349,7 +2349,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 42]
+Belshe, et al.           Expires April 13, 2014                [Page 42]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2405,7 +2405,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 43]
+Belshe, et al.           Expires April 13, 2014                [Page 43]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2461,7 +2461,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 44]
+Belshe, et al.           Expires April 13, 2014                [Page 44]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2517,7 +2517,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 45]
+Belshe, et al.           Expires April 13, 2014                [Page 45]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2573,7 +2573,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 46]
+Belshe, et al.           Expires April 13, 2014                [Page 46]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2629,7 +2629,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 47]
+Belshe, et al.           Expires April 13, 2014                [Page 47]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2685,7 +2685,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 48]
+Belshe, et al.           Expires April 13, 2014                [Page 48]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2741,7 +2741,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 49]
+Belshe, et al.           Expires April 13, 2014                [Page 49]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2797,7 +2797,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 50]
+Belshe, et al.           Expires April 13, 2014                [Page 50]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2853,7 +2853,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 51]
+Belshe, et al.           Expires April 13, 2014                [Page 51]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2909,7 +2909,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 52]
+Belshe, et al.           Expires April 13, 2014                [Page 52]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2965,7 +2965,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 53]
+Belshe, et al.           Expires April 13, 2014                [Page 53]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3021,7 +3021,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 54]
+Belshe, et al.           Expires April 13, 2014                [Page 54]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3077,7 +3077,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 55]
+Belshe, et al.           Expires April 13, 2014                [Page 55]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3133,7 +3133,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 56]
+Belshe, et al.           Expires April 13, 2014                [Page 56]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3189,7 +3189,7 @@ A.3.  Since draft-ietf-httpbis-http2-04
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 57]
+Belshe, et al.           Expires April 13, 2014                [Page 57]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3245,7 +3245,7 @@ A.6.  Since draft-ietf-httpbis-http2-01
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 58]
+Belshe, et al.           Expires April 13, 2014                [Page 58]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3301,7 +3301,7 @@ Authors' Addresses
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 59]
+Belshe, et al.           Expires April 13, 2014                [Page 59]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3356,4 +3356,4 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 11, 2014                [Page 60]
+Belshe, et al.           Expires April 13, 2014                [Page 60]
