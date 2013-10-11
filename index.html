@@ -418,7 +418,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires April 13, 2014";
+       content: "Expires April 14, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -462,7 +462,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-10-10">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-10-11">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). The HTTP/2.0 encapsulation enables more efficient use of network resources and reduced perception of latency by allowing header field compression and multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete the HTTP/1.1 message format or protocol. HTTP's existing semantics remain unchanged.">
    </head>
@@ -482,7 +482,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: April 13, 2014</td>
+               <td class="left">Expires: April 14, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -503,7 +503,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">October 10, 2013</td>
+               <td class="right">October 11, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -534,7 +534,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on April 13, 2014.</p>
+         <p>This Internet-Draft will expire on April 14, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -642,8 +642,7 @@ samp, tt, code, pre {
          <li><a href="#rfc.section.9">9.</a>&nbsp;&nbsp;&nbsp;<a href="#HttpExtra">Additional HTTP Requirements/Considerations</a><ul>
                <li><a href="#rfc.section.9.1">9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.1">Connection Management</a></li>
                <li><a href="#rfc.section.9.2">9.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.2">Use of TLS Features</a></li>
-               <li><a href="#rfc.section.9.3">9.3</a>&nbsp;&nbsp;&nbsp;<a href="#HttpSizeLimit">Frame Size Limits for HTTP</a></li>
-               <li><a href="#rfc.section.9.4">9.4</a>&nbsp;&nbsp;&nbsp;<a href="#Compression">GZip Content-Encoding</a></li>
+               <li><a href="#rfc.section.9.3">9.3</a>&nbsp;&nbsp;&nbsp;<a href="#Compression">GZip Content-Encoding</a></li>
             </ul>
          </li>
          <li><a href="#rfc.section.10">10.</a>&nbsp;&nbsp;&nbsp;<a href="#security">Security Considerations</a><ul>
@@ -950,8 +949,8 @@ Upgrade: HTTP/2.0
             <div id="rfc.figure.1"></div><pre class="inline">  0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |         Length (16)           |   Type (8)    |   Flags (8)   |
- +-+-------------+---------------+-------------------------------+
+ | R |     Length (16)           |   Type (8)    |   Flags (8)   |
+ +-+-+-----------+---------------+-------------------------------+
  |R|                 Stream Identifier (31)                      |
  +-+-------------------------------------------------------------+
  |                   Frame Payload (0...)                      ...
@@ -959,8 +958,12 @@ Upgrade: HTTP/2.0
           </pre><p class="figure">Figure 1: Frame Header</p>
             <p id="rfc.section.4.1.p.3">The fields of the frame header are defined as: </p>
             <dl>
+               <dt>R:</dt>
+               <dd>A reserved 2-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
+                  ignored when receiving.
+               </dd>
                <dt>Length:</dt>
-               <dd>The length of the frame payload expressed as an unsigned 16-bit integer. The 8 octets of the frame header are not included
+               <dd>The length of the frame payload expressed as an unsigned 14-bit integer. The 8 octets of the frame header are not included
                   in this value.
                </dd>
                <dt>Type:</dt>
@@ -983,8 +986,8 @@ Upgrade: HTTP/2.0
          </div>
          <div id="FrameSize">
             <h2 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2</a>&nbsp;<a href="#FrameSize">Frame Size</a></h2>
-            <p id="rfc.section.4.2.p.1">The maximum size of a frame payload varies by frame type and use. For instance, the HTTP/2.0 usage limits frame payloads to
-               2<sup>14</sup>-1 (16,383) octets (<a href="#HttpSizeLimit" title="Frame Size Limits for HTTP">Section&nbsp;9.3</a>). All implementations SHOULD be capable of receiving and minimally processing frames up to the maximum size.
+            <p id="rfc.section.4.2.p.1">The maximum size of a frame payload varies by frame type and use. The absolute maximum size of a frame is 2<sup>14</sup>-1 (16,383) octets. All implementations SHOULD be capable of receiving and minimally processing frames up to this maximum
+               size.
             </p>
             <p id="rfc.section.4.2.p.2">Certain frame types, such as <a href="#PING" class="smpl">PING</a> (see <a href="#PING" title="PING">Section&nbsp;6.7</a>), impose additional limits on the amount of payload data allowed. Likewise, additional size limits can be set by specific
                application uses (see <a href="#HttpExtra" title="Additional HTTP Requirements/Considerations">Section&nbsp;9</a>).
@@ -1793,6 +1796,10 @@ Upgrade: HTTP/2.0
             <dt id="CONNECT_ERROR">CONNECT_ERROR (10):</dt>
             <dd>The connection established in response to a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>) was reset or abnormally closed.
             </dd>
+            <dt id="ENHANCE_YOUR_CALM">ENHANCE_YOUR_CALM (420):</dt>
+            <dd>The endpoint detected that its peer is exhibiting a behavior over a given amount of time that has caused it to refuse to process
+               further frames.
+            </dd>
          </dl>
       </div>
       <div id="HTTPLayer">
@@ -1837,7 +1844,7 @@ Upgrade: HTTP/2.0
   Accept: image/jpeg               + END_HEADERS
                                      :method = GET
                                      :scheme = https
-                                     :host = example.org
+                                     :authority = example.org
                                      :path = /resource
                                      accept = image/jpeg
 </pre><p id="rfc.section.8.1.1.p.3">Similarly, a response that includes only response header fields is transmitted as a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> frames containing the serialized block of response header fields. The last <a href="#HEADERS" class="smpl">HEADERS</a> frame in the sequence has both the END_HEADERS and END_STREAM flag set:
@@ -1854,7 +1861,7 @@ Upgrade: HTTP/2.0
   Content-Type: image/jpeg         + END_HEADERS
   Content-Length: 123                :method = POST
                                      :scheme = https
-  {binary data}                      :host = example.org
+  {binary data}                      :authority = example.org
                                      :path = /resource
                                      content-type = image/jpeg
                                      content-length = 123
@@ -1912,24 +1919,28 @@ Upgrade: HTTP/2.0
                </dl>
                <div id="HttpRequest">
                   <h4 id="rfc.section.8.1.2.1"><a href="#rfc.section.8.1.2.1">8.1.2.1</a>&nbsp;<a href="#HttpRequest">Request Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.1.p.1">HTTP/2.0 defines a number of headers starting with a ':' character that carry information about the request target: </p>
+                  <p id="rfc.section.8.1.2.1.p.1">HTTP/2.0 defines a number of headers starting with a colon ':' character that carry information about the request target: </p>
                   <ul>
                      <li>The <samp>:method</samp> header field includes the HTTP method (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#methods" title="Request Methods">Section 4</a>).
                      </li>
                      <li>The <samp>:scheme</samp> header field includes the scheme portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.1">Section 3.1</a>).
                      </li>
-                     <li>The <samp>:host</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>).
+                     <li>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>).
                      </li>
                      <li>The <samp>:path</samp> header field includes the path and query parts of the target URI (the <samp>path-absolute</samp> production from <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a> and optionally a '?' character followed by the <samp>query</samp> production, see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.3">Section 3.3</a> and <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.4">Section 3.4</a>). This field MUST NOT be empty; URIs that do not contain a path component MUST include a value of '/', unless the request
                         is an OPTIONS request for '*', in which case the <samp>:path</samp> header field MUST include '*'.
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory colon headers is malformed. Intermediaries that do not interpret requests MAY forward
-                     a malformed request. Implementations that detect malformed requests need to ensure that the stream ends, however a server
-                     MAY send an HTTP response prior to closing or resetting the stream.
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory headers is malformed. Intermediaries that do not interpret requests MAY forward a malformed
+                     request. Implementations that detect malformed requests need to ensure that the stream ends, however a server MAY send an
+                     HTTP response prior to closing or resetting the stream.
                   </p>
-                  <p id="rfc.section.8.1.2.1.p.2">HTTP/2.0 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
-                  <p id="rfc.section.8.1.2.1.p.3">All HTTP Requests that include a body can include a <samp>content-length</samp> header field. If a server receives a request where the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths does not equal the value of the <samp>content-length</samp> header field, the server MUST return a 400 (Bad Request) error.
+                  <p id="rfc.section.8.1.2.1.p.2">Header field names that contain a colon are only valid in the HTTP/2.0 context. These are not HTTP header fields. Implementations
+                     MUST NOT generate header fields that start with a colon, but they MUST ignore any header field that starts with a colon. In
+                     particular, header fields with names starting with a colon MUST NOT be exposed as HTTP header fields.
+                  </p>
+                  <p id="rfc.section.8.1.2.1.p.3">HTTP/2.0 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
+                  <p id="rfc.section.8.1.2.1.p.4">All HTTP Requests that include a body can include a <samp>content-length</samp> header field. If a server receives a request where the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths does not equal the value of the <samp>content-length</samp> header field, the server MUST return a 400 (Bad Request) error.
                   </p>
                </div>
                <div id="HttpResponse">
@@ -1975,6 +1986,8 @@ Upgrade: HTTP/2.0
                pushed resources is up to that intermediary. Equally, the intermediary might choose to push additional resources to the client,
                without any action taken by the server.
             </p>
+            <p id="rfc.section.8.2.p.3">A server can only push requests that are safe (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#safe.methods" title="Safe Methods">Section 4.2.1</a>), cacheable (see <a href="#HTTP-p6"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Caching">[HTTP-p6]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p6-cache.html#response.cacheability" title="Storing Responses in Caches">Section 3</a>) and do not include a request body.
+            </p>
             <div>
                <h3 id="rfc.section.8.2.1"><a href="#rfc.section.8.2.1">8.2.1</a>&nbsp;Push Requests
                </h3>
@@ -1983,7 +1996,7 @@ Upgrade: HTTP/2.0
                </p>
                <p id="rfc.section.8.2.1.p.2">Pushed resources are always associated with an explicit request from a client. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames sent by the server are sent on the stream created for the original request. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame includes a promised stream identifier, chosen from the stream identifiers available to the server (see <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>).
                </p>
-               <p id="rfc.section.8.2.1.p.3">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request headers (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#safe.methods" title="Safe Methods">Section 4.2.1</a>). If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <p id="rfc.section.8.2.1.p.3">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request headers (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe and cacheable. If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                </p>
                <p id="rfc.section.8.2.1.p.4">The server SHOULD send <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;6.6</a>) frames prior to sending any frames that reference the promised resources. This avoids a race where clients issue requests
                   for resources prior to receiving any <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames.
@@ -2030,12 +2043,10 @@ Upgrade: HTTP/2.0
             <ul>
                <li>The <samp>:method</samp> header field is set to <samp>CONNECT</samp>.
                </li>
-               <li>The <samp>:scheme</samp> header field MUST be omitted.
+               <li>The <samp>:scheme</samp> and <samp>:path</samp> header fields MUST be omitted.
                </li>
-               <li>The <samp>:host</samp> header field MAY be sent. It exists for backwards compatibility with HTTP/1.1 implementations where the Host header may not
-                  match the host indicated in the authority specified in the request-target of the CONNECT request. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Unjustified: what value does :host provide?]</span> 
-               </li>
-               <li>The <samp>:path</samp> header field contains the authority-form of the request-target of CONNECT requests (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>).
+               <li>The <samp>:authority</samp> header field contains the host and port to connect to (equivalent to the authority-form of the request-target of CONNECT requests,
+                  see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>).
                </li>
             </ul>
             <p id="rfc.section.8.3.p.3">A proxy that supports CONNECT, establishes a <a href="#TCP">TCP connection</a> <cite title="Transmission Control Protocol">[TCP]</cite> to the server identified in the <samp>:path</samp> header field. Once this connection is successfully established, the proxy sends a <a href="#HEADERS" class="smpl">HEADERS</a> frame containing a 2xx series status code, as defined in <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#CONNECT" title="CONNECT">Section 4.3.6</a>.
@@ -2074,7 +2085,7 @@ Upgrade: HTTP/2.0
          <div>
             <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;Use of TLS Features
             </h2>
-            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
+            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
                   of early drafts.]</span> 
             </p>
             <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2.0 clients MUST indicate the target domain name when negotiating TLS.
@@ -2086,15 +2097,9 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.9.2.p.4">Implementations are encouraged not to negotiate TLS cipher suites with known vulnerabilities, such as <a href="#RC4"><cite title="The RC4 encryption algorithm">[RC4]</cite></a>.
             </p>
          </div>
-         <div id="HttpSizeLimit">
-            <h2 id="rfc.section.9.3"><a href="#rfc.section.9.3">9.3</a>&nbsp;<a href="#HttpSizeLimit">Frame Size Limits for HTTP</a></h2>
-            <p id="rfc.section.9.3.p.1">Frames used for HTTP messages MUST NOT exceed 2<sup>14</sup>-1 (16,383) octets in length, not counting the 8 octet frame header. An endpoint MUST treat the receipt of a larger frame
-               as a <a href="#FRAME_SIZE_ERROR" class="smpl">FRAME_SIZE_ERROR</a> error (see <a href="#FrameSize" title="Frame Size">Section&nbsp;4.2</a>).
-            </p>
-         </div>
          <div id="Compression">
-            <h2 id="rfc.section.9.4"><a href="#rfc.section.9.4">9.4</a>&nbsp;<a href="#Compression">GZip Content-Encoding</a></h2>
-            <p id="rfc.section.9.4.p.1">Clients MUST support gzip compression for HTTP response bodies. Regardless of the value of the accept-encoding header field,
+            <h2 id="rfc.section.9.3"><a href="#rfc.section.9.3">9.3</a>&nbsp;<a href="#Compression">GZip Content-Encoding</a></h2>
+            <p id="rfc.section.9.3.p.1">Clients MUST support gzip compression for HTTP response bodies. Regardless of the value of the accept-encoding header field,
                a server MAY send responses with gzip or deflate encoding. A compressed response MUST still bear an appropriate content-encoding
                header field.
             </p>
@@ -2120,7 +2125,7 @@ Upgrade: HTTP/2.0
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
@@ -2400,7 +2405,7 @@ Upgrade: HTTP/2.0
          </tr>
          <tr>
             <td class="reference"><b id="HTTP-p6">[HTTP-p6]</b></td>
-            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a>, <a href="mailto:mnot@mnot.net" title="Akamai">Nottingham, M., Ed.</a>, and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-24">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p6-cache-24 (work in progress), July&nbsp;2013.
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a>, <a href="mailto:mnot@mnot.net" title="Akamai">Nottingham, M., Ed.</a>, and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-24">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p6-cache-24 (work in progress), September&nbsp;2013.
             </td>
          </tr>
          <tr>
@@ -2508,6 +2513,8 @@ Upgrade: HTTP/2.0
          <div id="changes.since.draft-ietf-httpbis-http2-06">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-06">Since draft-ietf-httpbis-http2-06</a></h2>
             <p id="rfc.section.A.1.p.1">Adding definition for CONNECT method.</p>
+            <p id="rfc.section.A.1.p.2">Constraining the use of push to safe, cacheable methods with no request body.</p>
+            <p id="rfc.section.A.1.p.3">Changing from :host to :authority to remove any potential confusion.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-05">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-05">Since draft-ietf-httpbis-http2-05</a></h2>
