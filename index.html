@@ -604,6 +604,7 @@ samp, tt, code, pre {
                <li><a href="#rfc.section.6.5">6.5</a>&nbsp;&nbsp;&nbsp;<a href="#SETTINGS">SETTINGS</a><ul>
                      <li><a href="#rfc.section.6.5.1">6.5.1</a>&nbsp;&nbsp;&nbsp;<a href="#SettingFormat">Setting Format</a></li>
                      <li><a href="#rfc.section.6.5.2">6.5.2</a>&nbsp;&nbsp;&nbsp;<a href="#SettingValues">Defined Settings</a></li>
+                     <li><a href="#rfc.section.6.5.3">6.5.3</a>&nbsp;&nbsp;&nbsp;<a href="#SettingsSync">Settings Synchronization</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.6.6">6.6</a>&nbsp;&nbsp;&nbsp;<a href="#PUSH_PROMISE">PUSH_PROMISE</a></li>
@@ -1422,7 +1423,14 @@ Upgrade: HTTP/2.0
                Therefore, the value of a setting is the last value that is seen by a receiver. This permits the inclusion of the same settings
                multiple times in the same SETTINGS frame, though doing so does nothing other than waste connection capacity.
             </p>
-            <p id="rfc.section.6.5.p.5">The SETTINGS frame does not define any flags.</p>
+            <p id="rfc.section.6.5.p.5">The SETTINGS frame defines the following flag: </p>
+            <dl>
+               <dt>ACK (0x1):</dt>
+               <dd>Bit 1 being set indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame. When this bit
+                  is set, the payload of the SETTINGS frame MUST be empty. Receipt of a SETTINGS frame with the ACK flag set and a length field
+                  value other than 0 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FRAME_SIZE_ERROR" class="smpl">FRAME_SIZE_ERROR</a>. For more info, see Settings Synchronization (<a href="#SettingsSync" title="Settings Synchronization">Section&nbsp;6.5.3</a>).
+               </dd>
+            </dl>
             <p id="rfc.section.6.5.p.6">SETTINGS frames always apply to a connection, never a single stream. The stream identifier for a settings frame MUST be zero.
                If an endpoint receives a SETTINGS frame whose stream identifier field is anything other than 0x0, the endpoint MUST respond
                with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
@@ -1447,27 +1455,45 @@ Upgrade: HTTP/2.0
                <h3 id="rfc.section.6.5.2"><a href="#rfc.section.6.5.2">6.5.2</a>&nbsp;<a href="#SettingValues">Defined Settings</a></h3>
                <p id="rfc.section.6.5.2.p.1">The following settings are defined: </p>
                <dl>
+                  <dt>SETTINGS_HEADER_TABLE_SIZE (1):</dt>
+                  <dd>
+                     <p>Allows the sender to inform the remote endpoint of the maximum size it accepts for the header table in the decoder.</p>
+                     <p>The default value is 4096 bytes. <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Do we need a maximum size?]</span> 
+                     </p>
+                  </dd>
                   <dt>SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
                   <dd>
-                     <p>indicates the maximum number of concurrent streams that the sender will allow. This limit is directional: it applies to the
+                     <p>Indicates the maximum number of concurrent streams that the sender will allow. This limit is directional: it applies to the
                         number of streams that the sender permits the receiver to create. By default there is no limit. It is recommended that this
                         value be no smaller than 100, so as to not unnecessarily limit parallelism.
                      </p>
                   </dd>
                   <dt>SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
                   <dd>
-                     <p>indicates the sender's initial window size (in bytes) for stream level flow control.</p>
+                     <p>Indicates the sender's initial window size (in bytes) for stream level flow control.</p>
                      <p>This settings affects the window size of all streams, including existing streams, see <a href="#InitialWindowSize" title="Initial Flow Control Window Size">Section&nbsp;6.9.2</a>.
                      </p>
                   </dd>
                   <dt>SETTINGS_FLOW_CONTROL_OPTIONS (10):</dt>
                   <dd>
-                     <p>indicates flow control options. The least significant bit (0x1) of the value is set to indicate that the sender has disabled
+                     <p>Indicates flow control options. The least significant bit (0x1) of the value is set to indicate that the sender has disabled
                         all flow control. This bit cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>.
                      </p>
                      <p>All bits other than the least significant are reserved.</p>
                   </dd>
                </dl>
+            </div>
+            <div id="SettingsSync">
+               <h3 id="rfc.section.6.5.3"><a href="#rfc.section.6.5.3">6.5.3</a>&nbsp;<a href="#SettingsSync">Settings Synchronization</a></h3>
+               <p id="rfc.section.6.5.3.p.1">Most values in SETTINGS benefit from or require an understanding of when the peer has received and applied the changed setting
+                  values. In order to provide such synchronization timepoints, the recipient of a SETTINGS frame in which the ACK flag is not
+                  set MUST apply the updated settings as soon as possible upon receipt.
+               </p>
+               <p id="rfc.section.6.5.3.p.2">The values in the SETTINGS frame MUST be applied in sequence, with no other frame processing between values. Once all values
+                  have been applied, the recipient MUST immediately emit a SETTINGS frame with the ACK flag set.
+               </p>
+               <p id="rfc.section.6.5.3.p.3">If the sender of a SETTINGS frame does not receive an acknowledgement within a reasonable amount of time, it MAY issue a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#SETTINGS_TIMEOUT" class="smpl">SETTINGS_TIMEOUT</a>.
+               </p>
             </div>
          </div>
          <div id="PUSH_PROMISE">
@@ -1535,12 +1561,12 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.6.7.p.3">In addition to the frame header, PING frames MUST contain 8 octets of data in the payload. A sender can include any value
                it chooses and use those bytes in any fashion.
             </p>
-            <p id="rfc.section.6.7.p.4">Receivers of a PING frame that does not include a PONG flag MUST send a PING frame with the PONG flag set in response, with
+            <p id="rfc.section.6.7.p.4">Receivers of a PING frame that does not include a ACK flag MUST send a PING frame with the ACK flag set in response, with
                an identical payload. PING responses SHOULD given higher priority than any other frame.
             </p>
             <p id="rfc.section.6.7.p.5">The PING frame defines the following flags: </p>
             <dl>
-               <dt>PONG (0x1):</dt>
+               <dt>ACK (0x1):</dt>
                <dd>Bit 1 being set indicates that this PING frame is a PING response. An endpoint MUST set this flag in PING responses. An endpoint
                   MUST NOT respond to PING frames containing this flag.
                </dd>
@@ -1741,7 +1767,7 @@ Upgrade: HTTP/2.0
             <dl>
                <dt>END_STREAM (0x1):</dt>
                <dd>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
-                  flag causes the stream to enter a "half closed" or "closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: We have not decided yet if it is a good idea to keep this flag here since it could be used to end a stream by being attached
+                  flag causes the stream to enter a "half closed" or "closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: We have not decided yet if it is a good idea to keep this flag here since it could be used to end a stream by being attached
                      to a PUSH_PROMISE continuation. See https://github.com/http2/http2-spec/issues/228 for details.]</span> 
                </dd>
                <dt>Unused (0x2):</dt>
@@ -1782,6 +1808,9 @@ Upgrade: HTTP/2.0
             <dd>The endpoint encountered an unexpected internal error.</dd>
             <dt id="FLOW_CONTROL_ERROR">FLOW_CONTROL_ERROR (3):</dt>
             <dd>The endpoint detected that its peer violated the flow control protocol.</dd>
+            <dt id="SETTINGS_TIMEOUT">SETTINGS_TIMEOUT (4):</dt>
+            <dd>The endpoint sent a SETTINGS frame, but did not receive a response in a timely manner. See Settings Synchronization (<a href="#SettingsSync" title="Settings Synchronization">Section&nbsp;6.5.3</a>).
+            </dd>
             <dt id="STREAM_CLOSED">STREAM_CLOSED (5):</dt>
             <dd>The endpoint received a frame after a stream was half closed.</dd>
             <dt id="FRAME_SIZE_ERROR">FRAME_SIZE_ERROR (6):</dt>
@@ -2028,7 +2057,7 @@ Upgrade: HTTP/2.0
                   promised streams that are not wanted.
                </p>
                <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
-                  policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+                  policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
                </p>
             </div>
          </div>
@@ -2085,7 +2114,7 @@ Upgrade: HTTP/2.0
          <div>
             <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;Use of TLS Features
             </h2>
-            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
+            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
                   of early drafts.]</span> 
             </p>
             <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2.0 clients MUST indicate the target domain name when negotiating TLS.
@@ -2125,7 +2154,7 @@ Upgrade: HTTP/2.0
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.6">[<a href="#rfc.comment.6" class="smpl">rfc.comment.6</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
@@ -2249,7 +2278,7 @@ Upgrade: HTTP/2.0
                      <tr>
                         <td class="left">4</td>
                         <td class="left"><a href="#SETTINGS" class="smpl">SETTINGS</a></td>
-                        <td class="left">-</td>
+                        <td class="left">ACK(1)</td>
                         <td class="left"><a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a></td>
                      </tr>
                      <tr>
@@ -2261,7 +2290,7 @@ Upgrade: HTTP/2.0
                      <tr>
                         <td class="left">6</td>
                         <td class="left"><a href="#PING" class="smpl">PING</a></td>
-                        <td class="left">PONG(1)</td>
+                        <td class="left">ACK(1)</td>
                         <td class="left"><a href="#PING" title="PING">Section&nbsp;6.7</a></td>
                      </tr>
                      <tr>
@@ -2515,6 +2544,8 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.A.1.p.1">Adding definition for CONNECT method.</p>
             <p id="rfc.section.A.1.p.2">Constraining the use of push to safe, cacheable methods with no request body.</p>
             <p id="rfc.section.A.1.p.3">Changing from :host to :authority to remove any potential confusion.</p>
+            <p id="rfc.section.A.1.p.4">Adding setting for for header compression table size.</p>
+            <p id="rfc.section.A.1.p.5">Adding settings acknowledgement.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-05">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-05">Since draft-ietf-httpbis-http2-05</a></h2>
