@@ -960,27 +960,40 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.4.1.p.3">The fields of the frame header are defined as: </p>
             <dl>
                <dt>R:</dt>
-               <dd>A reserved 2-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
-                  ignored when receiving.
+               <dd>
+                  <p>A reserved 2-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
+                     ignored when receiving.
+                  </p>
                </dd>
                <dt>Length:</dt>
-               <dd>The length of the frame payload expressed as an unsigned 14-bit integer. The 8 octets of the frame header are not included
-                  in this value.
+               <dd>
+                  <p>The length of the frame payload expressed as an unsigned 14-bit integer. The 8 octets of the frame header are not included
+                     in this value.
+                  </p>
                </dd>
                <dt>Type:</dt>
-               <dd>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and payload are interpreted.
-                  Implementations MUST ignore frames of unsupported or unrecognized types.
+               <dd>
+                  <p>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and payload are interpreted.
+                     Implementations MUST ignore frames of unsupported or unrecognized types.
+                  </p>
                </dd>
                <dt>Flags:</dt>
-               <dd>An 8-bit field reserved for frame-type specific boolean flags. <br><br> Flags are assigned semantics specific to the indicated frame type. Flags that have no defined semantics for a particular frame
-                  type MUST be ignored, and MUST be left unset (0) when sending.
+               <dd>
+                  <p>An 8-bit field reserved for frame-type specific boolean flags.</p>
+                  <p>Flags are assigned semantics specific to the indicated frame type. Flags that have no defined semantics for a particular frame
+                     type MUST be ignored, and MUST be left unset (0) when sending.
+                  </p>
                </dd>
                <dt>R:</dt>
-               <dd>A reserved 1-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
-                  ignored when receiving.
+               <dd>
+                  <p>A reserved 1-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
+                     ignored when receiving.
+                  </p>
                </dd>
                <dt>Stream Identifier:</dt>
-               <dd>A 31-bit stream identifier (see <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>). A value 0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
+               <dd>
+                  <p>A 31-bit stream identifier (see <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>). A value 0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
+                  </p>
                </dd>
             </dl>
             <p id="rfc.section.4.1.p.4">The structure and content of the frame payload is dependent entirely on the frame type.</p>
@@ -1072,7 +1085,10 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.5.1.p.4">Streams have the following states: </p>
             <dl>
                <dt>idle:</dt>
-               <dd><br> All streams start in the "idle" state. In this state, no frames have been exchanged. <br><br> The following transitions are valid from this state: 
+               <dd>
+                  <p><br> All streams start in the "idle" state. In this state, no frames have been exchanged.
+                  </p>
+                  <p>The following transitions are valid from this state: </p>
                   <ul>
                      <li>Sending or receiving a <a href="#HEADERS" class="smpl">HEADERS</a> frame causes the stream to become "open". The stream identifier is selected as described in <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>.
                      </li>
@@ -1080,48 +1096,88 @@ Upgrade: HTTP/2.0
                      </li>
                      <li>Receiving a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame marks the associated stream as reserved by the remote peer. The state of the stream becomes "reserved (remote)".
                      </li>
-                  </ul> 
+                  </ul>
                </dd>
                <dt>reserved (local):</dt>
-               <dd><br> A stream in the "reserved (local)" state is one that has been promised by sending a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame. A <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame reserves an idle stream by associating the stream with an open stream that was initiated by the remote peer (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>). <br><br> In this state, only the following transitions are possible: 
+               <dd>
+                  <p><br> A stream in the "reserved (local)" state is one that has been promised by sending a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame. A <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame reserves an idle stream by associating the stream with an open stream that was initiated by the remote peer (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
+                  </p>
+                  <p>In this state, only the following transitions are possible: </p>
                   <ul>
                      <li>The endpoint can send a <a href="#HEADERS" class="smpl">HEADERS</a> frame. This causes the stream to open in a "half closed (remote)" state.
                      </li>
                      <li>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame to cause the stream to become "closed". This also releases the stream reservation.
                      </li>
-                  </ul> An endpoint MUST NOT send any other type of frame in this state. Receiving any frame other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </ul>
+                  <p> An endpoint MUST NOT send any other type of frame in this state. Receiving any frame other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
                </dd>
                <dt>reserved (remote):</dt>
-               <dd><br> A stream in the "reserved (remote)" state has been reserved by a remote peer. <br><br> In this state, only the following transitions are possible: 
+               <dd>
+                  <p><br> A stream in the "reserved (remote)" state has been reserved by a remote peer.
+                  </p>
+                  <p>In this state, only the following transitions are possible: </p>
                   <ul>
                      <li>Receiving a <a href="#HEADERS" class="smpl">HEADERS</a> frame causes the stream to transition to "half closed (local)".
                      </li>
                      <li>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame to cause the stream to become "closed". This also releases the stream reservation.
                      </li>
-                  </ul> Receiving any other type of frame MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. An endpoint MAY send <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames in this state to cancel or reprioritize the reserved stream.
+                  </ul>
+                  <p> Receiving any other type of frame MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. An endpoint MAY send <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames in this state to cancel or reprioritize the reserved stream.
+                  </p>
                </dd>
                <dt>open:</dt>
-               <dd><br> The "open" state is where both peers can send frames of any type. In this state, sending peers observe advertised stream level flow control limits (<a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a>). <br><br> From this state either endpoint can send a frame with a END_STREAM flag set, which causes the stream to transition into one
-                  of the "half closed" states: an endpoint sending a END_STREAM flag causes the stream state to become "half closed (local)";
-                  an endpoint receiving a END_STREAM flag causes the stream state to become "half closed (remote)". <br><br> Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame from this state, causing it to transition immediately to "closed".
+               <dd>
+                  <p><br> The "open" state is where both peers can send frames of any type. In this state, sending peers observe advertised stream level flow control limits (<a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a>).
+                  </p>
+                  <p>From this state either endpoint can send a frame with a END_STREAM flag set, which causes the stream to transition into one
+                     of the "half closed" states: an endpoint sending a END_STREAM flag causes the stream state to become "half closed (local)";
+                     an endpoint receiving a END_STREAM flag causes the stream state to become "half closed (remote)".
+                  </p>
+                  <p>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame from this state, causing it to transition immediately to "closed".
+                  </p>
                </dd>
                <dt>half closed (local):</dt>
-               <dd><br> A stream that is "half closed (local)" cannot be used for sending frames. <br><br> A stream transitions from this state to "closed" when a frame that contains a END_STREAM flag is received, or when either
-                  peer sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame. <br><br> A receiver can ignore <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames in this state. These frame types might arrive for a short period after a frame bearing the END_STREAM flag is sent.
+               <dd>
+                  <p><br> A stream that is "half closed (local)" cannot be used for sending frames.
+                  </p>
+                  <p>A stream transitions from this state to "closed" when a frame that contains a END_STREAM flag is received, or when either
+                     peer sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame.
+                  </p>
+                  <p>A receiver can ignore <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames in this state. These frame types might arrive for a short period after a frame bearing the END_STREAM flag is sent.
+                  </p>
                </dd>
                <dt>half closed (remote):</dt>
-               <dd><br> A stream that is "half closed (remote)" is no longer being used by the peer to send frames. In this state, an endpoint is
-                  no longer obligated to maintain a receiver flow control window if it performs flow control. <br><br> If an endpoint receives additional frames for a stream that is in this state it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#STREAM_CLOSED" class="smpl">STREAM_CLOSED</a>. <br><br> A stream can transition from this state to "closed" by sending a frame that contains a END_STREAM flag, or when either peer
-                  sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame.
+               <dd>
+                  <p><br> A stream that is "half closed (remote)" is no longer being used by the peer to send frames. In this state, an endpoint is
+                     no longer obligated to maintain a receiver flow control window if it performs flow control.
+                  </p>
+                  <p>If an endpoint receives additional frames for a stream that is in this state it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#STREAM_CLOSED" class="smpl">STREAM_CLOSED</a>.
+                  </p>
+                  <p>A stream can transition from this state to "closed" by sending a frame that contains a END_STREAM flag, or when either peer
+                     sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame.
+                  </p>
                </dd>
                <dt>closed:</dt>
-               <dd><br> The "closed" state is the terminal state. <br><br> An endpoint MUST NOT send frames on a closed stream. An endpoint that receives a frame after receiving a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or a frame containing a END_STREAM flag on that stream MUST treat that as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#STREAM_CLOSED" class="smpl">STREAM_CLOSED</a>. <br><br> <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, <a href="#PRIORITY" class="smpl">PRIORITY</a>, or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frames can be received in this state for a short period after a frame containing an END_STREAM flag is sent. Until the remote
-                  peer receives and processes the frame bearing the END_STREAM flag, it might send frame of any of these types. Endpoints MUST
-                  ignore <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, <a href="#PRIORITY" class="smpl">PRIORITY</a>, or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frames received in this state, though endpoints MAY choose to treat frames that arrive a significant time after sending END_STREAM
-                  as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. <br><br> If this state is reached as a result of sending a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame, the peer that receives the <a href="#RST_STREAM" class="smpl">RST_STREAM</a> might have already sent - or enqueued for sending - frames on the stream that cannot be withdrawn. An endpoint MUST ignore
-                  frames that it receives on closed streams after it has sent a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame. An endpoint MAY choose to limit the period over which it ignores frames and treat frames that arrive after this time
-                  as being in error. <br><br> Flow controlled frames (i.e., <a href="#DATA" class="smpl">DATA</a>) received after sending <a href="#RST_STREAM" class="smpl">RST_STREAM</a> are counted toward the connection flow control window. Even though these frames might be ignored, because they are sent before
-                  the sender receives the <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, the sender will consider the frames to count against the flow control window. <br><br> An endpoint might receive a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame after it sends <a href="#RST_STREAM" class="smpl">RST_STREAM</a>. <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> causes a stream to become "reserved". The <a href="#RST_STREAM" class="smpl">RST_STREAM</a> does not cancel any promised stream. Therefore, if promised streams are not desired, a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> can be used to close any of those streams.
+               <dd>
+                  <p><br> The "closed" state is the terminal state.
+                  </p>
+                  <p>An endpoint MUST NOT send frames on a closed stream. An endpoint that receives a frame after receiving a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or a frame containing a END_STREAM flag on that stream MUST treat that as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#STREAM_CLOSED" class="smpl">STREAM_CLOSED</a>.
+                  </p>
+                  <p><a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, <a href="#PRIORITY" class="smpl">PRIORITY</a>, or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frames can be received in this state for a short period after a frame containing an END_STREAM flag is sent. Until the remote
+                     peer receives and processes the frame bearing the END_STREAM flag, it might send frame of any of these types. Endpoints MUST
+                     ignore <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, <a href="#PRIORITY" class="smpl">PRIORITY</a>, or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frames received in this state, though endpoints MAY choose to treat frames that arrive a significant time after sending END_STREAM
+                     as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
+                  <p>If this state is reached as a result of sending a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame, the peer that receives the <a href="#RST_STREAM" class="smpl">RST_STREAM</a> might have already sent - or enqueued for sending - frames on the stream that cannot be withdrawn. An endpoint MUST ignore
+                     frames that it receives on closed streams after it has sent a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame. An endpoint MAY choose to limit the period over which it ignores frames and treat frames that arrive after this time
+                     as being in error.
+                  </p>
+                  <p>Flow controlled frames (i.e., <a href="#DATA" class="smpl">DATA</a>) received after sending <a href="#RST_STREAM" class="smpl">RST_STREAM</a> are counted toward the connection flow control window. Even though these frames might be ignored, because they are sent before
+                     the sender receives the <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, the sender will consider the frames to count against the flow control window.
+                  </p>
+                  <p>An endpoint might receive a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame after it sends <a href="#RST_STREAM" class="smpl">RST_STREAM</a>. <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> causes a stream to become "reserved". The <a href="#RST_STREAM" class="smpl">RST_STREAM</a> does not cancel any promised stream. Therefore, if promised streams are not desired, a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> can be used to close any of those streams.
+                  </p>
                </dd>
             </dl>
             <p id="rfc.section.5.1.p.5">In the absence of more specific guidance elsewhere in this document, implementations SHOULD treat the receipt of a message
@@ -1333,20 +1389,32 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.6.2.p.3">The HEADERS frame defines the following flags: </p>
             <dl>
                <dt>END_STREAM (0x1):</dt>
-               <dd>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
-                  flag causes the stream to enter a "half closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>).
+               <dd>
+                  <p>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
+                     flag causes the stream to enter a "half closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>).
+                  </p>
                </dd>
                <dt>RESERVED (0x2):</dt>
-               <dd>Bit 2 is reserved for future use.</dd>
+               <dd>
+                  <p>Bit 2 is reserved for future use.</p>
+               </dd>
                <dt>END_HEADERS (0x4):</dt>
-               <dd>Bit 3 being set indicates that this frame ends the sequence of header block fragments necessary to provide a complete set
-                  of headers. <br><br> The payload for a complete header block is provided by a sequence of that starts with a HEADERS frame, followed by zero or
-                  more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. The sequence is terminated by a frame with the END_HEADERS flag set. Once the sequence terminates, the payload of
-                  all HEADERS and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames are concatenated and interpreted as a single block. <br><br> A HEADERS frame without the END_HEADERS flag set MUST be followed by a <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame for the same stream. A receiver MUST treat the receipt of any other type of frame or a frame on a different stream as
-                  a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <dd>
+                  <p>Bit 3 being set indicates that this frame ends the sequence of header block fragments necessary to provide a complete set
+                     of headers.
+                  </p>
+                  <p>The payload for a complete header block is provided by a sequence of that starts with a HEADERS frame, followed by zero or
+                     more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. The sequence is terminated by a frame with the END_HEADERS flag set. Once the sequence terminates, the payload of
+                     all HEADERS and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames are concatenated and interpreted as a single block.
+                  </p>
+                  <p>A HEADERS frame without the END_HEADERS flag set MUST be followed by a <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame for the same stream. A receiver MUST treat the receipt of any other type of frame or a frame on a different stream as
+                     a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
                </dd>
                <dt>PRIORITY (0x8):</dt>
-               <dd>Bit 4 being set indicates that the first four octets of this frame contain a single reserved bit and a 31-bit priority; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. If this bit is not set, the four bytes do not appear and the frame only contains a header block fragment.
+               <dd>
+                  <p>Bit 4 being set indicates that the first four octets of this frame contain a single reserved bit and a 31-bit priority; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. If this bit is not set, the four bytes do not appear and the frame only contains a header block fragment.
+                  </p>
                </dd>
             </dl>
             <p id="rfc.section.6.2.p.4">The payload of a HEADERS frame contains a header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). A header block that does not fit within a HEADERS frame is continued in a CONTINUATION frame (<a href="#CONTINUATION" title="CONTINUATION">Section&nbsp;6.10</a>).
@@ -1522,12 +1590,18 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.6.6.p.6">The PUSH_PROMISE frame defines the following flags: </p>
             <dl>
                <dt>END_PUSH_PROMISE (0x4):</dt>
-               <dd>The END_PUSH_PROMISE bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
-                  set of headers. <br><br> The payload for a complete header block is provided by a sequence of frames that starts with a PUSH_PROMISE frame, followed
-                  by zero or more CONTINUATION frames. The sequence terminates by a PUSH_PROMISE frame with the END_PUSH_PROMISE flag set or
-                  a CONTINUATION frame with the END_HEADERS flag set. Once the sequence terminates, the payload of all frames in the sequence
-                  are concatenated and interpreted as a single block. <br><br> A PUSH_PROMISE frame without the END_PUSH_PROMISE flag set MUST be followed by a CONTINUATION frame for the same stream. A
-                  receiver MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <dd>
+                  <p>The END_PUSH_PROMISE bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
+                     set of headers.
+                  </p>
+                  <p>The payload for a complete header block is provided by a sequence of frames that starts with a PUSH_PROMISE frame, followed
+                     by zero or more CONTINUATION frames. The sequence terminates by a PUSH_PROMISE frame with the END_PUSH_PROMISE flag set or
+                     a CONTINUATION frame with the END_HEADERS flag set. Once the sequence terminates, the payload of all frames in the sequence
+                     are concatenated and interpreted as a single block.
+                  </p>
+                  <p>A PUSH_PROMISE frame without the END_PUSH_PROMISE flag set MUST be followed by a CONTINUATION frame for the same stream. A
+                     receiver MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
                </dd>
             </dl>
             <p id="rfc.section.6.6.p.7">Promised streams are not required to be used in order promised. The PUSH_PROMISE only reserves stream identifiers for later
@@ -1766,17 +1840,27 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.6.10.p.3">The CONTINUATION frame defines the following flags: </p>
             <dl>
                <dt>END_STREAM (0x1):</dt>
-               <dd>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
-                  flag causes the stream to enter a "half closed" or "closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: We have not decided yet if it is a good idea to keep this flag here since it could be used to end a stream by being attached
-                     to a PUSH_PROMISE continuation. See https://github.com/http2/http2-spec/issues/228 for details.]</span> 
+               <dd>
+                  <p>Bit 1 being set indicates that this frame is the last that the endpoint will send for the identified stream. Setting this
+                     flag causes the stream to enter a "half closed" or "closed" state (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: We have not decided yet if it is a good idea to keep this flag here since it could be used to end a stream by being attached
+                        to a PUSH_PROMISE continuation. See https://github.com/http2/http2-spec/issues/228 for details.]</span> 
+                  </p>
                </dd>
                <dt>Unused (0x2):</dt>
-               <dd>This flag is not currently used.</dd>
+               <dd>
+                  <p>This flag is not currently used.</p>
+               </dd>
                <dt>END_HEADERS (0x4):</dt>
-               <dd>The END_HEADERS bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
-                  set of headers. <br><br> The payload for a complete header block is provided by a sequence that starts with a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame and zero or more CONTINUATION frames, terminated by a <a href="#HEADERS" class="smpl">HEADERS</a> or CONTINUATION frame with the END_HEADERS flag set, or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_PUSH_PROMISE flag set. Once the sequence terminates, the payload of all frames in the sequence are concatenated
-                  and interpreted as a single block. <br><br> A <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a>, or CONTINUATION frame without the END_HEADERS flag set MUST be followed by a CONTINUATION frame for the same stream. A receiver
-                  MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <dd>
+                  <p>The END_HEADERS bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
+                     set of headers.
+                  </p>
+                  <p>The payload for a complete header block is provided by a sequence that starts with a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame and zero or more CONTINUATION frames, terminated by a <a href="#HEADERS" class="smpl">HEADERS</a> or CONTINUATION frame with the END_HEADERS flag set, or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_PUSH_PROMISE flag set. Once the sequence terminates, the payload of all frames in the sequence are concatenated
+                     and interpreted as a single block.
+                  </p>
+                  <p>A <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a>, or CONTINUATION frame without the END_HEADERS flag set MUST be followed by a CONTINUATION frame for the same stream. A receiver
+                     MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
                </dd>
             </dl>
             <p id="rfc.section.6.10.p.4">The payload of a CONTINUATION frame contains a header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
@@ -1951,15 +2035,25 @@ Upgrade: HTTP/2.0
                   <h4 id="rfc.section.8.1.2.1"><a href="#rfc.section.8.1.2.1">8.1.2.1</a>&nbsp;<a href="#HttpRequest">Request Header Fields</a></h4>
                   <p id="rfc.section.8.1.2.1.p.1">HTTP/2.0 defines a number of headers starting with a colon ':' character that carry information about the request target: </p>
                   <ul>
-                     <li>The <samp>:method</samp> header field includes the HTTP method (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#methods" title="Request Methods">Section 4</a>).
+                     <li>
+                        <p>The <samp>:method</samp> header field includes the HTTP method (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#methods" title="Request Methods">Section 4</a>).
+                        </p>
                      </li>
-                     <li>The <samp>:scheme</samp> header field includes the scheme portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.1">Section 3.1</a>).
+                     <li>
+                        <p>The <samp>:scheme</samp> header field includes the scheme portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.1">Section 3.1</a>).
+                        </p>
                      </li>
-                     <li>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>). <br><br> To ensure that the HTTP/1.1 request line can be reproduced accurately, this header field MUST be omitted when translating
-                        from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2.0 requests directly SHOULD instead omit the <samp>Host</samp> header. An intermediary that converts a request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
+                     <li>
+                        <p>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>).
+                        </p>
+                        <p>To ensure that the HTTP/1.1 request line can be reproduced accurately, this header field MUST be omitted when translating
+                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2.0 requests directly SHOULD instead omit the <samp>Host</samp> header. An intermediary that converts a request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
+                        </p>
                      </li>
-                     <li>The <samp>:path</samp> header field includes the path and query parts of the target URI (the <samp>path-absolute</samp> production from <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a> and optionally a '?' character followed by the <samp>query</samp> production, see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.3">Section 3.3</a> and <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.4">Section 3.4</a>). This field MUST NOT be empty; URIs that do not contain a path component MUST include a value of '/', unless the request
-                        is an OPTIONS in asterisk form, in which case the <samp>:path</samp> header field MUST include '*'.
+                     <li>
+                        <p>The <samp>:path</samp> header field includes the path and query parts of the target URI (the <samp>path-absolute</samp> production from <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a> and optionally a '?' character followed by the <samp>query</samp> production, see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.3">Section 3.3</a> and <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.4">Section 3.4</a>). This field MUST NOT be empty; URIs that do not contain a path component MUST include a value of '/', unless the request
+                           is an OPTIONS in asterisk form, in which case the <samp>:path</samp> header field MUST include '*'.
+                        </p>
                      </li>
                   </ul>
                   <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory headers is malformed. Intermediaries that do not interpret requests MAY forward a malformed
