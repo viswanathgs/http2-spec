@@ -418,7 +418,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires April 14, 2014";
+       content: "Expires April 17, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -456,7 +456,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-10-11">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-10-14">
       <meta name="dct.abstract" content="This document describes HPACK, a format adapted to efficiently represent HTTP headers in the context of HTTP/2.0.">
       <meta name="description" content="This document describes HPACK, a format adapted to efficiently represent HTTP headers in the context of HTTP/2.0.">
    </head>
@@ -476,12 +476,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: April 14, 2014</td>
+               <td class="left">Expires: April 17, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">October 11, 2013</td>
+               <td class="right">October 14, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -505,7 +505,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on April 14, 2014.</p>
+         <p>This Internet-Draft will expire on April 17, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -544,14 +544,13 @@ samp, tt, code, pre {
             </ul>
          </li>
          <li><a href="#rfc.section.4">4.</a>&nbsp;&nbsp;&nbsp;<a href="#detailed.format">Detailed Format</a><ul>
-               <li><a href="#rfc.section.4.1">4.1</a>&nbsp;&nbsp;&nbsp;<a href="#string.encoding">Low-level representations</a><ul>
+               <li><a href="#rfc.section.4.1">4.1</a>&nbsp;&nbsp;&nbsp;<a href="#low-level.representation">Low-level representations</a><ul>
                      <li><a href="#rfc.section.4.1.1">4.1.1</a>&nbsp;&nbsp;&nbsp;<a href="#integer.representation">Integer representation</a><ul>
                            <li><a href="#rfc.section.4.1.1.1">4.1.1.1</a>&nbsp;&nbsp;&nbsp;<a href="#integer.representation.example1">Example 1: Encoding 10 using a 5-bit prefix</a></li>
                            <li><a href="#rfc.section.4.1.1.2">4.1.1.2</a>&nbsp;&nbsp;&nbsp;<a href="#integer.representation.example2">Example 2: Encoding 1337 using a 5-bit prefix</a></li>
                         </ul>
                      </li>
-                     <li><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;&nbsp;&nbsp;<a href="#header.name.representation">Header Name Representation</a></li>
-                     <li><a href="#rfc.section.4.1.3">4.1.3</a>&nbsp;&nbsp;&nbsp;<a href="#string.literal.representation">Header Value Representation</a></li>
+                     <li><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;&nbsp;&nbsp;<a href="#string.literal.representation">String Literal Representation</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.4.2">4.2</a>&nbsp;&nbsp;&nbsp;<a href="#indexed.header.representation">Indexed Header Representation</a></li>
@@ -691,7 +690,7 @@ samp, tt, code, pre {
                <p id="rfc.section.3.1.2.p.7">The encoder decides how to update the header table and as such can control how much memory is used by the header table. To
                   limit the memory requirements on the decoder side, the header table size is bounded (see the SETTINGS_HEADER_TABLE_SIZE in <a href="#parameter.negotiation" title="Parameter Negotiation">Section&nbsp;5</a>).
                </p>
-               <p id="rfc.section.3.1.2.p.8">The size of an entry is the sum of its name's length in bytes (as defined in <a href="#header.name.representation" title="Header Name Representation">Section&nbsp;4.1.2</a>), of its value's length in bytes (<a href="#string.literal.representation" title="Header Value Representation">Section&nbsp;4.1.3</a>) and of 32 bytes. The 32 bytes are an accounting for the entry structure overhead. For example, an entry structure using
+               <p id="rfc.section.3.1.2.p.8">The size of an entry is the sum of its name's length in bytes (as defined in <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>), of its value's length in bytes (<a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>) and of 32 bytes. The 32 bytes are an accounting for the entry structure overhead. For example, an entry structure using
                   two 64-bits pointers to reference the name and the value and the entry, and two 64-bits integer for counting the number of
                   references to these name and value would use 32 bytes.
                </p>
@@ -815,8 +814,8 @@ samp, tt, code, pre {
       </div>
       <div id="detailed.format">
          <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a>&nbsp;<a href="#detailed.format">Detailed Format</a></h1>
-         <div id="string.encoding">
-            <h2 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1</a>&nbsp;<a href="#string.encoding">Low-level representations</a></h2>
+         <div id="low-level.representation">
+            <h2 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1</a>&nbsp;<a href="#low-level.representation">Low-level representations</a></h2>
             <div id="integer.representation">
                <h3 id="rfc.section.4.1.1"><a href="#rfc.section.4.1.1">4.1.1</a>&nbsp;<a href="#integer.representation">Integer representation</a></h3>
                <p id="rfc.section.4.1.1.p.1">Integers are used to represent name indexes, pair indexes or string lengths. To allow for optimized processing, an integer
@@ -887,32 +886,14 @@ Else
 +---+---+---+---+---+---+---+---+
 </pre></div>
             </div>
-            <div id="header.name.representation">
-               <h3 id="rfc.section.4.1.2"><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;<a href="#header.name.representation">Header Name Representation</a></h3>
-               <p id="rfc.section.4.1.2.p.1">Header names are sequences of ASCII characters that MUST conform to the following header-name ABNF construction:</p>
-               <div id="rfc.figure.u.4"></div><pre class="inline">  LOWERALPHA = %x61-7A
-  header-char = "!" / "#" / "$" / "%" / "&amp;" / "'" /
-                "*" / "+" / "-" / "." / "^" / "_" /
-                "`" / "|" / "~" / DIGIT / LOWERALPHA
-  header-name = [":"] 1*header-char
-                  </pre><p id="rfc.section.4.1.2.p.3">They are encoded in two parts: </p>
-               <ol>
-                  <li>The length of the text, defined as the number of octets of storage required to store the text, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
-                  </li>
-                  <li>The specific sequence of ASCII octets</li>
-               </ol>
-            </div>
             <div id="string.literal.representation">
-               <h3 id="rfc.section.4.1.3"><a href="#rfc.section.4.1.3">4.1.3</a>&nbsp;<a href="#string.literal.representation">Header Value Representation</a></h3>
-               <p id="rfc.section.4.1.3.p.1">Header values are encoded as sequences of UTF-8 encoded text. They are encoded in two parts: </p>
+               <h3 id="rfc.section.4.1.2"><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;<a href="#string.literal.representation">String Literal Representation</a></h3>
+               <p id="rfc.section.4.1.2.p.1">Header names and header values are encoded as sequences of bytes. A header name or a header value is encoded in two parts: </p>
                <ol>
-                  <li>The length of the text, defined as the number of octets of storage required to store the text, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
+                  <li>The number of bytes in the sequence, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                   </li>
-                  <li>The specific sequence of octets representing the UTF-8 text.</li>
+                  <li>The sequence of bytes representing the header value.</li>
                </ol>
-               <p id="rfc.section.4.1.3.p.2">Invalid UTF-8 octet sequences, "over-long" UTF-8 encodings, and UTF-8 octets that represent invalid Unicode Codepoints MUST
-                  NOT be used.
-               </p>
             </div>
          </div>
          <div id="indexed.header.representation">
@@ -966,9 +947,9 @@ Else
                   by one (index + 1) is represented as an integer with a 6-bit prefix. Note that if the index is strictly below 63, one byte
                   is used.
                </p>
-               <p id="rfc.section.4.3.1.p.6">If the header name does not match a header name entry, the value 0 is represented on 6 bits followed by the header name (<a href="#header.name.representation" title="Header Name Representation">Section&nbsp;4.1.2</a>).
+               <p id="rfc.section.4.3.1.p.6">If the header name does not match a header name entry, the value 0 is represented on 6 bits followed by the header name (<a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
                </p>
-               <p id="rfc.section.4.3.1.p.7">Header name representation is followed by the header value represented as a literal string as described in <a href="#string.literal.representation" title="Header Value Representation">Section&nbsp;4.1.3</a>.
+               <p id="rfc.section.4.3.1.p.7">Header name representation is followed by the header value represented as a literal string as described in <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>.
                </p>
             </div>
             <div id="literal.header.with.incremental.indexing">
@@ -1001,9 +982,9 @@ Else
                   by one (index + 1) is represented as an integer with a 6-bit prefix. Note that if the index is strictly below 63, one byte
                   is used.
                </p>
-               <p id="rfc.section.4.3.2.p.6">If the header name does not match a header name entry, the value 0 is represented on 6 bits followed by the header name (<a href="#header.name.representation" title="Header Name Representation">Section&nbsp;4.1.2</a>).
+               <p id="rfc.section.4.3.2.p.6">If the header name does not match a header name entry, the value 0 is represented on 6 bits followed by the header name (<a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
                </p>
-               <p id="rfc.section.4.3.2.p.7">Header name representation is followed by the header value represented as a literal string as described in <a href="#string.literal.representation" title="Header Value Representation">Section&nbsp;4.1.3</a>.
+               <p id="rfc.section.4.3.2.p.7">Header name representation is followed by the header value represented as a literal string as described in <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>.
                </p>
             </div>
          </div>
@@ -1496,13 +1477,13 @@ Else
             <h2 id="rfc.section.C.1"><a href="#rfc.section.C.1">C.1</a>&nbsp;First header set
             </h2>
             <p id="rfc.section.C.1.p.1">The first header set to represent is the following: </p>
-            <div id="rfc.figure.u.5"></div><pre class="text">:path, /my-example/index.html
+            <div id="rfc.figure.u.4"></div><pre class="text">:path, /my-example/index.html
 user-agent, my-user-agent
 mynewheader, first
 </pre><p> The header table is empty, all headers are represented as literal headers with indexing. The 'mynewheader' header name is
                not in the header name table and is encoded literally. This gives the following representation: 
             </p>
-            <div id="rfc.figure.u.6"></div><pre class="text">0x04      (literal header with incremental indexing, name index = 3)
+            <div id="rfc.figure.u.5"></div><pre class="text">0x04      (literal header with incremental indexing, name index = 3)
 0x16      (header value string length = 22)
 /my-example/index.html
 0x0D      (literal header with incremental indexing, name index = 12)
@@ -1514,7 +1495,7 @@ mynewheader
 0x05      (header value string length = 5)
 first
 </pre><p> The header table is as follows after the processing of these headers: </p>
-            <div id="rfc.figure.u.7"></div><pre class="inline">Header table
+            <div id="rfc.figure.u.6"></div><pre class="inline">Header table
 +---------+----------------+---------------------------+
 |  Index  | Header Name    | Header Value              |
 +---------+----------------+---------------------------+
@@ -1535,7 +1516,7 @@ first
 </pre><p> As all the headers in the first header set are indexed in the header table, all are kept in the reference set of headers,
                which is: 
             </p>
-            <div id="rfc.figure.u.8"></div><pre class="inline">Reference Set:
+            <div id="rfc.figure.u.7"></div><pre class="inline">Reference Set:
 :path, /my-example/index.html
 user-agent, my-user-agent
 mynewheader, first
@@ -1544,7 +1525,7 @@ mynewheader, first
             <h2 id="rfc.section.C.2"><a href="#rfc.section.C.2">C.2</a>&nbsp;Second header set
             </h2>
             <p id="rfc.section.C.2.p.1">The second header set to represent is the following: </p>
-            <div id="rfc.figure.u.9"></div><pre class="text">:path, /my-example/resources/script.js
+            <div id="rfc.figure.u.8"></div><pre class="text">:path, /my-example/resources/script.js
 user-agent, my-user-agent
 mynewheader, second
 </pre><p> Comparing this second header set to the reference set, the first and third headers are from the reference set are not present
@@ -1552,7 +1533,7 @@ mynewheader, second
                The path header is represented as a literal header without indexing. The mynewheader will be represented as a literal header
                with incremental indexing. 
             </p>
-            <div id="rfc.figure.u.10"></div><pre class="text">0x80       (indexed header, index = 0: removal from reference set)
+            <div id="rfc.figure.u.9"></div><pre class="text">0x80       (indexed header, index = 0: removal from reference set)
 0x82       (indexed header, index = 2: removal from reference set)
 0x43       (literal header, without indexing, name index = 2)
 0x1f       (header value string length = 31)
@@ -1561,7 +1542,7 @@ mynewheader, second
 0x06       (header value string length = 6)
 second
 </pre><p> The header table is updated as follow: </p>
-            <div id="rfc.figure.u.11"></div><pre class="inline">Header table
+            <div id="rfc.figure.u.10"></div><pre class="inline">Header table
 +---------+----------------+---------------------------+
 |  Index  | Header Name    | Header Value              |
 +---------+----------------+---------------------------+
@@ -1584,7 +1565,7 @@ second
 </pre><p> All the headers in this second header set are indexed in the header table, therefore, all are kept in the reference set of
                headers, which becomes: 
             </p>
-            <div id="rfc.figure.u.12"></div><pre class="inline">Reference Set:
+            <div id="rfc.figure.u.11"></div><pre class="inline">Reference Set:
 :path, /my-example/resources/script.js
 user-agent, my-user-agent
 mynewheader, second
