@@ -5,12 +5,12 @@
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: April 17, 2014                                      Google, Inc
+Expires: April 18, 2014                                      Google, Inc
                                                          M. Thomson, Ed.
                                                                Microsoft
                                                         A. Melnikov, Ed.
                                                                Isode Ltd
-                                                        October 14, 2013
+                                                        October 15, 2013
 
 
                 Hypertext Transfer Protocol version 2.0
@@ -19,16 +19,14 @@ Expires: April 17, 2014                                      Google, Inc
 Abstract
 
    This specification describes an optimized expression of the syntax of
-   the Hypertext Transfer Protocol (HTTP).  The HTTP/2.0 encapsulation
-   enables more efficient use of network resources and reduced
-   perception of latency by allowing header field compression and
-   multiple concurrent messages on the same connection.  It also
-   introduces unsolicited push of representations from servers to
-   clients.
+   the Hypertext Transfer Protocol (HTTP).  HTTP/2.0 enables a more
+   efficient use of network resources and a reduced perception of
+   latency by introducing header compression and allowing multiple
+   concurrent messages on the same connection.  It also introduces
+   unsolicited push of representations from servers to clients.
 
-   This document is an alternative to, but does not obsolete the HTTP/
-   1.1 message format or protocol.  HTTP's existing semantics remain
-   unchanged.
+   This document is an alternative to, but does not obsolete, the HTTP/
+   1.1 message syntax.  HTTP's existing semantics remain unchanged.
 
 Editorial Note (To be removed by RFC Editor)
 
@@ -50,20 +48,20 @@ Status of This Memo
    working documents as Internet-Drafts.  The list of current Internet-
    Drafts is at http://datatracker.ietf.org/drafts/current/.
 
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 1]
+Belshe, et al.           Expires April 18, 2014                 [Page 1]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-   Internet-Drafts are draft documents valid for a maximum of six months
-   and may be updated, replaced, or obsoleted by other documents at any
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 17, 2014.
+   This Internet-Draft will expire on April 18, 2014.
 
 Copyright Notice
 
@@ -92,10 +90,10 @@ Table of Contents
    3.  Starting HTTP/2.0 . . . . . . . . . . . . . . . . . . . . . .   7
      3.1.  HTTP/2.0 Version Identification . . . . . . . . . . . . .   7
      3.2.  Starting HTTP/2.0 for "http" URIs . . . . . . . . . . . .   8
-       3.2.1.  HTTP2-Settings Header Field . . . . . . . . . . . . .   9
+       3.2.1.  HTTP2-Settings Header . . . . . . . . . . . . . . . .   9
      3.3.  Starting HTTP/2.0 for "https" URIs  . . . . . . . . . . .  10
      3.4.  Starting HTTP/2.0 with Prior Knowledge  . . . . . . . . .  10
-     3.5.  Connection Header . . . . . . . . . . . . . . . . . . . .  10
+     3.5.  HTTP/2.0 Connection Header  . . . . . . . . . . . . . . .  10
    4.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . . . .  11
      4.1.  Frame Format  . . . . . . . . . . . . . . . . . . . . . .  11
      4.2.  Frame Size  . . . . . . . . . . . . . . . . . . . . . . .  12
@@ -106,16 +104,16 @@ Table of Contents
        5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  19
      5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  20
        5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  20
+       5.2.2.  Appropriate Use of Flow Control . . . . . . . . . . .  21
+     5.3.  Stream priority . . . . . . . . . . . . . . . . . . . . .  22
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 2]
+Belshe, et al.           Expires April 18, 2014                 [Page 2]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-       5.2.2.  Appropriate Use of Flow Control . . . . . . . . . . .  21
-     5.3.  Stream priority . . . . . . . . . . . . . . . . . . . . .  22
      5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  22
        5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  22
        5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  23
@@ -162,16 +160,16 @@ Internet-Draft                  HTTP/2.0                    October 2013
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  53
      12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  53
      12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  54
+     12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  55
+     12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  55
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 3]
+Belshe, et al.           Expires April 18, 2014                 [Page 3]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-     12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  55
-     12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  55
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  56
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  56
      14.1.  Normative References . . . . . . . . . . . . . . . . . .  56
@@ -197,12 +195,11 @@ Internet-Draft                  HTTP/2.0                    October 2013
    characteristics that have a negative overall effect on application
    performance.
 
-   In particular, HTTP/1.0 only allows one request to be delivered at a
-   time on a given connection.  HTTP/1.1 pipelining only partially
-   addressed request concurrency, and is not widely deployed.
-   Therefore, clients that need to make many requests (as is common on
-   the Web) typically use multiple connections to a server in order to
-   reduce perceived latency.
+   In particular, HTTP/1.0 only allows one request to be outstanding at
+   a time on a given connection.  HTTP/1.1 pipelining only partially
+   addressed request concurrency and suffers from head-of-line blocking.
+   Therefore, clients that need to make many requests typically use
+   multiple connections to a server in order to reduce latency.
 
    Furthermore, HTTP/1.1 header fields are often repetitive and verbose,
    which, in addition to generating more or larger network packets, can
@@ -215,13 +212,16 @@ Internet-Draft                  HTTP/2.0                    October 2013
    allows interleaving of request and response messages on the same
    connection and uses an efficient coding for HTTP header fields.  It
    also allows prioritization of requests, letting more important
-   requests complete more quickly, further improving perceived
-   performance.
+   requests complete more quickly, further improving performance.
 
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 4]
+
+
+
+
+Belshe, et al.           Expires April 18, 2014                 [Page 4]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -264,31 +264,33 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    connection:  A transport-level connection between two endpoints.
 
+   connection error:  An error on the HTTP/2.0 connection.
+
    endpoint:  Either the client or server of the connection.
 
    frame:  The smallest unit of communication within an HTTP/2.0
       connection, consisting of a header and a variable-length sequence
       of bytes structured according to the frame type.
 
-   peer:  An endpoint.  When discussing a particular endpoint, "peer"
-      refers to the endpoint that is remote to the primary subject of
-      discussion.
 
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 5]
+
+Belshe, et al.           Expires April 18, 2014                 [Page 5]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   peer:  An endpoint.  When discussing a particular endpoint, "peer"
+      refers to the endpoint that is remote to the primary subject of
+      discussion.
 
    receiver:  An endpoint that is receiving frames.
 
    sender:  An endpoint that is transmitting frames.
 
    server:  The endpoint which did not initiate the HTTP connection.
-
-   connection error:  An error on the HTTP/2.0 connection.
 
    stream:  A bi-directional flow of frames across a virtual channel
       within the HTTP/2.0 connection.
@@ -320,8 +322,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 2.2.  HTTP Multiplexing
 
-   HTTP/2.0 provides the ability to multiplex multiple HTTP requests and
-   responses onto a single connection.  Multiple requests or responses
+   HTTP/2.0 provides the ability to multiplex HTTP requests and
+   responses over a single connection.  Multiple requests or responses
    can be sent concurrently on a connection using streams (Section 5).
    In order to maintain independent streams, flow control and
    prioritization are necessary.
@@ -331,9 +333,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-
-
-Belshe, et al.           Expires April 17, 2014                 [Page 6]
+Belshe, et al.           Expires April 18, 2014                 [Page 6]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -389,7 +389,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 7]
+Belshe, et al.           Expires April 18, 2014                 [Page 7]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -410,7 +410,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
    (Section 6.7 of [HTTP-p1]).  The client makes an HTTP/1.1 request
    that includes an Upgrade header field identifying HTTP/2.0.  The HTTP
    /1.1 request MUST include exactly one HTTP2-Settings (Section 3.2.1)
-   header field.
+   header.
 
    For example:
 
@@ -421,38 +421,38 @@ Internet-Draft                  HTTP/2.0                    October 2013
    HTTP2-Settings: <base64url encoding of HTTP/2.0 SETTINGS payload>
 
 
-   Requests that contain a request entity body MUST be sent in their
-   entirety before the client can send HTTP/2.0 frames.  This means that
-   a large request entity can block the use of the connection until it
-   is completely sent.
+   Requests that contain an entity body MUST be sent in their entirety
+   before the client can send HTTP/2.0 frames.  This means that a large
+   request entity can block the use of the connection until it is
+   completely sent.
 
-      If concurrency of an initial request with subsequent requests is
-      important, a small request can be used to perform the upgrade to
-      HTTP/2.0, at the cost of an additional round trip.
+   If concurrency of an initial request with subsequent requests is
+   important, a small request can be used to perform the upgrade to HTTP
+   /2.0, at the cost of an additional round trip.
 
    A server that does not support HTTP/2.0 can respond to the request as
    though the Upgrade header field were absent:
 
      HTTP/1.1 200 OK
-     Content-length: 243
-     Content-type: text/html
+     Content-Length: 243
+     Content-Type: text/html
 
      ...
 
 
-   A server that supports HTTP/2.0 accepts the upgrade with a 101
-   (Switching Protocols) status code.  After the empty line that
+   A server that supports HTTP/2.0 can accept the upgrade with a 101
+   (Switching Protocols) response.  After the empty line that terminates
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 8]
+Belshe, et al.           Expires April 18, 2014                 [Page 8]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-   terminates the 101 response, the server can begin sending HTTP/2.0
-   frames.  These frames MUST include a response to the request that
-   initiated the Upgrade.
+   the 101 response, the server can begin sending HTTP/2.0 frames.
+   These frames MUST include a response to the request that initiated
+   the Upgrade.
 
      HTTP/1.1 101 Switching Protocols
      Connection: Upgrade
@@ -466,13 +466,13 @@ Internet-Draft                  HTTP/2.0                    October 2013
    sends a connection header (Section 3.5), which includes a SETTINGS
    [SETTINGS] frame.
 
-   The HTTP/1.1 request that is sent prior to upgrade is associated with
-   stream 1 and is assigned the highest possible priority.  Stream 1 is
-   implicitly half closed from the client toward the server, since the
-   request is completed as an HTTP/1.1 request.  After commencing the
-   HTTP/2.0 connection, stream 1 is used for the response.
+   The HTTP/1.1 request that is sent prior to upgrade is assigned stream
+   identifier 1 and is assigned the highest possible priority.  Stream 1
+   is implicitly half closed from the client toward the server, since
+   the request is completed as an HTTP/1.1 request.  After commencing
+   the HTTP/2.0 connection, stream 1 is used for the response.
 
-3.2.1.  HTTP2-Settings Header Field
+3.2.1.  HTTP2-Settings Header
 
    A request that upgrades from HTTP/1.1 to HTTP/2.0 MUST include
    exactly one "HTTP2-Settings" header field.  The "HTTP2-Settings"
@@ -501,7 +501,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                 [Page 9]
+Belshe, et al.           Expires April 18, 2014                 [Page 9]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -540,7 +540,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
    between instances in clustered server.  Interception proxies (a.k.a.
    "transparent" proxies) are another source of variability.
 
-3.5.  Connection Header
+3.5.  HTTP/2.0 Connection Header
 
    Upon establishment of a TCP connection and determination that HTTP/
    2.0 will be used by both peers, each endpoint MUST send a connection
@@ -557,7 +557,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 10]
+Belshe, et al.           Expires April 18, 2014                [Page 10]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -613,7 +613,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 11]
+Belshe, et al.           Expires April 18, 2014                [Page 11]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -650,7 +650,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
       when receiving.
 
    Stream Identifier:  A 31-bit stream identifier (see Section 5.1.1).
-      A value 0 is reserved for frames that are associated with the
+      The value 0 is reserved for frames that are associated with the
       connection as a whole as opposed to an individual stream.
 
    The structure and content of the frame payload is dependent entirely
@@ -658,8 +658,8 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 4.2.  Frame Size
 
-   The maximum size of a frame payload varies by frame type and use.
-   The absolute maximum size of a frame is 2^14-1 (16,383) octets.  All
+   The maximum size of a frame payload varies by frame type.  The
+   absolute maximum size of a frame is 2^14-1 (16,383) octets.  All
    implementations SHOULD be capable of receiving and minimally
    processing frames up to this maximum size.
 
@@ -669,7 +669,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 12]
+Belshe, et al.           Expires April 18, 2014                [Page 12]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -725,7 +725,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 13]
+Belshe, et al.           Expires April 18, 2014                [Page 13]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -735,10 +735,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
    context maintained by a receiver.  An endpoint receiving HEADERS
    [HEADERS], PUSH_PROMISE [PUSH_PROMISE] or CONTINUATION [CONTINUATION]
    frames MUST reassemble header blocks and perform decompression even
-   if the frames are to be discarded, which is likely to occur after a
-   stream is reset.  A receiver MUST terminate the connection with a
-   connection error (Section 5.4.1) of type COMPRESSION_ERROR
-   [COMPRESSION_ERROR], if it does not decompress a header block.
+   if the frames are to be discarded.  A receiver MUST terminate the
+   connection with a connection error (Section 5.4.1) of type
+   COMPRESSION_ERROR [COMPRESSION_ERROR], if it does not decompress a
+   header block.
 
 5.  Streams and Multiplexing
 
@@ -748,7 +748,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
    characteristics:
 
    o  A single HTTP/2.0 connection can contain multiple concurrently
-      active streams, with either endpoint interleaving frames from
+      open streams, with either endpoint interleaving frames from
       multiple streams.
 
    o  Streams can be established and used unilaterally or shared by
@@ -760,7 +760,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
       Recipients process frames in the order they are received.
 
    o  Streams are identified by an integer.  Stream identifiers are
-      assigned to streams by the endpoint that initiates a stream.
+      assigned to streams by the initiating endpoint.
 
 5.1.  Stream States
 
@@ -781,7 +781,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 14]
+Belshe, et al.           Expires April 18, 2014                [Page 14]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 15]
+Belshe, et al.           Expires April 18, 2014                [Page 15]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -882,36 +882,36 @@ Internet-Draft                  HTTP/2.0                    October 2013
       stream.
 
    open:
-      The "open" state is where both peers can send frames of any type.
-      In this state, sending peers observe advertised stream level flow
-      control limits (Section 5.2).
+      A stream in the "open" state may be used by both peers to send
+      frames of any type.  In this state, sending peers observe
+      advertised stream level flow control limits (Section 5.2).
 
-      From this state either endpoint can send a frame with a END_STREAM
-      flag set, which causes the stream to transition into one of the
-      "half closed" states: an endpoint sending a END_STREAM flag causes
-      the stream state to become "half closed (local)"; an endpoint
+      From this state either endpoint can send a frame with an
+      END_STREAM flag set, which causes the stream to transition into
+      one of the "half closed" states: an endpoint sending an END_STREAM
+      flag causes the stream state to become "half closed (local)"; an
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 16]
+Belshe, et al.           Expires April 18, 2014                [Page 16]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-      receiving a END_STREAM flag causes the stream state to become
-      "half closed (remote)".  A HEADERS [HEADERS] frame bearing an
-      END_STREAM flag can be followed by CONTINUATION [CONTINUATION]
+      endpoint receiving an END_STREAM flag causes the stream state to
+      become "half closed (remote)".  A HEADERS [HEADERS] frame bearing
+      an END_STREAM flag can be followed by CONTINUATION [CONTINUATION]
       frames.
 
       Either endpoint can send a RST_STREAM [RST_STREAM] frame from this
       state, causing it to transition immediately to "closed".
 
    half closed (local):
-      A stream that is "half closed (local)" cannot be used for sending
-      frames.
+      A stream that is in the "half closed (local)" state cannot be used
+      for sending frames.
 
       A stream transitions from this state to "closed" when a frame that
-      contains a END_STREAM flag is received, or when either peer sends
+      contains an END_STREAM flag is received, or when either peer sends
       a RST_STREAM [RST_STREAM] frame.  A HEADERS [HEADERS] frame
       bearing an END_STREAM flag can be followed by CONTINUATION
       [CONTINUATION] frames.
@@ -949,7 +949,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 17]
+Belshe, et al.           Expires April 18, 2014                [Page 17]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1005,7 +1005,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 18]
+Belshe, et al.           Expires April 18, 2014                [Page 18]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1061,7 +1061,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 19]
+Belshe, et al.           Expires April 18, 2014                [Page 19]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1117,7 +1117,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 20]
+Belshe, et al.           Expires April 18, 2014                [Page 20]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 21]
+Belshe, et al.           Expires April 18, 2014                [Page 21]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 22]
+Belshe, et al.           Expires April 18, 2014                [Page 22]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 23]
+Belshe, et al.           Expires April 18, 2014                [Page 23]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 24]
+Belshe, et al.           Expires April 18, 2014                [Page 24]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 25]
+Belshe, et al.           Expires April 18, 2014                [Page 25]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1453,7 +1453,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 26]
+Belshe, et al.           Expires April 18, 2014                [Page 26]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 27]
+Belshe, et al.           Expires April 18, 2014                [Page 27]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 28]
+Belshe, et al.           Expires April 18, 2014                [Page 28]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1621,7 +1621,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 29]
+Belshe, et al.           Expires April 18, 2014                [Page 29]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1677,7 +1677,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 30]
+Belshe, et al.           Expires April 18, 2014                [Page 30]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1733,7 +1733,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 31]
+Belshe, et al.           Expires April 18, 2014                [Page 31]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1789,7 +1789,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 32]
+Belshe, et al.           Expires April 18, 2014                [Page 32]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1845,7 +1845,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 33]
+Belshe, et al.           Expires April 18, 2014                [Page 33]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1901,7 +1901,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 34]
+Belshe, et al.           Expires April 18, 2014                [Page 34]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -1957,7 +1957,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 35]
+Belshe, et al.           Expires April 18, 2014                [Page 35]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2013,7 +2013,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 36]
+Belshe, et al.           Expires April 18, 2014                [Page 36]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2069,7 +2069,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 37]
+Belshe, et al.           Expires April 18, 2014                [Page 37]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2125,7 +2125,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 38]
+Belshe, et al.           Expires April 18, 2014                [Page 38]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2181,7 +2181,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 39]
+Belshe, et al.           Expires April 18, 2014                [Page 39]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2237,7 +2237,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 40]
+Belshe, et al.           Expires April 18, 2014                [Page 40]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2293,7 +2293,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 41]
+Belshe, et al.           Expires April 18, 2014                [Page 41]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2349,7 +2349,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 42]
+Belshe, et al.           Expires April 18, 2014                [Page 42]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2405,7 +2405,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 43]
+Belshe, et al.           Expires April 18, 2014                [Page 43]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2461,7 +2461,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 44]
+Belshe, et al.           Expires April 18, 2014                [Page 44]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2517,7 +2517,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 45]
+Belshe, et al.           Expires April 18, 2014                [Page 45]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2573,7 +2573,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 46]
+Belshe, et al.           Expires April 18, 2014                [Page 46]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2629,7 +2629,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 47]
+Belshe, et al.           Expires April 18, 2014                [Page 47]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2685,7 +2685,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 48]
+Belshe, et al.           Expires April 18, 2014                [Page 48]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2741,7 +2741,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 49]
+Belshe, et al.           Expires April 18, 2014                [Page 49]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2797,7 +2797,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 50]
+Belshe, et al.           Expires April 18, 2014                [Page 50]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2853,7 +2853,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 51]
+Belshe, et al.           Expires April 18, 2014                [Page 51]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2909,7 +2909,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 52]
+Belshe, et al.           Expires April 18, 2014                [Page 52]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -2965,7 +2965,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 53]
+Belshe, et al.           Expires April 18, 2014                [Page 53]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3021,7 +3021,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 54]
+Belshe, et al.           Expires April 18, 2014                [Page 54]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3077,7 +3077,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 55]
+Belshe, et al.           Expires April 18, 2014                [Page 55]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3133,7 +3133,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 56]
+Belshe, et al.           Expires April 18, 2014                [Page 56]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3189,7 +3189,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 57]
+Belshe, et al.           Expires April 18, 2014                [Page 57]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3245,7 +3245,7 @@ A.2.  Since draft-ietf-httpbis-http2-05
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 58]
+Belshe, et al.           Expires April 18, 2014                [Page 58]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3301,7 +3301,7 @@ A.5.  Since draft-ietf-httpbis-http2-02
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 59]
+Belshe, et al.           Expires April 18, 2014                [Page 59]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3357,7 +3357,7 @@ A.7.  Since draft-ietf-httpbis-http2-00
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 60]
+Belshe, et al.           Expires April 18, 2014                [Page 60]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3413,7 +3413,7 @@ Authors' Addresses
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 61]
+Belshe, et al.           Expires April 18, 2014                [Page 61]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
@@ -3468,4 +3468,4 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
 
-Belshe, et al.           Expires April 17, 2014                [Page 62]
+Belshe, et al.           Expires April 18, 2014                [Page 62]
