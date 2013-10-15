@@ -625,6 +625,7 @@ samp, tt, code, pre {
                      <li><a href="#rfc.section.8.1.2">8.1.2</a>&nbsp;&nbsp;&nbsp;<a href="#HttpHeaders">HTTP Header Fields</a><ul>
                            <li><a href="#rfc.section.8.1.2.1">8.1.2.1</a>&nbsp;&nbsp;&nbsp;<a href="#HttpRequest">Request Header Fields</a></li>
                            <li><a href="#rfc.section.8.1.2.2">8.1.2.2</a>&nbsp;&nbsp;&nbsp;<a href="#HttpResponse">Response Header Fields</a></li>
+                           <li><a href="#rfc.section.8.1.2.3">8.1.2.3</a>&nbsp;&nbsp;&nbsp;<a href="#malformed">Malformed Requests and Responses</a></li>
                         </ul>
                      </li>
                      <li><a href="#rfc.section.8.1.3">8.1.3</a>&nbsp;&nbsp;&nbsp;<a href="#Reliability">Request Reliability Mechanisms in HTTP/2.0</a></li>
@@ -957,8 +958,8 @@ Upgrade: HTTP/2.0
             <dl>
                <dt>R:</dt>
                <dd>
-                  <p>A reserved 2-bit field. The semantics of this bit are undefined and the bit MUST remain unset (0) when sending and MUST be
-                     ignored when receiving.
+                  <p>A reserved 2-bit field. The semantics of these bits are undefined and the bit MUST remain unset (0) when sending and MUST
+                     be ignored when receiving.
                   </p>
                </dd>
                <dt>Length:</dt>
@@ -2006,13 +2007,14 @@ Upgrade: HTTP/2.0
                <p id="rfc.section.8.1.2.p.1">HTTP/2.0 request and response header fields carry information as a series of key-value pairs. This includes the target URI
                   for the request, the status code for the response, as well as HTTP header fields.
                </p>
-               <p id="rfc.section.8.1.2.p.2">HTTP header field names are strings of ASCII characters that are compared in a case-insensitive fashion. Note that header
-                  compression could cause case information to be lost.
+               <p id="rfc.section.8.1.2.p.2">HTTP header field names are strings of ASCII characters that are compared in a case-insensitive fashion. Header field names
+                  MUST be converted to lowercase prior to their encoding in HTTP/2.0. A request or response containing uppercase header field
+                  names MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.3</a>).
                </p>
                <p id="rfc.section.8.1.2.p.3">The semantics of HTTP header fields are not altered by this specification, though header fields relating to connection management
                   or request framing are no longer necessary. An HTTP/2.0 request or response MUST NOT include any of the following header fields:
-                  Connection, Keep-Alive, Proxy-Connection, TE, Transfer-Encoding, and Upgrade. A server MUST treat the presence of any of these
-                  header fields as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. 
+                  Connection, Keep-Alive, Proxy-Connection, TE, Transfer-Encoding, and Upgrade. A request or response containing these header
+                  fields MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.3</a>). 
                </p>
                <dl>
                   <dt>Note:</dt>
@@ -2044,24 +2046,34 @@ Upgrade: HTTP/2.0
                         </p>
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed. Intermediaries that do not interpret requests MAY forward
-                     a malformed request. Implementations that detect malformed requests need to ensure that the stream ends, however a server
-                     MAY send an HTTP response prior to closing or resetting the stream.
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.3</a>).
                   </p>
                   <p id="rfc.section.8.1.2.1.p.2">Header field names that contain a colon are only valid in the HTTP/2.0 context. These are not HTTP header fields. Implementations
                      MUST NOT generate header fields that start with a colon, but they MUST ignore any header field that starts with a colon. In
                      particular, header fields with names starting with a colon MUST NOT be exposed as HTTP header fields.
                   </p>
                   <p id="rfc.section.8.1.2.1.p.3">HTTP/2.0 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
-                  <p id="rfc.section.8.1.2.1.p.4">All HTTP Requests that include a body can include a <samp>content-length</samp> header field. If a server receives a request where the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths does not equal the value of the <samp>content-length</samp> header field, the server MUST return a 400 (Bad Request) error.
-                  </p>
                </div>
                <div id="HttpResponse">
                   <h4 id="rfc.section.8.1.2.2"><a href="#rfc.section.8.1.2.2">8.1.2.2</a>&nbsp;<a href="#HttpResponse">Response Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses. Intermediaries that do not interpret requests MAY forward a response
-                     that is malformed in this fashion. Clients MUST NOT accept a malformed response.
+                  <p id="rfc.section.8.1.2.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses, otherwise the response is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.3</a>).
                   </p>
                   <p id="rfc.section.8.1.2.2.p.2">HTTP/2.0 does not define a way to carry the version or reason phrase that is included in an HTTP/1.1 status line.</p>
+               </div>
+               <div id="malformed">
+                  <h4 id="rfc.section.8.1.2.3"><a href="#rfc.section.8.1.2.3">8.1.2.3</a>&nbsp;<a href="#malformed">Malformed Requests and Responses</a></h4>
+                  <p id="rfc.section.8.1.2.3.p.1">A malformed request or response is one that uses a valid sequence of HTTP/2.0 frames with valid compression, but is otherwise
+                     invalid due to the presence of prohibited header fields, the absence of mandatory header fields, or the inclusion of uppercase
+                     header field names.
+                  </p>
+                  <p id="rfc.section.8.1.2.3.p.2">A request or response that includes an entity body can include a <samp>content-length</samp> header field. A request or response is also malformed if the value of a <samp>content-length</samp> header field does not equal the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths that form the body.
+                  </p>
+                  <p id="rfc.section.8.1.2.3.p.3">Intermediaries MAY forward a malformed request or response, but only if the frames are forwarded without inspection of header
+                     fields.
+                  </p>
+                  <p id="rfc.section.8.1.2.3.p.4">Implementations that detect malformed requests or responses need to ensure that the stream ends. For malformed requests, a
+                     server MAY send an HTTP response to prior to closing or resetting the stream. Clients MUST NOT accept a malformed response.
+                  </p>
                </div>
             </div>
             <div id="Reliability">
