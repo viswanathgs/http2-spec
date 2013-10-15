@@ -560,7 +560,7 @@ samp, tt, code, pre {
          <li><a href="#rfc.section.3">3.</a>&nbsp;&nbsp;&nbsp;<a href="#starting">Starting HTTP/2.0</a><ul>
                <li><a href="#rfc.section.3.1">3.1</a>&nbsp;&nbsp;&nbsp;<a href="#versioning">HTTP/2.0 Version Identification</a></li>
                <li><a href="#rfc.section.3.2">3.2</a>&nbsp;&nbsp;&nbsp;<a href="#discover-http">Starting HTTP/2.0 for "http" URIs</a><ul>
-                     <li><a href="#rfc.section.3.2.1">3.2.1</a>&nbsp;&nbsp;&nbsp;<a href="#Http2SettingsHeader">HTTP2-Settings Header</a></li>
+                     <li><a href="#rfc.section.3.2.1">3.2.1</a>&nbsp;&nbsp;&nbsp;<a href="#Http2SettingsHeader">HTTP2-Settings Header Field</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.3.3">3.3</a>&nbsp;&nbsp;&nbsp;<a href="#discover-https">Starting HTTP/2.0 for "https" URIs</a></li>
@@ -783,7 +783,7 @@ samp, tt, code, pre {
             <p id="rfc.section.2.1.p.1">HTTP/2.0 provides an efficient serialization of HTTP semantics. HTTP requests and responses are encoded into length-prefixed
                frames (see <a href="#FrameHeader" title="Frame Format">Section&nbsp;4.1</a>).
             </p>
-            <p id="rfc.section.2.1.p.2">HTTP headers are compressed into a series of frames that contain header block fragments (see <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
+            <p id="rfc.section.2.1.p.2">HTTP header fields are compressed into a series of frames that contain header block fragments (see <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
             </p>
          </div>
          <div>
@@ -836,7 +836,7 @@ samp, tt, code, pre {
             <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a href="#discover-http">Starting HTTP/2.0 for "http" URIs</a></h2>
             <p id="rfc.section.3.2.p.1">A client that makes a request to an "http" URI without prior knowledge about support for HTTP/2.0 uses the HTTP Upgrade mechanism
                (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#header.upgrade" title="Upgrade">Section 6.7</a> of <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>). The client makes an HTTP/1.1 request that includes an Upgrade header field identifying HTTP/2.0. The HTTP/1.1 request MUST
-               include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header">Section&nbsp;3.2.1</a>) header.
+               include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a>) header field.
             </p>
             <div id="rfc.figure.u.1"></div>
             <p>For example:</p><pre class="text2">GET /default.htm HTTP/1.1
@@ -872,9 +872,9 @@ Upgrade: HTTP/2.0
                After commencing the HTTP/2.0 connection, stream 1 is used for the response.
             </p>
             <div id="Http2SettingsHeader">
-               <h3 id="rfc.section.3.2.1"><a href="#rfc.section.3.2.1">3.2.1</a>&nbsp;<a href="#Http2SettingsHeader">HTTP2-Settings Header</a></h3>
+               <h3 id="rfc.section.3.2.1"><a href="#rfc.section.3.2.1">3.2.1</a>&nbsp;<a href="#Http2SettingsHeader">HTTP2-Settings Header Field</a></h3>
                <p id="rfc.section.3.2.1.p.1">A request that upgrades from HTTP/1.1 to HTTP/2.0 MUST include exactly one <samp>HTTP2-Settings</samp> header field. The <samp>HTTP2-Settings</samp> header field is a hop-by-hop header field that includes settings that govern the HTTP/2.0 connection, provided in anticipation
-                  of the server accepting the request to upgrade. A server MUST reject an attempt to upgrade if this header is not present.
+                  of the server accepting the request to upgrade. A server MUST reject an attempt to upgrade if this header field is not present.
                </p>
                <div id="rfc.figure.u.4"></div><pre class="inline">HTTP2-Settings    = token68
 </pre><p id="rfc.section.3.2.1.p.3">The content of the <samp>HTTP2-Settings</samp> header field is the payload of a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a>), encoded as a base64url string (that is, the URL- and filename-safe Base64 encoding described in <a href="http://tools.ietf.org/html/rfc4648#section-5">Section 5</a> of <a href="#RFC4648"><cite title="The Base16, Base32, and Base64 Data Encodings">[RFC4648]</cite></a>, with any trailing '=' characters omitted). The <a href="#RFC5234">ABNF</a> <cite title="Augmented BNF for Syntax Specifications: ABNF">[RFC5234]</cite> production for <samp>token68</samp> is defined in <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p7-auth.html#challenge.and.response" title="Challenge and Response">Section 2.1</a> of <a href="#HTTP-p7"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Authentication">[HTTP-p7]</cite></a>.
@@ -1007,8 +1007,8 @@ Upgrade: HTTP/2.0
          </div>
          <div id="HeaderBlock">
             <h2 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3</a>&nbsp;<a href="#HeaderBlock">Header Compression and Decompression</a></h2>
-            <p id="rfc.section.4.3.p.1">A header in HTTP/2.0 is a name-value pair with one or more associated values. They are used within HTTP request and response
-               messages as well as server push operations (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
+            <p id="rfc.section.4.3.p.1">A header field in HTTP/2.0 is a name-value pair with one or more associated values. They are used within HTTP request and
+               response messages as well as server push operations (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
             </p>
             <p id="rfc.section.4.3.p.2">Header sets are logical collections of zero or more header fields arranged at the application layer. When transmitted over
                a connection, the header set is serialized into a header block using <a href="#COMPRESSION">HTTP Header Compression</a> <cite title="HPACK - Header Compression for HTTP/2.0">[COMPRESSION]</cite>. The serialized header block is then divided into one or more octet sequences, called header block fragments, and transmitted
@@ -1396,7 +1396,7 @@ Upgrade: HTTP/2.0
                <dt>END_HEADERS (0x4):</dt>
                <dd>
                   <p>Bit 3 being set indicates that this frame ends the sequence of header block fragments necessary to provide a complete set
-                     of headers.
+                     of header fields.
                   </p>
                   <p>The payload for a complete header block is provided by a sequence of that starts with a HEADERS frame, followed by zero or
                      more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. The sequence is terminated by a frame with the END_HEADERS flag set. Once the sequence terminates, the payload of
@@ -1843,7 +1843,7 @@ Upgrade: HTTP/2.0
                <dt>END_HEADERS (0x4):</dt>
                <dd>
                   <p>The END_HEADERS bit indicates that this frame ends the sequence of header block fragments necessary to provide a complete
-                     set of headers.
+                     set of header fields.
                   </p>
                   <p>The payload for a complete header block is provided by a sequence that starts with a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame and zero or more CONTINUATION frames, terminated by a <a href="#HEADERS" class="smpl">HEADERS</a> or CONTINUATION frame with the END_HEADERS flag set, or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_PUSH_PROMISE flag set. Once the sequence terminates, the payload of all frames in the sequence are concatenated
                      and interpreted as a single block.
@@ -1959,7 +1959,7 @@ Upgrade: HTTP/2.0
                                   + END_HEADERS
                                     :status = 204
                                     content-length: 0
-</pre><p id="rfc.section.8.1.1.p.6">An HTTP POST request that includes request header fields and payload data is transmitted as one <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, containing the request headers followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> (or <a href="#HEADERS" class="smpl">HEADERS</a>) frame having the END_HEADERS flag set and the final <a href="#DATA" class="smpl">DATA</a> frame having the END_STREAM flag set:
+</pre><p id="rfc.section.8.1.1.p.6">An HTTP POST request that includes request header fields and payload data is transmitted as one <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, containing the request header fields followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> (or <a href="#HEADERS" class="smpl">HEADERS</a>) frame having the END_HEADERS flag set and the final <a href="#DATA" class="smpl">DATA</a> frame having the END_STREAM flag set:
                </p>
                <div id="rfc.figure.u.8"></div><pre class="inline">  POST /resource HTTP/1.1        HEADERS 
   Host: example.org         ==&gt;    - END_STREAM
@@ -2024,7 +2024,7 @@ Upgrade: HTTP/2.0
                </dl>
                <div id="HttpRequest">
                   <h4 id="rfc.section.8.1.2.1"><a href="#rfc.section.8.1.2.1">8.1.2.1</a>&nbsp;<a href="#HttpRequest">Request Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.1.p.1">HTTP/2.0 defines a number of headers starting with a colon ':' character that carry information about the request target: </p>
+                  <p id="rfc.section.8.1.2.1.p.1">HTTP/2.0 defines a number of header fields starting with a colon ':' character that carry information about the request target: </p>
                   <ul>
                      <li>
                         <p>The <samp>:method</samp> header field includes the HTTP method (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p2-semantics.html#methods" title="Request Methods">Section 4</a>).
@@ -2038,7 +2038,7 @@ Upgrade: HTTP/2.0
                         <p>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="http://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>).
                         </p>
                         <p>To ensure that the HTTP/1.1 request line can be reproduced accurately, this header field MUST be omitted when translating
-                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2.0 requests directly SHOULD instead omit the <samp>Host</samp> header. An intermediary that converts a request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
+                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/24/p1-messaging.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2.0 requests directly SHOULD instead omit the <samp>Host</samp> header field. An intermediary that converts a request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
                         </p>
                      </li>
                      <li>
@@ -2047,9 +2047,9 @@ Upgrade: HTTP/2.0
                         </p>
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory headers is malformed. Intermediaries that do not interpret requests MAY forward a malformed
-                     request. Implementations that detect malformed requests need to ensure that the stream ends, however a server MAY send an
-                     HTTP response prior to closing or resetting the stream.
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed. Intermediaries that do not interpret requests MAY forward
+                     a malformed request. Implementations that detect malformed requests need to ensure that the stream ends, however a server
+                     MAY send an HTTP response prior to closing or resetting the stream.
                   </p>
                   <p id="rfc.section.8.1.2.1.p.2">Header field names that contain a colon are only valid in the HTTP/2.0 context. These are not HTTP header fields. Implementations
                      MUST NOT generate header fields that start with a colon, but they MUST ignore any header field that starts with a colon. In
@@ -2110,12 +2110,12 @@ Upgrade: HTTP/2.0
             <div>
                <h3 id="rfc.section.8.2.1"><a href="#rfc.section.8.2.1">8.2.1</a>&nbsp;Push Requests
                </h3>
-               <p id="rfc.section.8.2.1.p.1">Server push is semantically equivalent to a server responding to a request. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, or frames, sent by the server includes a header block that contains a complete set of request headers that the server
-                  attributes to the request. It is not possible to push a response to a request that includes a request body.
+               <p id="rfc.section.8.2.1.p.1">Server push is semantically equivalent to a server responding to a request. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, or frames, sent by the server includes a header block that contains a complete set of request header fields that the
+                  server attributes to the request. It is not possible to push a response to a request that includes a request body.
                </p>
                <p id="rfc.section.8.2.1.p.2">Pushed resources are always associated with an explicit request from a client. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames sent by the server are sent on the stream created for the original request. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame includes a promised stream identifier, chosen from the stream identifiers available to the server (see <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>).
                </p>
-               <p id="rfc.section.8.2.1.p.3">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request headers (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe and cacheable. If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <p id="rfc.section.8.2.1.p.3">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request header fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe and cacheable. If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                </p>
                <p id="rfc.section.8.2.1.p.4">The server SHOULD send <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;6.6</a>) frames prior to sending any frames that reference the promised resources. This avoids a race where clients issue requests
                   for resources prior to receiving any <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames.
@@ -2157,7 +2157,7 @@ Upgrade: HTTP/2.0
                established a TLS session with a server for the purposes of interacting with <samp>https</samp> resources.
             </p>
             <p id="rfc.section.8.3.p.2">In HTTP/2.0, the CONNECT method is used to establish a tunnel over a single HTTP/2.0 stream to a remote host. The HTTP header
-               mapping works as mostly as defined in Request Header Fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>), with a few differences. Specifically: 
+               field mapping works as mostly as defined in Request Header Fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.1</a>), with a few differences. Specifically: 
             </p>
             <ul>
                <li>The <samp>:method</samp> header field is set to <samp>CONNECT</samp>.
@@ -2472,7 +2472,7 @@ Upgrade: HTTP/2.0
                <dt>Author/Change controller:</dt>
                <dd>IETF</dd>
                <dt>Specification document(s):</dt>
-               <dd><a href="#Http2SettingsHeader" title="HTTP2-Settings Header">Section&nbsp;3.2.1</a> of this document
+               <dd><a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a> of this document
                </dd>
                <dt>Related information:</dt>
                <dd>This header field is only used by an HTTP/2.0 client for Upgrade-based negotiation.</dd>
@@ -2634,7 +2634,7 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.A.1.p.1">Adding definition for CONNECT method.</p>
             <p id="rfc.section.A.1.p.2">Constraining the use of push to safe, cacheable methods with no request body.</p>
             <p id="rfc.section.A.1.p.3">Changing from :host to :authority to remove any potential confusion.</p>
-            <p id="rfc.section.A.1.p.4">Adding setting for for header compression table size.</p>
+            <p id="rfc.section.A.1.p.4">Adding setting for header compression table size.</p>
             <p id="rfc.section.A.1.p.5">Adding settings acknowledgement.</p>
             <p id="rfc.section.A.1.p.6">Removing unnecessary and potentially problematic flags from CONTINUATION.</p>
          </div>
