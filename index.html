@@ -882,8 +882,8 @@ Upgrade: HTTP/2.0
                <p id="rfc.section.3.2.1.p.4">The client MUST include values for the following settings (<a href="#SettingFormat" title="Setting Format">Section&nbsp;6.5.1</a>): 
                </p>
                <ul>
-                  <li>SETTINGS_MAX_CONCURRENT_STREAMS</li>
-                  <li>SETTINGS_INITIAL_WINDOW_SIZE</li>
+                  <li><a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a></li>
+                  <li><a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a></li>
                </ul>
                <p id="rfc.section.3.2.1.p.5">As a hop-by-hop header field, the <samp>Connection</samp> header field MUST include a value of <samp>HTTP2-Settings</samp> in addition to <samp>Upgrade</samp> when upgrading to HTTP/2.0.
                </p>
@@ -1199,13 +1199,12 @@ Upgrade: HTTP/2.0
             <div>
                <h3 id="rfc.section.5.1.2"><a href="#rfc.section.5.1.2">5.1.2</a>&nbsp;Stream Concurrency
                </h3>
-               <p id="rfc.section.5.1.2.p.1">A peer can limit the number of concurrently active streams using the SETTINGS_MAX_CONCURRENT_STREAMS parameters within a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame. The maximum concurrent streams setting is specific to each endpoint and applies only to the peer that receives the
+               <p id="rfc.section.5.1.2.p.1">A peer can limit the number of concurrently active streams using the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> parameters within a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame. The maximum concurrent streams setting is specific to each endpoint and applies only to the peer that receives the
                   setting. That is, clients specify the maximum number of concurrent streams the server can initiate, and servers specify the
                   maximum number of concurrent streams the client can initiate. Endpoints MUST NOT exceed the limit set by their peer.
                </p>
                <p id="rfc.section.5.1.2.p.2">Streams that are in the "open" state, or either of the "half closed" states count toward the maximum number of streams that
-                  an endpoint is permitted to open. Streams in any of these three states count toward the limit advertised in the SETTINGS_MAX_CONCURRENT_STREAMS
-                  setting (see <a href="#SettingValues" title="Defined Settings">Section&nbsp;6.5.2</a>).
+                  an endpoint is permitted to open. Streams in any of these three states count toward the limit advertised in the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> setting (see <a href="#SettingValues" title="Defined Settings">Section&nbsp;6.5.2</a>).
                </p>
                <p id="rfc.section.5.1.2.p.3">Streams in either of the "reserved" states do not count as open, even if a small amount of application state is retained to
                   ensure that the promised stream can be successfully used.
@@ -1239,8 +1238,7 @@ Upgrade: HTTP/2.0
                   <li>The frame type determines whether flow control applies to a frame. Of the frames specified in this document, only <a href="#DATA" class="smpl">DATA</a> frames are subject to flow control; all other frame types do not consume space in the advertised flow control window. This
                      ensures that important control frames are not blocked by flow control.
                   </li>
-                  <li>Flow control can be disabled by a receiver. A receiver can choose to disable both forms of flow control by sending the SETTINGS_FLOW_CONTROL_OPTIONS
-                     setting. See Ending Flow Control (<a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>) for more details.
+                  <li>Flow control can be disabled by a receiver. A receiver can choose to disable both forms of flow control by sending the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting. See Ending Flow Control (<a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>) for more details.
                   </li>
                   <li>HTTP/2.0 standardizes only the format of the <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> frame (<a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;6.9</a>). This does not stipulate how a receiver decides when to send this frame or the value that it sends. Nor does it specify
                      how a sender chooses to send packets. Implementations are able to select any algorithm that suits their needs.
@@ -1518,31 +1516,31 @@ Upgrade: HTTP/2.0
                <h3 id="rfc.section.6.5.2"><a href="#rfc.section.6.5.2">6.5.2</a>&nbsp;<a href="#SettingValues">Defined Settings</a></h3>
                <p id="rfc.section.6.5.2.p.1">The following settings are defined: </p>
                <dl>
-                  <dt>SETTINGS_HEADER_TABLE_SIZE (1):</dt>
+                  <dt id="SETTINGS_HEADER_TABLE_SIZE">SETTINGS_HEADER_TABLE_SIZE (1):</dt>
                   <dd>
                      <p>Allows the sender to inform the remote endpoint of the size of the header compression table used to decode header blocks.
                         The default value is 4096 bytes.
                      </p>
                   </dd>
-                  <dt>SETTINGS_ENABLE_PUSH (2):</dt>
+                  <dt id="SETTINGS_ENABLE_PUSH">SETTINGS_ENABLE_PUSH (2):</dt>
                   <dd>
                      <p>This setting can be use to disable server push (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>). An endpoint MUST NOT send a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame if it receives this setting set to a value of 0. The default value is 1, which indicates that push is permitted.
                      </p>
                   </dd>
-                  <dt>SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
+                  <dt id="SETTINGS_MAX_CONCURRENT_STREAMS">SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
                   <dd>
                      <p>Indicates the maximum number of concurrent streams that the sender will allow. This limit is directional: it applies to the
                         number of streams that the sender permits the receiver to create. By default there is no limit. It is recommended that this
                         value be no smaller than 100, so as to not unnecessarily limit parallelism.
                      </p>
                   </dd>
-                  <dt>SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
+                  <dt id="SETTINGS_INITIAL_WINDOW_SIZE">SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
                   <dd>
                      <p>Indicates the sender's initial window size (in bytes) for stream level flow control.</p>
                      <p>This settings affects the window size of all streams, including existing streams, see <a href="#InitialWindowSize" title="Initial Flow Control Window Size">Section&nbsp;6.9.2</a>.
                      </p>
                   </dd>
-                  <dt>SETTINGS_FLOW_CONTROL_OPTIONS (10):</dt>
+                  <dt id="SETTINGS_FLOW_CONTROL_OPTIONS">SETTINGS_FLOW_CONTROL_OPTIONS (10):</dt>
                   <dd>
                      <p>Indicates flow control options. The least significant bit (0x1) of the value is set to indicate that the sender has disabled
                         all flow control. This bit cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>.
@@ -1570,7 +1568,8 @@ Upgrade: HTTP/2.0
                The PUSH_PROMISE frame includes the unsigned 31-bit identifier of the stream the endpoint plans to create along with a minimal
                set of headers that provide additional context for the stream. <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a> contains a thorough description of the use of PUSH_PROMISE frames.
             </p>
-            <p id="rfc.section.6.6.p.2">PUSH_PROMISE MUST NOT be sent if the SETTINGS_ENABLE_PUSH setting of the peer endpoint is set to 0.</p>
+            <p id="rfc.section.6.6.p.2">PUSH_PROMISE MUST NOT be sent if the <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting of the peer endpoint is set to 0.
+            </p>
             <div id="rfc.figure.7"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1776,19 +1775,17 @@ Upgrade: HTTP/2.0
                <h3 id="rfc.section.6.9.2"><a href="#rfc.section.6.9.2">6.9.2</a>&nbsp;<a href="#InitialWindowSize">Initial Flow Control Window Size</a></h3>
                <p id="rfc.section.6.9.2.p.1">When a HTTP/2.0 connection is first established, new streams are created with an initial flow control window size of 65535
                   bytes. The connection flow control window is 65535 bytes. Both endpoints can adjust the initial window size for new streams
-                  by including a value for SETTINGS_INITIAL_WINDOW_SIZE in the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that forms part of the connection header.
+                  by including a value for <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> in the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that forms part of the connection header.
                </p>
-               <p id="rfc.section.6.9.2.p.2">Prior to receiving a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that sets a value for SETTINGS_INITIAL_WINDOW_SIZE, an endpoint can only use the default initial window size when sending
-                  flow controlled frames. Similarly, the connection flow control window is set to the default initial window size until a WINDOW_UPDATE
-                  frame is received.
+               <p id="rfc.section.6.9.2.p.2">Prior to receiving a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that sets a value for <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a>, an endpoint can only use the default initial window size when sending flow controlled frames. Similarly, the connection
+                  flow control window is set to the default initial window size until a WINDOW_UPDATE frame is received.
                </p>
-               <p id="rfc.section.6.9.2.p.3">A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame can alter the initial flow control window size for all current streams. When the value of SETTINGS_INITIAL_WINDOW_SIZE
-                  changes, a receiver MUST adjust the size of all stream flow control windows that it maintains by the difference between the
+               <p id="rfc.section.6.9.2.p.3">A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame can alter the initial flow control window size for all current streams. When the value of <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> changes, a receiver MUST adjust the size of all stream flow control windows that it maintains by the difference between the
                   new value and the old value. A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame cannot alter the connection flow control window.
                </p>
-               <p id="rfc.section.6.9.2.p.4">A change to SETTINGS_INITIAL_WINDOW_SIZE could cause the available space in a flow control window to become negative. A sender
-                  MUST track the negative flow control window, and MUST NOT send new flow controlled frames until it receives WINDOW_UPDATE
-                  frames that cause the flow control window to become positive.
+               <p id="rfc.section.6.9.2.p.4">A change to <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> could cause the available space in a flow control window to become negative. A sender MUST track the negative flow control
+                  window, and MUST NOT send new flow controlled frames until it receives WINDOW_UPDATE frames that cause the flow control window
+                  to become positive.
                </p>
                <p id="rfc.section.6.9.2.p.5">For example, if the client sends 60KB immediately on connection establishment, and the server sets the initial window size
                   to be 16KB, the client will recalculate the available flow control window to be -44KB on receipt of the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame. The client retains a negative flow control window until WINDOW_UPDATE frames restore the window to being positive,
@@ -1819,11 +1816,11 @@ Upgrade: HTTP/2.0
                   it MUST cease transmission of WINDOW_UPDATE frames for that stream. A sender is not obligated to maintain the available flow
                   control window for streams that it is no longer sending on.
                </p>
-               <p id="rfc.section.6.9.4.p.2">Flow control can be disabled for the entire connection using the SETTINGS_FLOW_CONTROL_OPTIONS setting. This setting ends
-                  all forms of flow control. An implementation that does not wish to perform flow control can use this in the initial <a href="#SETTINGS" class="smpl">SETTINGS</a> exchange.
+               <p id="rfc.section.6.9.4.p.2">Flow control can be disabled for the entire connection using the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting. This setting ends all forms of flow control. An implementation that does not wish to perform flow control can use
+                  this in the initial <a href="#SETTINGS" class="smpl">SETTINGS</a> exchange.
                </p>
                <p id="rfc.section.6.9.4.p.3">Flow control cannot be enabled again once disabled. Any attempt to re-enable flow control - by sending a WINDOW_UPDATE or
-                  by clearing the bits on the SETTINGS_FLOW_CONTROL_OPTIONS setting - MUST be rejected with a <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> error code.
+                  by clearing the bits on the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting - MUST be rejected with a <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> error code.
                </p>
             </div>
          </div>
@@ -2099,8 +2096,7 @@ Upgrade: HTTP/2.0
                request. This feature becomes particularly helpful when the server knows the client will need to have those resources available
                in order to fully process the originally requested resource.
             </p>
-            <p id="rfc.section.8.2.p.2">Pushing additional resources is optional, and is negotiated only between individual endpoints. The SETTINGS_ENABLE_PUSH setting
-               can be set to 0 to indicate that server push is disabled. Even if enabled, an intermediary could receive pushed resources
+            <p id="rfc.section.8.2.p.2">Pushing additional resources is optional, and is negotiated only between individual endpoints. The <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting can be set to 0 to indicate that server push is disabled. Even if enabled, an intermediary could receive pushed resources
                from the server but could choose not to forward those on to the client. How to make use of the pushed resources is up to that
                intermediary. Equally, the intermediary might choose to push additional resources to the client, without any action taken
                by the server.
@@ -2141,10 +2137,8 @@ Upgrade: HTTP/2.0
                <p id="rfc.section.8.2.2.p.3">If the client determines, for any reason, that it does not wish to receive the pushed resource from the server, or if the
                   server takes too long to begin sending the promised resource, the client can send an <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame, using either the <a href="#CANCEL" class="smpl">CANCEL</a> or <a href="#REFUSED_STREAM" class="smpl">REFUSED_STREAM</a> codes, and referencing the pushed stream's identifier.
                </p>
-               <p id="rfc.section.8.2.2.p.4">A client can use the SETTINGS_MAX_CONCURRENT_STREAMS setting to limit the number of resources that can be concurrently pushed
-                  by a server. Advertising a SETTINGS_MAX_CONCURRENT_STREAMS value of zero disables server push by preventing the server from
-                  creating the necessary streams. This does not prohibit a server from sending PUSH_PROMISE frames; clients need to reset any
-                  promised streams that are not wanted.
+               <p id="rfc.section.8.2.2.p.4">A client can use the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> setting to limit the number of resources that can be concurrently pushed by a server. Advertising a <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> value of zero disables server push by preventing the server from creating the necessary streams. This does not prohibit a
+                  server from sending PUSH_PROMISE frames; clients need to reset any promised streams that are not wanted.
                </p>
                <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
                   policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
