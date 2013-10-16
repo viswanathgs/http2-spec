@@ -714,16 +714,7 @@ samp, tt, code, pre {
             <div id="header.representation">
                <h3 id="rfc.section.3.1.4"><a href="#rfc.section.3.1.4">3.1.4</a>&nbsp;<a href="#header.representation">Header Field Representation</a></h3>
                <p id="rfc.section.3.1.4.p.1">An encoded header field can be represented either as a literal or as an index.</p>
-               <p id="rfc.section.3.1.4.p.2">All key data and value-list data present in an encoded header field representation is <a href="#HUFF">huffman encoded</a> <cite title="A Method for the Construction of Minimim Redundancy Codes">[HUFF]</cite> byte-by-byte using a <a href="#CANON">canonical huffman coding</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite>, appended with an EOF symbol, and padded with zeroes to the nearest byte boundary.
-               </p>
-               <p id="rfc.section.3.1.4.p.3">Header fields sent in the client to server direction are encoded with the codes within the request huffman code table (<a href="#request.huffman.codes" title="Huffman Codes For Requests">Appendix&nbsp;C</a>) (see Request Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
-               </p>
-               <p id="rfc.section.3.1.4.p.4">Header fields sent in the server to client direction are encoded with the codes within the response huffman code table (<a href="#response.huffman.codes" title="Huffman Codes for Responses">Appendix&nbsp;D</a>) (see Response Huffman Enoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
-               </p>
-               <p id="rfc.section.3.1.4.p.5">The EOF symbol is represented with value 256, and is used solely to signal the end of the huffman-encoded key data or the
-                  end of the huffman-encoded value-list data.
-               </p>
-               <p id="rfc.section.3.1.4.p.6"></p>
+               <p id="rfc.section.3.1.4.p.2"></p>
                <dl>
                   <dt>Literal Representation:</dt>
                   <dd>A literal representation defines a new header field. The header field name is represented either literally or as a reference
@@ -932,14 +923,23 @@ Else
             </div>
             <div id="string.literal.representation">
                <h3 id="rfc.section.4.1.2"><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;<a href="#string.literal.representation">String Literal Representation</a></h3>
-               <p id="rfc.section.4.1.2.p.1">Header field names and header field values are encoded as sequences of bytes. A header field name or a header field value
+               <p id="rfc.section.4.1.2.p.1">Header field names and header field value-lists are encoded as sequences of bytes. A header field name or a header field value
                   is encoded in two parts: 
                </p>
                <ol>
-                  <li>The number of bytes in the sequence, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
+                  <li>The number of bytes required to hold the result of the next step, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                   </li>
-                  <li>The sequence of bytes representing the header field name or value.</li>
+                  <li>The bitwise concatenation of the <a href="#CANON">canonical</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite><a href="#HUFF">huffman code</a> <cite title="A Method for the Construction of Minimim Redundancy Codes">[HUFF]</cite> corresponding to each character of the data, the huffman code representing EOF, and padding with zeroes to the nearest byte
+                     boundary.
+                  </li>
                </ol>
+               <p id="rfc.section.4.1.2.p.2">String literals sent in the client to server direction are encoded with the codes within the request huffman code table (<a href="#request.huffman.codes" title="Huffman Codes For Requests">Appendix&nbsp;C</a>) (see Request Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               </p>
+               <p id="rfc.section.4.1.2.p.3">String literals sent in the server to client direction are encoded with the codes within the response huffman code table (<a href="#response.huffman.codes" title="Huffman Codes for Responses">Appendix&nbsp;D</a>) (see Response Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               </p>
+               <p id="rfc.section.4.1.2.p.4">The EOF symbol is represented with value 256, and is used solely to signal the end of the huffman-encoded key data or the
+                  end of the huffman-encoded value-list data.
+               </p>
             </div>
          </div>
          <div id="indexed.header.representation">
@@ -1488,7 +1488,7 @@ Else
       </div>
       <div id="request.huffman.codes">
          <h1 id="rfc.section.C"><a href="#rfc.section.C">C.</a>&nbsp;<a href="#request.huffman.codes">Huffman Codes For Requests</a></h1>
-         <p id="rfc.section.C.p.1">The following Huffman codes are used when encoding requests.</p>
+         <p id="rfc.section.C.p.1">The following Huffman codes are used when encoding string literals in the client to server direction.</p>
          <p id="rfc.section.C.p.2"></p>
          <div id="rfc.figure.u.4"></div><pre>             aligned                                  aligned
               to                                       to
@@ -1755,7 +1755,7 @@ Else
                     </pre></div>
       <div id="response.huffman.codes">
          <h1 id="rfc.section.D"><a href="#rfc.section.D">D.</a>&nbsp;<a href="#response.huffman.codes">Huffman Codes for Responses</a></h1>
-         <p id="rfc.section.D.p.1">The following Huffman codes are used when encoding responses.</p>
+         <p id="rfc.section.D.p.1">The following Huffman codes are used when encoding string literals in the server to client direction..</p>
          <p id="rfc.section.D.p.2"></p>
          <div id="rfc.figure.u.5"></div><pre>             aligned                                  aligned
               to                                       to
