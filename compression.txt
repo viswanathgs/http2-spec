@@ -286,6 +286,10 @@ Internet-Draft                   HPACK                      October 2013
    differences between the previous header set and the current header
    set need to be encoded.
 
+   When an entry is evicted from the header table, if it was referenced
+   from the reference set, its reference is removed from the reference
+   set.
+
 3.1.4.  Header Field Representation
 
    An encoded header field can be represented either as a literal or as
@@ -325,10 +329,6 @@ Internet-Draft                   HPACK                      October 2013
          elements in the header table, with index 0 referring to the
          beginning of the table.
 
-         Indices between len(header table) and len(header
-         table)+len(static table)-1, inclusive, refer to elements in the
-         static table, where the index len(header table) refers to the
-         first entry in the static table.
 
 
 
@@ -337,6 +337,11 @@ Peon & Ruellan           Expires April 20, 2014                 [Page 6]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+         Indices between len(header table) and len(header
+         table)+len(static table)-1, inclusive, refer to elements in the
+         static table, where the index len(header table) refers to the
+         first entry in the static table.
 
          Any other indices MUST be treated as erroneous, and the
          compression context considered corrupt and unusable.
@@ -382,17 +387,17 @@ Internet-Draft                   HPACK                      October 2013
    An _indexed representation_ corresponding to an entry _present_ in
    the reference set entails the following actions:
 
-   o  The reference to the entry is removed from the reference set.
-
-   A _literal representation_ that is _not added_ to the header table
-   entails the following action:
-
 
 
 Peon & Ruellan           Expires April 20, 2014                 [Page 7]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+   o  The reference to the entry is removed from the reference set.
+
+   A _literal representation_ that is _not added_ to the header table
+   entails the following action:
 
    o  The header field is emitted.
 
@@ -436,11 +441,6 @@ Internet-Draft                   HPACK                      October 2013
    two 64-bits pointers to reference the name and the value and the
    entry, and two 64-bits integer for counting the number of references
    to these name and value would use 32 bytes.
-
-
-
-
-
 
 
 
