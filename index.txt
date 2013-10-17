@@ -115,24 +115,24 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 
      5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  22
-       5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  22
+       5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  23
        5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  23
-       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  23
+       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  24
    6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  24
      6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  24
      6.2.  HEADERS . . . . . . . . . . . . . . . . . . . . . . . . .  24
      6.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . . . .  26
-     6.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . . . .  26
+     6.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . . . .  27
      6.5.  SETTINGS  . . . . . . . . . . . . . . . . . . . . . . . .  27
        6.5.1.  Setting Format  . . . . . . . . . . . . . . . . . . .  28
        6.5.2.  Defined Settings  . . . . . . . . . . . . . . . . . .  29
        6.5.3.  Settings Synchronization  . . . . . . . . . . . . . .  29
      6.6.  PUSH_PROMISE  . . . . . . . . . . . . . . . . . . . . . .  30
-     6.7.  PING  . . . . . . . . . . . . . . . . . . . . . . . . . .  31
-     6.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . . . .  32
+     6.7.  PING  . . . . . . . . . . . . . . . . . . . . . . . . . .  32
+     6.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . . . .  33
      6.9.  WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . . . .  34
        6.9.1.  The Flow Control Window . . . . . . . . . . . . . . .  36
-       6.9.2.  Initial Flow Control Window Size  . . . . . . . . . .  36
+       6.9.2.  Initial Flow Control Window Size  . . . . . . . . . .  37
        6.9.3.  Reducing the Stream Window Size . . . . . . . . . . .  37
        6.9.4.  Ending Flow Control . . . . . . . . . . . . . . . . .  38
      6.10. CONTINUATION  . . . . . . . . . . . . . . . . . . . . . .  38
@@ -601,7 +601,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 4.1.  Frame Format
 
    All frames begin with an 8-octet header followed by a payload of
-   between 0 and 65,535 octets.
+   between 0 and 16383 octets.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -857,10 +857,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
          cause the stream to become "closed".  This releases the stream
          reservation.
 
-      An endpoint MUST NOT send any other type of frame in this state.
-      Receiving any frame other than RST_STREAM [RST_STREAM] or PRIORITY
-      [PRIORITY] MUST be treated as a connection error (Section 5.4.1)
-      of type PROTOCOL_ERROR [PROTOCOL_ERROR].
+      An endpoint MUST NOT send frames other than than HEADERS [HEADERS]
+      or RST_STREAM [RST_STREAM] in this state.
+
+      A PRIORITY [PRIORITY] frame MAY be received in this state.
+      Receiving any frame other than HEADERS [HEADERS], RST_STREAM
+      [RST_STREAM], or PRIORITY [PRIORITY] MUST be treated as a
+      connection error (Section 5.4.1) of type PROTOCOL_ERROR
+      [PROTOCOL_ERROR].
 
    reserved (remote):
       A stream in the "reserved (remote)" state has been reserved by a
@@ -875,21 +879,17 @@ Internet-Draft                  HTTP/2.0                    October 2013
          cause the stream to become "closed".  This releases the stream
          reservation.
 
-      Receiving any other type of frame MUST be treated as a stream
-      error (Section 5.4.2) of type PROTOCOL_ERROR [PROTOCOL_ERROR].  An
-      endpoint MAY send RST_STREAM [RST_STREAM] or PRIORITY [PRIORITY]
-      frames in this state to cancel or reprioritize the reserved
-      stream.
+      An endpoint MAY send a PRIORITY [PRIORITY] frame in this state to
+      reprioritize the reserved stream.  An endpoint MUST NOT send any
+      other type of frame other than RST_STREAM [RST_STREAM] or PRIORITY
+      [PRIORITY].
+
+      Receiving any other type of frame other than HEADERS [HEADERS] or
+      RST_STREAM [RST_STREAM] MUST be treated as a connection error
+      (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].
 
    open:
-      A stream in the "open" state may be used by both peers to send
-      frames of any type.  In this state, sending peers observe
-      advertised stream level flow control limits (Section 5.2).
 
-      From this state either endpoint can send a frame with an
-      END_STREAM flag set, which causes the stream to transition into
-      one of the "half closed" states: an endpoint sending an END_STREAM
-      flag causes the stream state to become "half closed (local)"; an
 
 
 
@@ -898,6 +898,14 @@ Belshe, et al.           Expires April 20, 2014                [Page 16]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+      A stream in the "open" state may be used by both peers to send
+      frames of any type.  In this state, sending peers observe
+      advertised stream level flow control limits (Section 5.2).
+
+      From this state either endpoint can send a frame with an
+      END_STREAM flag set, which causes the stream to transition into
+      one of the "half closed" states: an endpoint sending an END_STREAM
+      flag causes the stream state to become "half closed (local)"; an
       endpoint receiving an END_STREAM flag causes the stream state to
       become "half closed (remote)".  A HEADERS [HEADERS] frame bearing
       an END_STREAM flag can be followed by CONTINUATION [CONTINUATION]
@@ -939,14 +947,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    closed:
       The "closed" state is the terminal state.
 
-      An endpoint MUST NOT send frames on a closed stream.  An endpoint
-      that receives any frame after receiving a RST_STREAM [RST_STREAM]
-      MUST treat that as a stream error (Section 5.4.2) of type
-      STREAM_CLOSED [STREAM_CLOSED].  Similarly, an endpoint that
-      receives any frame after receiving a DATA [DATA] frame with the
-      END_STREAM flag set, or any frame except a CONTINUATION
-      [CONTINUATION] frame after receiving a HEADERS [HEADERS] frame
-
 
 
 Belshe, et al.           Expires April 20, 2014                [Page 17]
@@ -954,6 +954,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 17]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+      An endpoint MUST NOT send frames on a closed stream.  An endpoint
+      that receives any frame after receiving a RST_STREAM [RST_STREAM]
+      MUST treat that as a stream error (Section 5.4.2) of type
+      STREAM_CLOSED [STREAM_CLOSED].  Similarly, an endpoint that
+      receives any frame after receiving a DATA [DATA] frame with the
+      END_STREAM flag set, or any frame except a CONTINUATION
+      [CONTINUATION] frame after receiving a HEADERS [HEADERS] frame
       with a END_STREAM flag set MUST treat that as a stream error
       (Section 5.4.2) of type STREAM_CLOSED [STREAM_CLOSED].
 
@@ -992,13 +999,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
       Therefore, if promised streams are not desired, a RST_STREAM
       [RST_STREAM] can be used to close any of those streams.
 
-   In the absence of more specific guidance elsewhere in this document,
-   implementations SHOULD treat the receipt of a message that is not
-   expressly permitted in the description of a state as a connection
-   error (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].
-
-
-
 
 
 
@@ -1009,6 +1009,11 @@ Belshe, et al.           Expires April 20, 2014                [Page 18]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   In the absence of more specific guidance elsewhere in this document,
+   implementations SHOULD treat the receipt of a message that is not
+   expressly permitted in the description of a state as a connection
+   error (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].
 
 5.1.1.  Stream Identifiers
 
@@ -1053,11 +1058,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    concurrent streams setting is specific to each endpoint and applies
    only to the peer that receives the setting.  That is, clients specify
    the maximum number of concurrent streams the server can initiate, and
-   servers specify the maximum number of concurrent streams the client
-   can initiate.  Endpoints MUST NOT exceed the limit set by their peer.
-
-   Streams that are in the "open" state, or either of the "half closed"
-   states count toward the maximum number of streams that an endpoint is
 
 
 
@@ -1066,6 +1066,11 @@ Belshe, et al.           Expires April 20, 2014                [Page 19]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   servers specify the maximum number of concurrent streams the client
+   can initiate.  Endpoints MUST NOT exceed the limit set by their peer.
+
+   Streams that are in the "open" state, or either of the "half closed"
+   states count toward the maximum number of streams that an endpoint is
    permitted to open.  Streams in any of these three states count toward
    the limit advertised in the SETTINGS_MAX_CONCURRENT_STREAMS
    [SETTINGS_MAX_CONCURRENT_STREAMS] setting (see Section 6.5.2).
@@ -1105,15 +1110,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
        control preferences as a receiver and abide by the flow control
        limits set by their peer when sending.
 
-   4.  The initial value for the flow control window is 65535 bytes for
+   4.  The initial value for the flow control window is 65,535 bytes for
        both new streams and the overall connection.
 
-   5.  The frame type determines whether flow control applies to a
-       frame.  Of the frames specified in this document, only DATA
-       [DATA] frames are subject to flow control; all other frame types
-       do not consume space in the advertised flow control window.  This
-       ensures that important control frames are not blocked by flow
-       control.
+
 
 
 
@@ -1121,6 +1121,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 20]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   5.  The frame type determines whether flow control applies to a
+       frame.  Of the frames specified in this document, only DATA
+       [DATA] frames are subject to flow control; all other frame types
+       do not consume space in the advertised flow control window.  This
+       ensures that important control frames are not blocked by flow
+       control.
 
    6.  Flow control can be disabled by a receiver.  A receiver can
        choose to disable both forms of flow control by sending the
@@ -1163,13 +1170,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    Even with full awareness of the current bandwidth-delay product,
    implementation of flow control can be difficult.  When using flow
-   control, the receive MUST read from the TCP receive buffer in a
-   timely fashion.  Failure to do so could lead to a deadlock when
-   critical frames, such as WINDOW_UPDATE [WINDOW_UPDATE], are not
-   available to HTTP/2.0.  However, flow control can ensure that
-   constrained resources are protected without any reduction in
-   connection utilization.
-
 
 
 
@@ -1177,6 +1177,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 21]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   control, the receive MUST read from the TCP receive buffer in a
+   timely fashion.  Failure to do so could lead to a deadlock when
+   critical frames, such as WINDOW_UPDATE [WINDOW_UPDATE], are not
+   available to HTTP/2.0.  However, flow control can ensure that
+   constrained resources are protected without any reduction in
+   connection utilization.
 
 5.3.  Stream priority
 
@@ -1219,13 +1226,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    A list of error codes is included in Section 7.
 
-5.4.1.  Connection Error Handling
-
-   A connection error is any error which prevents further processing of
-   the framing layer or which corrupts any connection state.
-
-   An endpoint that encounters a connection error SHOULD first send a
-   GOAWAY [GOAWAY] frame (Section 6.8) with the stream identifier of the
 
 
 
@@ -1234,6 +1234,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 22]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+5.4.1.  Connection Error Handling
+
+   A connection error is any error which prevents further processing of
+   the framing layer or which corrupts any connection state.
+
+   An endpoint that encounters a connection error SHOULD first send a
+   GOAWAY [GOAWAY] frame (Section 6.8) with the stream identifier of the
    last stream that it successfully received from its peer.  The GOAWAY
    [GOAWAY] frame includes an error code that indicates why the
    connection is terminating.  After sending the GOAWAY [GOAWAY] frame,
@@ -1275,13 +1282,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    An endpoint MUST NOT send a RST_STREAM [RST_STREAM] in response to an
    RST_STREAM [RST_STREAM] frame, to avoid looping.
 
-5.4.3.  Connection Termination
-
-   If the TCP connection is torn down while streams remain in open or
-   half closed states, then the endpoint MUST assume that the stream was
-   abnormally interrupted and could be incomplete.
-
-
 
 
 
@@ -1289,6 +1289,12 @@ Belshe, et al.           Expires April 20, 2014                [Page 23]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+5.4.3.  Connection Termination
+
+   If the TCP connection is torn down while streams remain in open or
+   half closed states, then the endpoint MUST assume that the stream was
+   abnormally interrupted and could be incomplete.
 
 6.  Frame Definitions
 
@@ -1331,13 +1337,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 6.2.  HEADERS
 
-   The HEADERS frame (type=0x1) carries name-value pairs.  It is used to
-   open a stream (Section 5.1).  HEADERS frames can be sent on a stream
-   in the "open" or "half closed (remote)" states.
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 
 
@@ -1346,6 +1346,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 24]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   The HEADERS frame (type=0x1) carries name-value pairs.  It is used to
+   open a stream (Section 5.1).  HEADERS frames can be sent on a stream
+   in the "open" or "half closed (remote)" states.
+
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |X|                        Priority (31)                        |
    +-+-------------------------------------------------------------+
    |                   Header Block Fragment (*)                 ...
@@ -1387,13 +1394,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    PRIORITY (0x8):  Bit 4 being set indicates that the first four octets
       of this frame contain a single reserved bit and a 31-bit priority;
-      see Section 5.3.  If this bit is not set, the four bytes do not
-      appear and the frame only contains a header block fragment.
-
-   The payload of a HEADERS frame contains a header block fragment
-   (Section 4.3).  A header block that does not fit within a HEADERS
-   frame is continued in a CONTINUATION frame (Section 6.10).
-
 
 
 
@@ -1401,6 +1401,13 @@ Belshe, et al.           Expires April 20, 2014                [Page 25]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+      see Section 5.3.  If this bit is not set, the four bytes do not
+      appear and the frame only contains a header block fragment.
+
+   The payload of a HEADERS frame contains a header block fragment
+   (Section 4.3).  A header block that does not fit within a HEADERS
+   frame is continued in a CONTINUATION frame (Section 6.10).
 
    HEADERS frames MUST be associated with a stream.  If a HEADERS frame
    is received whose stream identifier field is 0x0, the recipient MUST
@@ -1443,13 +1450,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    closed (remote)" state, this frame can only affect processing of the
    stream and not frame transmission.
 
-6.4.  RST_STREAM
-
-
-
-
-
-
 
 
 
@@ -1457,6 +1457,8 @@ Belshe, et al.           Expires April 20, 2014                [Page 26]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+6.4.  RST_STREAM
 
    The RST_STREAM frame (type=0x3) allows for abnormal termination of a
    stream.  When sent by the initiator of a stream, it indicates that
@@ -1503,9 +1505,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
    affect how endpoints communicate.  The parameters are either
    constraints on peer behavior or preferences.
 
-   SETTINGS frames MUST be sent at the start of a connection, and MAY be
-   sent at any other time by either endpoint over the lifetime of the
-   connection.
+
 
 
 
@@ -1513,6 +1513,10 @@ Belshe, et al.           Expires April 20, 2014                [Page 27]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   SETTINGS frames MUST be sent at the start of a connection, and MAY be
+   sent at any other time by either endpoint over the lifetime of the
+   connection.
 
    Implementations MUST support all of the settings defined by this
    specification and MAY support additional settings defined by
@@ -1558,10 +1562,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    0                   1                   2                   3
    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |  Reserved (8) |            Setting Identifier (24)            |
-   +---------------+-----------------------------------------------+
-   |                        Value (32)                             |
 
 
 
@@ -1570,6 +1570,10 @@ Belshe, et al.           Expires April 20, 2014                [Page 28]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Reserved (8) |            Setting Identifier (24)            |
+   +---------------+-----------------------------------------------+
+   |                        Value (32)                             |
    +---------------------------------------------------------------+
 
                               Setting Format
@@ -1610,14 +1614,10 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
 6.5.3.  Settings Synchronization
 
-   Most values in SETTINGS benefit from or require an understanding of
-   when the peer has received and applied the changed setting values.
-   In order to provide such synchronization timepoints, the recipient of
-   a SETTINGS frame in which the ACK flag is not set MUST apply the
-   updated settings as soon as possible upon receipt.
 
-   The values in the SETTINGS frame MUST be applied in sequence, with no
-   other frame processing between values.  Once all values have been
+
+
+
 
 
 
@@ -1626,6 +1626,14 @@ Belshe, et al.           Expires April 20, 2014                [Page 29]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
+   Most values in SETTINGS benefit from or require an understanding of
+   when the peer has received and applied the changed setting values.
+   In order to provide such synchronization timepoints, the recipient of
+   a SETTINGS frame in which the ACK flag is not set MUST apply the
+   updated settings as soon as possible upon receipt.
+
+   The values in the SETTINGS frame MUST be applied in sequence, with no
+   other frame processing between values.  Once all values have been
    applied, the recipient MUST immediately emit a SETTINGS frame with
    the ACK flag set.
 
@@ -1666,6 +1674,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    PUSH_PROMISE frames MUST be associated with an existing, peer-
    initiated stream.  If the stream identifier field specifies the value
+
+
+
+Belshe, et al.           Expires April 20, 2014                [Page 30]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    0x0, a recipient MUST respond with a connection error (Section 5.4.1)
    of type PROTOCOL_ERROR [PROTOCOL_ERROR].
 
@@ -1674,13 +1690,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    END_PUSH_PROMISE (0x4):  The END_PUSH_PROMISE bit indicates that this
       frame ends the sequence of header block fragments necessary to
       provide a complete set of headers.
-
-
-
-Belshe, et al.           Expires April 20, 2014                [Page 30]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
 
       The payload for a complete header block is provided by a sequence
       of frames that starts with a PUSH_PROMISE frame, followed by zero
@@ -1721,6 +1730,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
    treat the receipt of a PUSH_PROMISE on a stream that is neither
    "open" nor "half-closed (local)" as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].  Similarly,
+
+
+
+Belshe, et al.           Expires April 20, 2014                [Page 31]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
    a receiver MUST treat the receipt of a PUSH_PROMISE that promises an
    illegal stream identifier (Section 5.1.1) (that is, an identifier for
    a stream that is not currently in the "idle" state) as a connection
@@ -1729,14 +1746,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    the associated stream (see Section 5.1).
 
 6.7.  PING
-
-
-
-
-Belshe, et al.           Expires April 20, 2014                [Page 31]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
 
    The PING frame (type=0x6) is a mechanism for measuring a minimal
    round-trip time from the sender, as well as determining whether an
@@ -1777,6 +1786,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
    be treated as a connection error (Section 5.4.1) of type
    FRAME_SIZE_ERROR [FRAME_SIZE_ERROR].
 
+
+
+
+Belshe, et al.           Expires April 20, 2014                [Page 32]
+
+Internet-Draft                  HTTP/2.0                    October 2013
+
+
 6.8.  GOAWAY
 
    The GOAWAY frame (type=0x7) informs the remote peer to stop creating
@@ -1786,14 +1803,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    MUST NOT open additional streams on the connection, although a new
    connection can be established for new streams.  The purpose of this
    frame is to allow an endpoint to gracefully stop accepting new
-
-
-
-Belshe, et al.           Expires April 20, 2014                [Page 32]
-
-Internet-Draft                  HTTP/2.0                    October 2013
-
-
    streams (perhaps for a reboot or maintenance), while still finishing
    processing of previously established streams.
 
@@ -1834,21 +1843,19 @@ Internet-Draft                  HTTP/2.0                    October 2013
    |                  Additional Debug Data (*)                    |
    +---------------------------------------------------------------+
 
-                           GOAWAY Payload Format
-
-   The GOAWAY frame does not define any flags.
-
-   The GOAWAY frame applies to the connection, not a specific stream.
-   The stream identifier MUST be zero.
-
-
-
 
 
 Belshe, et al.           Expires April 20, 2014                [Page 33]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+                           GOAWAY Payload Format
+
+   The GOAWAY frame does not define any flags.
+
+   The GOAWAY frame applies to the connection, not a specific stream.
+   The stream identifier MUST be zero.
 
    The last stream identifier in the GOAWAY frame contains the highest
    numbered stream identifier for which the sender of the GOAWAY frame
@@ -1891,13 +1898,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
 
    The WINDOW_UPDATE frame (type=0x9) is used to implement flow control.
 
-   Flow control operates at two levels: on each individual stream and on
-   the entire connection.
-
-
-
-
-
 
 
 
@@ -1905,6 +1905,9 @@ Belshe, et al.           Expires April 20, 2014                [Page 34]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   Flow control operates at two levels: on each individual stream and on
+   the entire connection.
 
    Both types of flow control are hop by hop; that is, only between the
    two endpoints.  Intermediaries do not forward WINDOW_UPDATE frames
@@ -1951,9 +1954,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    for its contribution against the connection flow control window,
    unless the receiver treats this as a connection error
    (Section 5.4.1).  This is necessary even if the frame is in error.
-   Since the sender counts the frame toward the flow control window, if
-   the receiver does not, the flow control window at sender and receiver
-   can become different.
 
 
 
@@ -1961,6 +1961,10 @@ Belshe, et al.           Expires April 20, 2014                [Page 35]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   Since the sender counts the frame toward the flow control window, if
+   the receiver does not, the flow control window at sender and receiver
+   can become different.
 
 6.9.1.  The Flow Control Window
 
@@ -2006,10 +2010,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    This property allows a receiver to aggressively update the window
    size kept by the sender to prevent streams from stalling.
 
-6.9.2.  Initial Flow Control Window Size
-
-   When a HTTP/2.0 connection is first established, new streams are
-   created with an initial flow control window size of 65535 bytes.  The
 
 
 
@@ -2018,10 +2018,14 @@ Belshe, et al.           Expires April 20, 2014                [Page 36]
 Internet-Draft                  HTTP/2.0                    October 2013
 
 
-   connection flow control window is 65535 bytes.  Both endpoints can
-   adjust the initial window size for new streams by including a value
-   for SETTINGS_INITIAL_WINDOW_SIZE [SETTINGS_INITIAL_WINDOW_SIZE] in
-   the SETTINGS [SETTINGS] frame that forms part of the connection
+6.9.2.  Initial Flow Control Window Size
+
+   When a HTTP/2.0 connection is first established, new streams are
+   created with an initial flow control window size of 65,535 bytes.
+   The connection flow control window is 65,535 bytes.  Both endpoints
+   can adjust the initial window size for new streams by including a
+   value for SETTINGS_INITIAL_WINDOW_SIZE [SETTINGS_INITIAL_WINDOW_SIZE]
+   in the SETTINGS [SETTINGS] frame that forms part of the connection
    header.
 
    Prior to receiving a SETTINGS [SETTINGS] frame that sets a value for
@@ -2062,10 +2066,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    size, since the sender might send data that exceeds the lower limit
    prior to processing the SETTINGS [SETTINGS] frame.
 
-   A receiver has two options for handling streams that exceed flow
-   control limits:
-
-
 
 
 
@@ -2073,6 +2073,9 @@ Belshe, et al.           Expires April 20, 2014                [Page 37]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   A receiver has two options for handling streams that exceed flow
+   control limits:
 
    1.  The receiver can immediately send RST_STREAM [RST_STREAM] with
        FLOW_CONTROL_ERROR [FLOW_CONTROL_ERROR] error code for the
@@ -2120,15 +2123,14 @@ Internet-Draft                  HTTP/2.0                    October 2013
    |                   Header Block Fragment (*)                 ...
    +---------------------------------------------------------------+
 
-                        CONTINUATION Frame Payload
-
-
 
 
 Belshe, et al.           Expires April 20, 2014                [Page 38]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+                        CONTINUATION Frame Payload
 
    The CONTINUATION frame defines the following flags:
 
@@ -2174,9 +2176,7 @@ Internet-Draft                  HTTP/2.0                    October 2013
    [RST_STREAM] and GOAWAY [GOAWAY] frames to convey the reasons for the
    stream or connection error.
 
-   Error codes share a common code space.  Some error codes only apply
-   to specific conditions and have no defined semantics in certain frame
-   types.
+
 
 
 
@@ -2185,6 +2185,10 @@ Belshe, et al.           Expires April 20, 2014                [Page 39]
 
 Internet-Draft                  HTTP/2.0                    October 2013
 
+
+   Error codes share a common code space.  Some error codes only apply
+   to specific conditions and have no defined semantics in certain frame
+   types.
 
    The following error codes are defined:
 
@@ -2228,10 +2232,6 @@ Internet-Draft                  HTTP/2.0                    October 2013
    ENHANCE_YOUR_CALM (420):  The endpoint detected that its peer is
       exhibiting a behavior over a given amount of time that has caused
       it to refuse to process further frames.
-
-
-
-
 
 
 

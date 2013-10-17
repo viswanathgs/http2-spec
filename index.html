@@ -943,7 +943,7 @@ Upgrade: HTTP/2.0
          <p id="rfc.section.4.p.1">Once the HTTP/2.0 connection is established, endpoints can begin exchanging frames.</p>
          <div id="FrameHeader">
             <h2 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1</a>&nbsp;<a href="#FrameHeader">Frame Format</a></h2>
-            <p id="rfc.section.4.1.p.1">All frames begin with an 8-octet header followed by a payload of between 0 and 65,535 octets.</p>
+            <p id="rfc.section.4.1.p.1">All frames begin with an 8-octet header followed by a payload of between 0 and 16383 octets.</p>
             <div id="rfc.figure.1"></div><pre class="inline">  0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1106,7 +1106,9 @@ Upgrade: HTTP/2.0
                      <li>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame to cause the stream to become "closed". This releases the stream reservation.
                      </li>
                   </ul>
-                  <p> An endpoint MUST NOT send any other type of frame in this state. Receiving any frame other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>An endpoint MUST NOT send frames other than than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> in this state.
+                  </p>
+                  <p>A <a href="#PRIORITY" class="smpl">PRIORITY</a> frame MAY be received in this state. Receiving any frame other than <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>reserved (remote):</dt>
@@ -1120,7 +1122,9 @@ Upgrade: HTTP/2.0
                      <li>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame to cause the stream to become "closed". This releases the stream reservation.
                      </li>
                   </ul>
-                  <p> Receiving any other type of frame MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. An endpoint MAY send <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames in this state to cancel or reprioritize the reserved stream.
+                  <p>An endpoint MAY send a <a href="#PRIORITY" class="smpl">PRIORITY</a> frame in this state to reprioritize the reserved stream. An endpoint MUST NOT send any other type of frame other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a>.
+                  </p>
+                  <p>Receiving any other type of frame other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>open:</dt>
@@ -1129,7 +1133,9 @@ Upgrade: HTTP/2.0
                   </p>
                   <p>From this state either endpoint can send a frame with an END_STREAM flag set, which causes the stream to transition into one
                      of the "half closed" states: an endpoint sending an END_STREAM flag causes the stream state to become "half closed (local)";
-                     an endpoint receiving an END_STREAM flag causes the stream state to become "half closed (remote)". A <a href="#HEADERS" class="smpl">HEADERS</a> frame bearing an END_STREAM flag can be followed by <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. <br><br> Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame from this state, causing it to transition immediately to "closed".
+                     an endpoint receiving an END_STREAM flag causes the stream state to become "half closed (remote)". A <a href="#HEADERS" class="smpl">HEADERS</a> frame bearing an END_STREAM flag can be followed by <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames.
+                  </p>
+                  <p>Either endpoint can send a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame from this state, causing it to transition immediately to "closed".
                   </p>
                </dd>
                <dt>half closed (local):</dt>
@@ -1235,7 +1241,7 @@ Upgrade: HTTP/2.0
                      Clients, servers and intermediaries all independently advertise their flow control preferences as a receiver and abide by
                      the flow control limits set by their peer when sending.
                   </li>
-                  <li>The initial value for the flow control window is 65535 bytes for both new streams and the overall connection.</li>
+                  <li>The initial value for the flow control window is 65,535 bytes for both new streams and the overall connection.</li>
                   <li>The frame type determines whether flow control applies to a frame. Of the frames specified in this document, only <a href="#DATA" class="smpl">DATA</a> frames are subject to flow control; all other frame types do not consume space in the advertised flow control window. This
                      ensures that important control frames are not blocked by flow control.
                   </li>
@@ -1774,8 +1780,8 @@ Upgrade: HTTP/2.0
             </div>
             <div id="InitialWindowSize">
                <h3 id="rfc.section.6.9.2"><a href="#rfc.section.6.9.2">6.9.2</a>&nbsp;<a href="#InitialWindowSize">Initial Flow Control Window Size</a></h3>
-               <p id="rfc.section.6.9.2.p.1">When a HTTP/2.0 connection is first established, new streams are created with an initial flow control window size of 65535
-                  bytes. The connection flow control window is 65535 bytes. Both endpoints can adjust the initial window size for new streams
+               <p id="rfc.section.6.9.2.p.1">When a HTTP/2.0 connection is first established, new streams are created with an initial flow control window size of 65,535
+                  bytes. The connection flow control window is 65,535 bytes. Both endpoints can adjust the initial window size for new streams
                   by including a value for <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> in the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that forms part of the connection header.
                </p>
                <p id="rfc.section.6.9.2.p.2">Prior to receiving a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that sets a value for <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a>, an endpoint can only use the default initial window size when sending flow controlled frames. Similarly, the connection
