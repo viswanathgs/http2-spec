@@ -597,7 +597,7 @@ samp, tt, code, pre {
             
             <ul>
                <li><a href="#rfc.figure.1">Figure 1: Index Address Space</a></li>
-               <li><a href="#rfc.figure.2">Figure 2: Indexed Header</a></li>
+               <li><a href="#rfc.figure.2">Figure 2: Indexed Header Field</a></li>
                <li><a href="#rfc.figure.3">Figure 3: Literal Header Field without Indexing - Indexed Name</a></li>
                <li><a href="#rfc.figure.4">Figure 4: Literal Header Field without Indexing - New Name</a></li>
                <li><a href="#rfc.figure.5">Figure 5: Literal Header Field with Incremental Indexing -                         Indexed Name</a></li>
@@ -613,15 +613,14 @@ samp, tt, code, pre {
       </div>
       <div id="overview">
          <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a href="#overview">Overview</a></h1>
-         <p id="rfc.section.2.p.1">In HTTP/1.X, header fields are sent without any form of compression. As web pages have grown to include dozens to hundreds
-            of requests, the redundant header fields in these requests now pose a problem of measurable latency and unnecessary bandwidth
-            (see <a href="#PERF1"><cite title="IETF83: SPDY and What to Consider for HTTP/2.0">[PERF1]</cite></a> and <a href="#PERF2"><cite title="SPDY: What I Like About You">[PERF2]</cite></a>).
+         <p id="rfc.section.2.p.1">In HTTP/1.X (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), header fields are sent without any form of compression. As web pages have grown to include dozens to hundreds of requests,
+            the redundant header fields in these requests now pose a problem of measurable latency and unnecessary bandwidth (see <a href="#PERF1"><cite title="IETF83: SPDY and What to Consider for HTTP/2.0">[PERF1]</cite></a> and <a href="#PERF2"><cite title="SPDY: What I Like About You">[PERF2]</cite></a>).
          </p>
          <p id="rfc.section.2.p.2"><a href="#SPDY">SPDY</a> <cite title="SPDY Protocol">[SPDY]</cite> initially addressed this redundancy by compressing header fields with Deflate, which proved very effective at eliminating
             the redundant header fields. However, that aproach exposed a security risk as demonstrated by the <a href="#CRIME">CRIME</a> <cite title="The Crime Attack">[CRIME]</cite>.
          </p>
-         <p id="rfc.section.2.p.3">In this document, we propose a new compressor for headers which eliminates redundant headers, is not vulnerable to CRIME style
-            attacks, and which also has a bounded memory cost for use in constrained environments.
+         <p id="rfc.section.2.p.3">In this document, we propose a new compressor for header fields which eliminates redundant header fields, is not vulnerable
+            to CRIME style attacks, and which also has a bounded memory cost for use in constrained environments.
          </p>
          <div>
             <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;Outline
@@ -645,10 +644,11 @@ samp, tt, code, pre {
          <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a>&nbsp;<a href="#header.encoding">Header Field Encoding</a></h1>
          <div id="encoding.concepts">
             <h2 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1</a>&nbsp;<a href="#encoding.concepts">Encoding Concepts</a></h2>
-            <p id="rfc.section.3.1.p.1">The encoding and decoding of headers relies on some components and concepts: </p>
+            <p id="rfc.section.3.1.p.1">The encoding and decoding of header fields relies on some components and concepts: </p>
             <dl>
-               <dt>Header Field</dt>
-               <dd>A key, value-list pair where the value-list is a NULL separated ordered list of values.</dd>
+               <dt>Header Field:</dt>
+               <dd>A key, value pair. HPACK allows a header field value to be either a value as specified by HTTP/1.X (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), or a NULL-separated ordered list of HTTP/1.X values.
+               </dd>
                <dt>Header Table:</dt>
                <dd>The header table (see <a href="#header.table" title="Header Table">Section&nbsp;3.1.2</a>) is a component used to associate stored header fields to index values. The data stored in this table is in first-in, first-out
                   order.
@@ -662,16 +662,17 @@ samp, tt, code, pre {
                   the differential encoding of a new header set.
                </dd>
                <dt>Header Set:</dt>
-               <dd>A header set is a potentially ordered group of header fields that are encoded jointly. A complete set of key-value pairs as
-                  encoded in a HTTP request or response is a header set.
+               <dd>A header set is a potentially ordered group of header fields that are encoded jointly. A complete set of key-value pairs contained
+                  in a HTTP request or response is a header set.
                </dd>
-               <dt>Header Representation:</dt>
-               <dd>A header can be represented in encoded form either as a literal or as an index (see <a href="#header.representation" title="Header Field Representation">Section&nbsp;3.1.4</a>).
+               <dt>Header Field Representation:</dt>
+               <dd>A header field can be represented in encoded form either as a literal or as an index (see <a href="#header.representation" title="Header Field Representation">Section&nbsp;3.1.4</a>).
                </dd>
                <dt>Header Block:</dt>
-               <dd>The entire set of encoded header representations which, when decoded, yield a complete header set.</dd>
+               <dd>The entire set of encoded header field representations which, when decoded, yield a complete header set.</dd>
                <dt>Header Field Emission:</dt>
-               <dd>When decoding a set of header representations, some operations emit a header field (see <a href="#header.emission" title="Header Field Emission">Section&nbsp;3.1.5</a>). All emitted header fields which are considered to be part of the same header set comprise an HTTP request or response.
+               <dd>When decoding a set of header field representations, some operations emit a header field (see <a href="#header.emission" title="Header Field Emission">Section&nbsp;3.1.5</a>). Once emitted, a header field can't be removed from the current header set, and can be passed safely to upper processing
+                  layers.
                </dd>
             </dl>
             <div id="encoding.context">
@@ -698,14 +699,14 @@ samp, tt, code, pre {
                <p id="rfc.section.3.1.2.p.4">The encoder decides how to update the header table and as such can control how much memory is used by the header table. To
                   limit the memory requirements on the decoder side, the header table size is strictly bounded (see <a href="#maximum.table.size" title="Maximum Table Size">Section&nbsp;3.3.1</a>).
                </p>
-               <p id="rfc.section.3.1.2.p.5">The header table is updated during the processing of a set of header representations (see header representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
+               <p id="rfc.section.3.1.2.p.5">The header table is updated during the processing of a set of header field representations (see header field representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
                </p>
             </div>
             <div id="reference.set">
                <h3 id="rfc.section.3.1.3"><a href="#rfc.section.3.1.3">3.1.3</a>&nbsp;<a href="#reference.set">Reference Set</a></h3>
                <p id="rfc.section.3.1.3.p.1">A reference set is an unordered set of references to entries either within the header table or the static table.</p>
                <p id="rfc.section.3.1.3.p.2">The reference set is initially empty.</p>
-               <p id="rfc.section.3.1.3.p.3">The reference set is updated during the processing of a set of header representations (see header representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
+               <p id="rfc.section.3.1.3.p.3">The reference set is updated during the processing of a set of header field representations (see header field representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
                </p>
                <p id="rfc.section.3.1.3.p.4">The reference set enables differential encoding, whereby only differences between the previous header set and the current
                   header set need to be encoded.
@@ -755,16 +756,16 @@ Insertion Point       Drop Point
             </div>
             <div id="header.emission">
                <h3 id="rfc.section.3.1.5"><a href="#rfc.section.3.1.5">3.1.5</a>&nbsp;<a href="#header.emission">Header Field Emission</a></h3>
-               <p id="rfc.section.3.1.5.p.1">The emission of header field is the process of passing that header field to the application, so that the application can process
-                  and react to header field data.
+               <p id="rfc.section.3.1.5.p.1">The emission of a header field is the process of passing that header field to the application, so that the application can
+                  process and react to header field data.
                </p>
-               <p id="rfc.section.3.1.5.p.2">By emitting headers instead of emitting header sets, the decoder may be implemented in a streaming way, and as such must only
-                  keep in memory the header table and the reference set. This bounds the amount of memory used by the decoder, even in presence
-                  of a very large set of header fields. The management of memory for handling very large sets of header fields can therefore
-                  be deferred to the application.
+               <p id="rfc.section.3.1.5.p.2">By emitting header fields instead of emitting header sets, the decoder can be implemented in a streaming way, and as such
+                  must only keep in memory the header table and the reference set. This bounds the amount of memory used by the decoder, even
+                  in presence of a very large set of header fields. The management of memory for handling very large sets of header fields can
+                  therefore be deferred to the application.
                </p>
-               <p id="rfc.section.3.1.5.p.3">When a header field includes a value-list which has a NULL, each value within the value-list may be emitted with the name
-                  separately in the order in which it appears in the value-list.
+               <p id="rfc.section.3.1.5.p.3">When a header field is a NULL-separated list of values, each value within the list MAY be emitted separately, with the same
+                  header field name, and the order of emission MUST be the order of appearance in the list.
                </p>
             </div>
          </div>
@@ -799,7 +800,7 @@ Insertion Point       Drop Point
                <ul>
                   <li>The header field is inserted at the beginning of the header table.</li>
                   <li>A reference to the new entry is added to the reference set.</li>
-                  <li>The header is emitted.</li>
+                  <li>The header field is emitted.</li>
                </ul>
             </div>
             <div id="reference.set.emission">
@@ -923,7 +924,7 @@ Else
             </div>
             <div id="string.literal.representation">
                <h3 id="rfc.section.4.1.2"><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;<a href="#string.literal.representation">String Literal Representation</a></h3>
-               <p id="rfc.section.4.1.2.p.1">Header field names and header field value-lists are encoded as sequences of bytes. A header field name or a header field value
+               <p id="rfc.section.4.1.2.p.1">Header field names and header field values are encoded as sequences of bytes. A header field name or a header field value
                   is encoded in two parts: 
                </p>
                <ol>
@@ -938,21 +939,21 @@ Else
                <p id="rfc.section.4.1.2.p.3">String literals sent in the server to client direction are encoded with the codes within the response huffman code table (<a href="#response.huffman.codes" title="Huffman Codes for Responses">Appendix&nbsp;D</a>) (see Response Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
                </p>
                <p id="rfc.section.4.1.2.p.4">The EOF symbol is represented with value 256, and is used solely to signal the end of the huffman-encoded key data or the
-                  end of the huffman-encoded value-list data.
+                  end of the huffman-encoded value data.
                </p>
             </div>
          </div>
          <div id="indexed.header.representation">
             <h2 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2</a>&nbsp;<a href="#indexed.header.representation">Indexed Header Field Representation</a></h2>
-            <p id="rfc.section.4.2.p.1">An indexed header representation either identifies an entry in the header table or static table. The specified entry is emitted
-               and a reference to that entry is added to the reference set if it is not currently in the reference set. If it is present
-               in the reference set then the reference is removed and the entry is not emitted.
+            <p id="rfc.section.4.2.p.1">An indexed header field representation either identifies an entry in the header table or static table. The specified entry
+               is emitted and a reference to that entry is added to the reference set if it is not currently in the reference set. If it
+               is present in the reference set then the reference is removed and the entry is not emitted.
             </p>
             <div id="rfc.figure.2"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |        Index (7+)         |
 +---+---------------------------+
-</pre><p class="figure">Figure 2: Indexed Header</p>
+</pre><p class="figure">Figure 2: Indexed Header Field</p>
             <p id="rfc.section.4.2.p.3">This representation starts with the '1' 1-bit pattern, followed by the index of the matching pair, represented as an integer
                with a 7-bit prefix.
             </p>
@@ -989,9 +990,9 @@ Else
 +-------------------------------+
 </pre><p class="figure">Figure 4: Literal Header Field without Indexing - New Name</p>
                <p id="rfc.section.4.3.1.p.4">This representation starts with the '01' 2-bit pattern.</p>
-               <p id="rfc.section.4.3.1.p.5">If the header name matches the header name of a (name, value) pair stored in the Header Table or Static Table, the index of
-                  that entry, increased by one (index + 1), is represented as an integer with a 6-bit prefix. Note that if the index is strictly
-                  below 63, only one byte is used for this representation.
+               <p id="rfc.section.4.3.1.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
+                  the index of that entry, increased by one (index + 1), is represented as an integer with a 6-bit prefix. Note that if the
+                  index is strictly below 63, only one byte is used for this representation.
                </p>
                <p id="rfc.section.4.3.1.p.6">If the header field name does not match a header field name entry, the value 0 is represented on 6 bits followed by the header
                   field name (<a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
@@ -1025,8 +1026,8 @@ Else
 +-------------------------------+
 </pre><p class="figure">Figure 6: Literal Header Field with Incremental Indexing -                         New Name</p>
                <p id="rfc.section.4.3.2.p.4">This representation starts with the '00' 2-bit pattern.</p>
-               <p id="rfc.section.4.3.2.p.5">If the header name matches the header name of a (name, value) pair stored in the header table or static table, the index of
-                  the pair increased by one (index + 1) is represented as an integer with a 6-bit prefix.
+               <p id="rfc.section.4.3.2.p.5">If the header field name matches the header field name of a (name, value) pair stored in the header table or static table,
+                  the index of the pair increased by one (index + 1) is represented as an integer with a 6-bit prefix.
                </p>
                <p id="rfc.section.4.3.2.p.6">If the header field name does not match a header field name entry, the value 0 is represented on 6 bits followed by the header
                   field name (<a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
@@ -1063,6 +1064,36 @@ Else
       <h2 id="rfc.references.1"><a href="#rfc.section.6.1" id="rfc.section.6.1">6.1</a> Normative References
       </h2>
       <table>
+         <tr>
+            <td class="reference"><b id="HTTP-p1">[HTTP-p1]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a> and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-24">Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p1-messaging-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="HTTP-p2">[HTTP-p2]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a> and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-24">Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p2-semantics-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="HTTP-p4">[HTTP-p4]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a> and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p4-conditional-24">Hypertext Transfer Protocol (HTTP/1.1): Conditional Requests</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p4-conditional-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="HTTP-p5">[HTTP-p5]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a>, <a href="mailto:ylafon@w3.org" title="World Wide Web Consortium">Lafon, Y., Ed.</a>, and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p5-range-24">Hypertext Transfer Protocol (HTTP/1.1): Range Requests</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p5-range-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="HTTP-p6">[HTTP-p6]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a>, <a href="mailto:mnot@mnot.net" title="Akamai">Nottingham, M., Ed.</a>, and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-24">Hypertext Transfer Protocol (HTTP/1.1): Caching</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p6-cache-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="HTTP-p7">[HTTP-p7]</b></td>
+            <td class="top"><a href="mailto:fielding@gbiv.com" title="Adobe Systems Incorporated">Fielding, R., Ed.</a> and <a href="mailto:julian.reschke@greenbytes.de" title="greenbytes GmbH">J. Reschke, Ed.</a>, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-p7-auth-24">Hypertext Transfer Protocol (HTTP/1.1): Authentication</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-p7-auth-24 (work in progress), September&nbsp;2013.
+            </td>
+         </tr>
          <tr>
             <td class="reference"><b id="HTTP2">[HTTP2]</b></td>
             <td class="top">Belshe, M., Peon, R., Thomson, M., and A. Melnikov, “<a href="http://tools.ietf.org/html/draft-ietf-httpbis-http2-06">Hypertext Transfer Protocol version 2.0</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-http2-06 (work in progress), August&nbsp;2013.
@@ -1170,8 +1201,8 @@ Else
          </p>
          <p id="rfc.section.B.p.2"><span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: The ordering of these tables is currently arbitrary. The tables in this section should be updated and ordered such that the
                table entries with the smallest indices are those which, based on a statistical analysis of the frequency of use weighted
-               by size, achieve the largest decrease in bytes transmitted subject to HTTP 2.0 header rules (like removal of some headers).
-               This set of headers is currently very likely incomplete, and should be made complete.]</span> <br> 
+               by size, achieve the largest decrease in bytes transmitted subject to HTTP 2.0 header field rules (like removal of some header
+               fields). This set of header fields is currently very likely incomplete, and should be made complete.]</span> <br> 
          </p>
          <p id="rfc.section.B.p.3">The following table lists the pre-defined header fields that make-up the static header table.</p>
          <div id="rfc.table.1">
