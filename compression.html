@@ -418,7 +418,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires April 20, 2014";
+       content: "Expires April 21, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -458,7 +458,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-10-17">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-10-18">
       <meta name="dct.abstract" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
       <meta name="description" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
    </head>
@@ -478,12 +478,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: April 20, 2014</td>
+               <td class="left">Expires: April 21, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">October 17, 2013</td>
+               <td class="right">October 18, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -507,7 +507,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on April 20, 2014.</p>
+         <p>This Internet-Draft will expire on April 21, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -861,10 +861,11 @@ Insertion Point       Drop Point
                   representation always finishes at the end of a byte.
                </p>
                <p id="rfc.section.4.1.1.p.2">An integer is represented in two parts: a prefix that fills the current byte and an optional list of bytes that are used if
-                  the integer value does not fit in the prefix. The number of bits of the prefix (called N) is a parameter of the integer representation.
+                  the integer value does not fit within the prefix. The number of bits of the prefix (called N) is a parameter of the integer
+                  representation.
                </p>
                <p id="rfc.section.4.1.1.p.3">The N-bit prefix allows filling the current byte. If the value is small enough (strictly less than 2<sup>N</sup>-1), it is encoded within the N-bit prefix. Otherwise all the bits of the prefix are set to 1 and the value is encoded using
-                  an <a href="http://en.wikipedia.org/wiki/Variable-length_quantity">unsigned variable length integer</a> representation.
+                  an <a href="http://en.wikipedia.org/wiki/Variable-length_quantity">unsigned variable length integer</a> representation. N is always between 1 and 8 bits. An integer starting at a byte-boundary will have an 8-bit prefix.
                </p>
                <p id="rfc.section.4.1.1.p.4">The algorithm to represent an integer I is as follows: </p>
                <div id="rfc.figure.u.1"></div><pre class="inline">If I &lt; 2^N - 1, encode I on N bits
@@ -933,15 +934,20 @@ Else
                <ol>
                   <li>The number of bytes required to hold the result of the next step, represented as a variable-length-quantity (<a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                   </li>
-                  <li>The bitwise concatenation of the <a href="#CANON">canonical</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite><a href="#HUFF">huffman code</a> <cite title="A Method for the Construction of Minimim Redundancy Codes">[HUFF]</cite> corresponding to each character of the data, the huffman code representing EOF, and padding with zeroes to the nearest byte
-                     boundary.
+                  <li>The bitwise concatenation of the <a href="#CANON">canonical</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite><a href="#HUFF">huffman code</a> <cite title="A Method for the Construction of Minimim Redundancy Codes">[HUFF]</cite> corresponding to each character of the data, followed by between 0-7 bits of padding.
                   </li>
                </ol>
-               <p id="rfc.section.4.1.2.p.2">String literals sent in the client to server direction are encoded with the codes within the request huffman code table (<a href="#request.huffman.codes" title="Huffman Codes For Requests">Appendix&nbsp;C</a>) (see Request Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               <p id="rfc.section.4.1.2.p.2">Padding is necessary to ensure that the remaining bits between the actual end of the data and the next byte boundary are not
+                  misinterpreted as part of the input data.
                </p>
-               <p id="rfc.section.4.1.2.p.3">String literals sent in the server to client direction are encoded with the codes within the response huffman code table (<a href="#response.huffman.codes" title="Huffman Codes for Responses">Appendix&nbsp;D</a>) (see Response Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               <p id="rfc.section.4.1.2.p.3">When padding, use the bits from the EOS (end-of-string) entry in the Huffman table, starting with the MSB. This entry is guaranteed
+                  to be at least 7 bits long.
                </p>
-               <p id="rfc.section.4.1.2.p.4">The EOF symbol is represented with value 256, and is used solely to signal the end of the huffman-encoded key data or the
+               <p id="rfc.section.4.1.2.p.4">String literals sent in the client to server direction are encoded with the codes within the request huffman code table (<a href="#request.huffman.codes" title="Huffman Codes For Requests">Appendix&nbsp;C</a>) (see Request Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               </p>
+               <p id="rfc.section.4.1.2.p.5">String literals sent in the server to client direction are encoded with the codes within the response huffman code table (<a href="#response.huffman.codes" title="Huffman Codes for Responses">Appendix&nbsp;D</a>) (see Response Huffman Encoding Example (<a href="#response.huffman.encoding.example" title="Response Huffman Encoding Example">Appendix&nbsp;F</a>)).
+               </p>
+               <p id="rfc.section.4.1.2.p.6">The EOS symbol is represented with value 256, and is used solely to signal the end of the huffman-encoded key data or the
                   end of the huffman-encoded value data.
                </p>
             </div>
@@ -1222,7 +1228,7 @@ Else
                <tbody>
                   <tr>
                      <td class="left">0</td>
-                     <td class="left">:host</td>
+                     <td class="left">:authority</td>
                      <td class="left"></td>
                   </tr>
                   <tr>
@@ -1525,11 +1531,12 @@ Else
       <div id="request.huffman.codes">
          <h1 id="rfc.section.C"><a href="#rfc.section.C">C.</a>&nbsp;<a href="#request.huffman.codes">Huffman Codes For Requests</a></h1>
          <p id="rfc.section.C.p.1">The following Huffman codes are used when encoding string literals in the client to server direction.</p>
-         <p id="rfc.section.C.p.2"></p>
+         <p id="rfc.section.C.p.2"><span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: This table is out of date and needs updating. In particular, EOS needs to be at least 7-bits long and currently is not.]</span> 
+         </p>
          <div id="rfc.figure.u.4"></div><pre>             aligned                                  aligned
-              to                                       to
-              MSB                                      LSB
-       sym    as bits                       len       as hex  len
+              to                            len        to     len
+              MSB                            in        LSB     in
+       sym    as bits                       bits      as hex  bits
       (  0) |11111111|11111111|11110111|100 [27]      7ffffbc [27]
       (  1) |11111111|11111111|11110111|101 [27]      7ffffbd [27]
       (  2) |11111111|11111111|11110111|110 [27]      7ffffbe [27]
@@ -1786,17 +1793,19 @@ Else
       (253) |11111111|11111111|11110110|11 [26]       3ffffdb [26]
       (254) |11111111|11111111|11110111|00 [26]       3ffffdc [26]
       (255) |11111111|11111111|11110111|01 [26]       3ffffdd [26]
-      (256) |10010 [5]                                     12 [5]
+  EOS (256) |10010 [5]                                     12 [5]
             
                     </pre></div>
       <div id="response.huffman.codes">
          <h1 id="rfc.section.D"><a href="#rfc.section.D">D.</a>&nbsp;<a href="#response.huffman.codes">Huffman Codes for Responses</a></h1>
-         <p id="rfc.section.D.p.1">The following Huffman codes are used when encoding string literals in the server to client direction..</p>
-         <p id="rfc.section.D.p.2"></p>
+         <p id="rfc.section.D.p.1">The following Huffman codes are used when encoding string literals in the server to client direction.</p>
+         <p id="rfc.section.D.p.2"><span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: This table is out of date and needs updating. In particular, EOS needs to be at least 7-bits long and currently is not.]</span> 
+         </p>
+         <p id="rfc.section.D.p.3"></p>
          <div id="rfc.figure.u.5"></div><pre>             aligned                                  aligned
-              to                                       to
-              MSB                                      LSB
-       sym    as bits                      len        as hex  len
+              to                           len         to     len
+              MSB                           in         LSB     in
+       sym    as bits                      bits       as hex  bits
       (  0) |11111111|11111111|11101111|10 [26]       3ffffbe [26]
       (  1) |11111111|11111111|11101111|11 [26]       3ffffbf [26]
       (  2) |11111111|11111111|11110000|00 [26]       3ffffc0 [26]
@@ -2053,7 +2062,7 @@ Else
       (253) |11111111|11111111|11101110|0 [25]        1ffffdc [25]
       (254) |11111111|11111111|11101110|1 [25]        1ffffdd [25]
       (255) |11111111|11111111|11101111|0 [25]        1ffffde [25]
-      (256) |10010 [5]                                     12 [5]
+  EOS (256) |10010 [5]                                     12 [5]
             
 
                     </pre></div>
@@ -2067,7 +2076,7 @@ Else
       </div>
       <div id="example">
          <h1 id="rfc.section.G"><a href="#rfc.section.G">G.</a>&nbsp;<a href="#example">Example</a></h1>
-         <p id="rfc.section.G.p.1">Here is an example that illustrates different representations and how tables are updated. <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: This section needs to be updated to better reflect the new processing of header fields, and include more examples.]</span> 
+         <p id="rfc.section.G.p.1">Here is an example that illustrates different representations and how tables are updated. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: This section needs to be updated to better reflect the new processing of header fields, and include more examples.]</span> 
          </p>
          <div>
             <h2 id="rfc.section.G.1"><a href="#rfc.section.G.1">G.1</a>&nbsp;First header set
