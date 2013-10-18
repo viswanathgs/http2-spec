@@ -103,7 +103,7 @@ Table of Contents
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication  . . . . . . . . . . . . . . . . . . . .  16
      A.1.  Since draft-ietf-httpbis-header-compression-03  . . . . .  16
-     A.2.  Since draft-ietf-httpbis-header-compression-02  . . . . .  16
+     A.2.  Since draft-ietf-httpbis-header-compression-02  . . . . .  17
      A.3.  Since draft-ietf-httpbis-header-compression-01  . . . . .  17
      A.4.  Since draft-ietf-httpbis-header-compression-01  . . . . .  17
 
@@ -114,8 +114,8 @@ Peon & Ruellan           Expires April 21, 2014                 [Page 2]
 Internet-Draft                   HPACK                      October 2013
 
 
-   Appendix B.  Static Table . . . . . . . . . . . . . . . . . . . .  17
-   Appendix C.  Huffman Codes For Requests . . . . . . . . . . . . .  19
+   Appendix B.  Static Table . . . . . . . . . . . . . . . . . . . .  18
+   Appendix C.  Huffman Codes For Requests . . . . . . . . . . . . .  20
    Appendix D.  Huffman Codes for Responses  . . . . . . . . . . . .  25
    Appendix E.  Request Huffman Encoding Example . . . . . . . . . .  31
    Appendix F.  Response Huffman Encoding Example  . . . . . . . . .  31
@@ -436,11 +436,11 @@ Internet-Draft                   HPACK                      October 2013
 
    The size of an entry is the sum of its name's length in bytes (as
    defined in Section 4.1.2), of its value's length in bytes
-   (Section 4.1.2) and of 32 bytes.  The 32 bytes are an accounting for
-   the entry structure overhead.  For example, an entry structure using
-   two 64-bits pointers to reference the name and the value and the
-   entry, and two 64-bits integer for counting the number of references
-   to these name and value would use 32 bytes.
+   (Section 4.1.2) and of 32 bytes.
+
+   The lengths are measured on the non-encoded entry name and entry
+   value (for the case when a Huffman encoding is used to transmit
+   string values).
 
 
 
@@ -449,6 +449,12 @@ Peon & Ruellan           Expires April 21, 2014                 [Page 8]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+   The 32 bytes are an accounting for the entry structure overhead.  For
+   example, an entry structure using two 64-bits pointers to reference
+   the name and the value and the entry, and two 64-bits integer for
+   counting the number of references to these name and value would use
+   32 bytes.
 
 3.3.2.  Entry Eviction
 
@@ -492,12 +498,6 @@ Internet-Draft                   HPACK                      October 2013
    The N-bit prefix allows filling the current byte.  If the value is
    small enough (strictly less than 2^N-1), it is encoded within the
    N-bit prefix.  Otherwise all the bits of the prefix are set to 1 and
-   the value is encoded using an unsigned variable length integer [4]
-   representation.  N is always between 1 and 8 bits.  An integer
-   starting at a byte-boundary will have an 8-bit prefix.
-
-   The algorithm to represent an integer I is as follows:
-
 
 
 
@@ -505,6 +505,12 @@ Peon & Ruellan           Expires April 21, 2014                 [Page 9]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+   the value is encoded using an unsigned variable length integer [4]
+   representation.  N is always between 1 and 8 bits.  An integer
+   starting at a byte-boundary will have an 8-bit prefix.
+
+   The algorithm to represent an integer I is as follows:
 
    If I < 2^N - 1, encode I on N bits
    Else
@@ -548,12 +554,6 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-            I % 128 == 26
-
-            26 + 128 == 154
-
-            154 is encoded in 8 bits as: 10011010
-
 
 
 
@@ -561,6 +561,12 @@ Peon & Ruellan           Expires April 21, 2014                [Page 10]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+            I % 128 == 26
+
+            26 + 128 == 154
+
+            154 is encoded in 8 bits as: 10011010
 
             I is set to 10 (1306 / 128 == 10)
 
@@ -604,12 +610,6 @@ Internet-Draft                   HPACK                      October 2013
    with the codes within the request huffman code table (Appendix C)
    (see Request Huffman Encoding Example (Appendix F)).
 
-   String literals sent in the server to client direction are encoded
-   with the codes within the response huffman code table (Appendix D)
-   (see Response Huffman Encoding Example (Appendix F)).
-
-
-
 
 
 
@@ -617,6 +617,10 @@ Peon & Ruellan           Expires April 21, 2014                [Page 11]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+   String literals sent in the server to client direction are encoded
+   with the codes within the response huffman code table (Appendix D)
+   (see Response Huffman Encoding Example (Appendix F)).
 
    The EOS symbol is represented with value 256, and is used solely to
    signal the end of the huffman-encoded key data or the end of the
@@ -662,10 +666,6 @@ Internet-Draft                   HPACK                      October 2013
    |       Value Length (8+)       |
    +-------------------------------+
    | Value String (Length octets)  |
-   +-------------------------------+
-
-           Literal Header Field without Indexing - Indexed Name
-
 
 
 
@@ -673,6 +673,10 @@ Peon & Ruellan           Expires April 21, 2014                [Page 12]
 
 Internet-Draft                   HPACK                      October 2013
 
+
+   +-------------------------------+
+
+           Literal Header Field without Indexing - Indexed Name
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
@@ -709,6 +713,23 @@ Internet-Draft                   HPACK                      October 2013
    A literal header field with incremental indexing adds a new entry to
    the header table.
 
+
+
+
+
+
+
+
+
+
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 13]
+
+Internet-Draft                   HPACK                      October 2013
+
+
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | 0 | 0 |      Index (6+)       |
@@ -722,14 +743,6 @@ Internet-Draft                   HPACK                      October 2013
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 13]
-
-Internet-Draft                   HPACK                      October 2013
-
-
    | 0 | 0 |           0           |
    +---+---+---+-------------------+
    |       Name Length (8+)        |
@@ -765,6 +778,14 @@ Internet-Draft                   HPACK                      October 2013
    this specification should be fairly safe against that kind of attack,
    as the reaping of any information from the compression context
    requires more work than guessing and verifying the plaintext data
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 14]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    directly with the server.  As with any secret, however, the longer
    the length of the secret, the more difficult the secret is to guess.
    It is inadvisable to have short cookies that are relied upon to
@@ -778,14 +799,6 @@ Internet-Draft                   HPACK                      October 2013
    Another common security problem is when the remote endpoint
    successfully causes the local endpoint to exhaust its memory.  This
    compressor attempts to deal with the most obvious ways that this
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 14]
-
-Internet-Draft                   HPACK                      October 2013
-
-
    could occur by limiting both the peak and the steady-state amount of
    memory consumed in the compressor state, by providing ways for the
    application to consume/flush the emitted header fields in small
@@ -821,6 +834,14 @@ Internet-Draft                   HPACK                      October 2013
               draft-ietf-httpbis-p5-range-24 (work in progress),
               September 2013.
 
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 15]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
               draft-ietf-httpbis-p6-cache-24 (work in progress),
@@ -833,14 +854,6 @@ Internet-Draft                   HPACK                      October 2013
    [HTTP2]    Belshe, M., Peon, R., Thomson, M., and A. Melnikov,
               "Hypertext Transfer Protocol version 2.0", draft-ietf-
               httpbis-http2-06 (work in progress), August 2013.
-
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 15]
-
-Internet-Draft                   HPACK                      October 2013
-
 
 6.2.  Informative References
 
@@ -878,6 +891,13 @@ A.1.  Since draft-ietf-httpbis-header-compression-03
    o  A large number of editorial changes; changed the description of
       evicting/adding new entries.
 
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 16]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    o  Removed substitution indexing
 
    o  Changed 'initial headers' to 'static headers', as per issue #258
@@ -890,13 +910,6 @@ A.1.  Since draft-ietf-httpbis-header-compression-03
 A.2.  Since draft-ietf-httpbis-header-compression-02
 
    o  Corrected error in integer encoding pseudocode.
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 16]
-
-Internet-Draft                   HPACK                      October 2013
-
 
 A.3.  Since draft-ietf-httpbis-header-compression-01
 
@@ -934,6 +947,13 @@ A.4.  Since draft-ietf-httpbis-header-compression-01
       Changed the name of the setting which dictates how much memory the
       compression context should use.
 
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 17]
+
+Internet-Draft                   HPACK                      October 2013
+
+
       Removed "specific use cases" section
 
       Corrected erroneous statement about what index can be contained in
@@ -944,15 +964,6 @@ A.4.  Since draft-ietf-httpbis-header-compression-01
       Removed security claims from introduction.
 
 Appendix B.  Static Table
-
-
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 17]
-
-Internet-Draft                   HPACK                      October 2013
-
 
    The static table consists of an unchangable ordered list of (name,
    value) pairs.  The first entry in the table is always represented by
@@ -991,6 +1002,14 @@ Internet-Draft                   HPACK                      October 2013
           | 14    | accept-encoding             |              |
           | 15    | accept-language             |              |
           | 16    | accept-ranges               |              |
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 18]
+
+Internet-Draft                   HPACK                      October 2013
+
+
           | 17    | accept                      |              |
           | 18    | access-control-allow-origin |              |
           | 19    | age                         |              |
@@ -1002,14 +1021,6 @@ Internet-Draft                   HPACK                      October 2013
           | 25    | content-language            |              |
           | 26    | content-length              |              |
           | 27    | content-location            |              |
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 18]
-
-Internet-Draft                   HPACK                      October 2013
-
-
           | 28    | content-range               |              |
           | 29    | content-type                |              |
           | 30    | cookie                      |              |
@@ -1047,6 +1058,14 @@ Internet-Draft                   HPACK                      October 2013
 
    The table give the index of each entry in the static table.  The full
    index of each entry, to be used for encoding a reference to this
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 19]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    entry, is computed by adding the number of entries in the header
    table to this index.
 
@@ -1057,14 +1076,6 @@ Appendix C.  Huffman Codes For Requests
 
    [[This table is out of date and needs updating.  In particular, EOS
    needs to be at least 7-bits long and currently is not.  ]]
-
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 19]
-
-Internet-Draft                   HPACK                      October 2013
-
 
                 aligned                                  aligned
                  to                            len        to     len
@@ -1103,6 +1114,14 @@ Internet-Draft                   HPACK                      October 2013
          ( 30) |11111111|11111111|11111011|010 [27]      7ffffda [27]
          ( 31) |11111111|11111111|11111011|011 [27]      7ffffdb [27]
      ' ' ( 32) |11111111|0110 [12]                           ff6 [12]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 20]
+
+Internet-Draft                   HPACK                      October 2013
+
+
      '!' ( 33) |11111111|0111 [12]                           ff7 [12]
      '"' ( 34) |11111111|111010 [14]                        3ffa [14]
      '#' ( 35) |11111111|1111100 [15]                       7ffc [15]
@@ -1114,14 +1133,6 @@ Internet-Draft                   HPACK                      October 2013
      ')' ( 41) |11111111|1001 [12]                           ff9 [12]
      '*' ( 42) |11111111|1010 [12]                           ffa [12]
      '+' ( 43) |11111111|1011 [12]                           ffb [12]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 20]
-
-Internet-Draft                   HPACK                      October 2013
-
-
      ',' ( 44) |11111110|00 [10]                             3f8 [10]
      '-' ( 45) |100111 [6]                                    27 [6]
      '.' ( 46) |00110 [5]                                      6 [5]
@@ -1159,6 +1170,14 @@ Internet-Draft                   HPACK                      October 2013
      'N' ( 78) |11111000|0 [9]                               1f0 [9]
      'O' ( 79) |11111000|1 [9]                               1f1 [9]
      'P' ( 80) |11111001|0 [9]                               1f2 [9]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 21]
+
+Internet-Draft                   HPACK                      October 2013
+
+
      'Q' ( 81) |11111110|10 [10]                             3fa [10]
      'R' ( 82) |11111001|1 [9]                               1f3 [9]
      'S' ( 83) |11111010|0 [9]                               1f4 [9]
@@ -1170,14 +1189,6 @@ Internet-Draft                   HPACK                      October 2013
      'Y' ( 89) |11111110|11 [10]                             3fb [10]
      'Z' ( 90) |11111111|00 [10]                             3fc [10]
      '[' ( 91) |11111111|111011 [14]                        3ffb [14]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 21]
-
-Internet-Draft                   HPACK                      October 2013
-
-
      '\' ( 92) |11111111|11111111|11111011|100 [27]      7ffffdc [27]
      ']' ( 93) |11111111|111100 [14]                        3ffc [14]
      '^' ( 94) |11111111|111101 [14]                        3ffd [14]
@@ -1215,6 +1226,14 @@ Internet-Draft                   HPACK                      October 2013
      '~' (126) |11111111|1101 [12]                           ffd [12]
          (127) |11111111|11111111|11111011|101 [27]      7ffffdd [27]
          (128) |11111111|11111111|11111011|110 [27]      7ffffde [27]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 22]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (129) |11111111|11111111|11111011|111 [27]      7ffffdf [27]
          (130) |11111111|11111111|11111100|000 [27]      7ffffe0 [27]
          (131) |11111111|11111111|11111100|001 [27]      7ffffe1 [27]
@@ -1226,14 +1245,6 @@ Internet-Draft                   HPACK                      October 2013
          (137) |11111111|11111111|11111100|111 [27]      7ffffe7 [27]
          (138) |11111111|11111111|11111101|000 [27]      7ffffe8 [27]
          (139) |11111111|11111111|11111101|001 [27]      7ffffe9 [27]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 22]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (140) |11111111|11111111|11111101|010 [27]      7ffffea [27]
          (141) |11111111|11111111|11111101|011 [27]      7ffffeb [27]
          (142) |11111111|11111111|11111101|100 [27]      7ffffec [27]
@@ -1271,6 +1282,14 @@ Internet-Draft                   HPACK                      October 2013
          (174) |11111111|11111111|11100011|00 [26]       3ffff8c [26]
          (175) |11111111|11111111|11100011|01 [26]       3ffff8d [26]
          (176) |11111111|11111111|11100011|10 [26]       3ffff8e [26]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 23]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (177) |11111111|11111111|11100011|11 [26]       3ffff8f [26]
          (178) |11111111|11111111|11100100|00 [26]       3ffff90 [26]
          (179) |11111111|11111111|11100100|01 [26]       3ffff91 [26]
@@ -1282,14 +1301,6 @@ Internet-Draft                   HPACK                      October 2013
          (185) |11111111|11111111|11100101|11 [26]       3ffff97 [26]
          (186) |11111111|11111111|11100110|00 [26]       3ffff98 [26]
          (187) |11111111|11111111|11100110|01 [26]       3ffff99 [26]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 23]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (188) |11111111|11111111|11100110|10 [26]       3ffff9a [26]
          (189) |11111111|11111111|11100110|11 [26]       3ffff9b [26]
          (190) |11111111|11111111|11100111|00 [26]       3ffff9c [26]
@@ -1327,6 +1338,14 @@ Internet-Draft                   HPACK                      October 2013
          (222) |11111111|11111111|11101111|00 [26]       3ffffbc [26]
          (223) |11111111|11111111|11101111|01 [26]       3ffffbd [26]
          (224) |11111111|11111111|11101111|10 [26]       3ffffbe [26]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 24]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (225) |11111111|11111111|11101111|11 [26]       3ffffbf [26]
          (226) |11111111|11111111|11110000|00 [26]       3ffffc0 [26]
          (227) |11111111|11111111|11110000|01 [26]       3ffffc1 [26]
@@ -1338,14 +1357,6 @@ Internet-Draft                   HPACK                      October 2013
          (233) |11111111|11111111|11110001|11 [26]       3ffffc7 [26]
          (234) |11111111|11111111|11110010|00 [26]       3ffffc8 [26]
          (235) |11111111|11111111|11110010|01 [26]       3ffffc9 [26]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 24]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (236) |11111111|11111111|11110010|10 [26]       3ffffca [26]
          (237) |11111111|11111111|11110010|11 [26]       3ffffcb [26]
          (238) |11111111|11111111|11110011|00 [26]       3ffffcc [26]
@@ -1383,6 +1394,14 @@ Appendix D.  Huffman Codes for Responses
                  MSB                           in         LSB     in
           sym    as bits                      bits       as hex  bits
          (  0) |11111111|11111111|11101111|10 [26]       3ffffbe [26]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 25]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (  1) |11111111|11111111|11101111|11 [26]       3ffffbf [26]
          (  2) |11111111|11111111|11110000|00 [26]       3ffffc0 [26]
          (  3) |11111111|11111111|11110000|01 [26]       3ffffc1 [26]
@@ -1394,14 +1413,6 @@ Appendix D.  Huffman Codes for Responses
          (  9) |11111111|11111111|11110001|11 [26]       3ffffc7 [26]
          ( 10) |11111111|11111111|11110010|00 [26]       3ffffc8 [26]
          ( 11) |11111111|11111111|11110010|01 [26]       3ffffc9 [26]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 25]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          ( 12) |11111111|11111111|11110010|10 [26]       3ffffca [26]
          ( 13) |11111111|11111111|11110010|11 [26]       3ffffcb [26]
          ( 14) |11111111|11111111|11110011|00 [26]       3ffffcc [26]
@@ -1439,6 +1450,14 @@ Internet-Draft                   HPACK                      October 2013
      '.' ( 46) |1101001 [7]                                   69 [7]
      '/' ( 47) |11101000 [8]                                  e8 [8]
      '0' ( 48) |0001 [4]                                       1 [4]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 26]
+
+Internet-Draft                   HPACK                      October 2013
+
+
      '1' ( 49) |0010 [4]                                       2 [4]
      '2' ( 50) |0011 [4]                                       3 [4]
      '3' ( 51) |01000 [5]                                      8 [5]
@@ -1450,14 +1469,6 @@ Internet-Draft                   HPACK                      October 2013
      '9' ( 57) |01101 [5]                                      d [5]
      ':' ( 58) |01110 [5]                                      e [5]
      ';' ( 59) |11110110|1 [9]                               1ed [9]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 26]
-
-Internet-Draft                   HPACK                      October 2013
-
-
      '<' ( 60) |11111111|11111100 [16]                      fffc [16]
      '=' ( 61) |1101010 [7]                                   6a [7]
      '>' ( 62) |11111111|111011 [14]                        3ffb [14]
@@ -1495,6 +1506,14 @@ Internet-Draft                   HPACK                      October 2013
      '^' ( 94) |11111111|1111101 [15]                       7ffd [15]
      '_' ( 95) |11111011|1 [9]                               1f7 [9]
      '`' ( 96) |11111111|11111111|10 [18]                  3fffe [18]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 27]
+
+Internet-Draft                   HPACK                      October 2013
+
+
      'a' ( 97) |10000 [5]                                     10 [5]
      'b' ( 98) |1101101 [7]                                   6d [7]
      'c' ( 99) |101011 [6]                                    2b [6]
@@ -1506,14 +1525,6 @@ Internet-Draft                   HPACK                      October 2013
      'i' (105) |101101 [6]                                    2d [6]
      'j' (106) |11111100|0 [9]                               1f8 [9]
      'k' (107) |11111100|1 [9]                               1f9 [9]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 27]
-
-Internet-Draft                   HPACK                      October 2013
-
-
      'l' (108) |1110001 [7]                                   71 [7]
      'm' (109) |1110010 [7]                                   72 [7]
      'n' (110) |101110 [6]                                    2e [6]
@@ -1551,6 +1562,14 @@ Internet-Draft                   HPACK                      October 2013
          (142) |11111111|11111111|11111011|01 [26]       3ffffed [26]
          (143) |11111111|11111111|11111011|10 [26]       3ffffee [26]
          (144) |11111111|11111111|11111011|11 [26]       3ffffef [26]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 28]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (145) |11111111|11111111|11111100|00 [26]       3fffff0 [26]
          (146) |11111111|11111111|11111100|01 [26]       3fffff1 [26]
          (147) |11111111|11111111|11111100|10 [26]       3fffff2 [26]
@@ -1562,14 +1581,6 @@ Internet-Draft                   HPACK                      October 2013
          (153) |11111111|11111111|11111110|00 [26]       3fffff8 [26]
          (154) |11111111|11111111|11111110|01 [26]       3fffff9 [26]
          (155) |11111111|11111111|11111110|10 [26]       3fffffa [26]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 28]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (156) |11111111|11111111|11111110|11 [26]       3fffffb [26]
          (157) |11111111|11111111|11111111|00 [26]       3fffffc [26]
          (158) |11111111|11111111|11111111|01 [26]       3fffffd [26]
@@ -1607,6 +1618,14 @@ Internet-Draft                   HPACK                      October 2013
          (190) |11111111|11111111|11001110|1 [25]        1ffff9d [25]
          (191) |11111111|11111111|11001111|0 [25]        1ffff9e [25]
          (192) |11111111|11111111|11001111|1 [25]        1ffff9f [25]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 29]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (193) |11111111|11111111|11010000|0 [25]        1ffffa0 [25]
          (194) |11111111|11111111|11010000|1 [25]        1ffffa1 [25]
          (195) |11111111|11111111|11010001|0 [25]        1ffffa2 [25]
@@ -1618,14 +1637,6 @@ Internet-Draft                   HPACK                      October 2013
          (201) |11111111|11111111|11010100|0 [25]        1ffffa8 [25]
          (202) |11111111|11111111|11010100|1 [25]        1ffffa9 [25]
          (203) |11111111|11111111|11010101|0 [25]        1ffffaa [25]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 29]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (204) |11111111|11111111|11010101|1 [25]        1ffffab [25]
          (205) |11111111|11111111|11010110|0 [25]        1ffffac [25]
          (206) |11111111|11111111|11010110|1 [25]        1ffffad [25]
@@ -1663,6 +1674,14 @@ Internet-Draft                   HPACK                      October 2013
          (238) |11111111|11111111|11100110|1 [25]        1ffffcd [25]
          (239) |11111111|11111111|11100111|0 [25]        1ffffce [25]
          (240) |11111111|11111111|11100111|1 [25]        1ffffcf [25]
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 30]
+
+Internet-Draft                   HPACK                      October 2013
+
+
          (241) |11111111|11111111|11101000|0 [25]        1ffffd0 [25]
          (242) |11111111|11111111|11101000|1 [25]        1ffffd1 [25]
          (243) |11111111|11111111|11101001|0 [25]        1ffffd2 [25]
@@ -1674,14 +1693,6 @@ Internet-Draft                   HPACK                      October 2013
          (249) |11111111|11111111|11101100|0 [25]        1ffffd8 [25]
          (250) |11111111|11111111|11101100|1 [25]        1ffffd9 [25]
          (251) |11111111|11111111|11101101|0 [25]        1ffffda [25]
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 30]
-
-Internet-Draft                   HPACK                      October 2013
-
-
          (252) |11111111|11111111|11101101|1 [25]        1ffffdb [25]
          (253) |11111111|11111111|11101110|0 [25]        1ffffdc [25]
          (254) |11111111|11111111|11101110|1 [25]        1ffffdd [25]
@@ -1720,6 +1731,13 @@ G.1.  First header set
    name is not in the header table and is encoded literally.  This gives
    the following representation:
 
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 31]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    0x04      (literal header with incremental indexing, name index = 3)
    0x16      (header field value string length = 22)
    /my-example/index.html
@@ -1730,14 +1748,6 @@ G.1.  First header set
    0x0B      (header field name string length = 11)
    mynewheader
    0x05      (header field value string length = 5)
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 31]
-
-Internet-Draft                   HPACK                      October 2013
-
-
    first
 
 
@@ -1776,6 +1786,14 @@ Internet-Draft                   HPACK                      October 2013
 
 G.2.  Second header set
 
+
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 32]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    The second header set to represent is the following:
 
    :path, /my-example/resources/script.js
@@ -1786,14 +1804,6 @@ G.2.  Second header set
    Comparing this second header set to the reference set, the first and
    third header fields are from the reference set are not present in
    this second header set and must be removed.  In addition, in this new
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 32]
-
-Internet-Draft                   HPACK                      October 2013
-
-
    set, the first and third header fields have to be encoded.  The path
    header field is represented as a literal header field without
    indexing.  The mynewheader will be represented as a literal header
@@ -1833,6 +1843,13 @@ Internet-Draft                   HPACK                      October 2013
    +---------+----------------+---------------------------+
 
 
+
+
+Peon & Ruellan           Expires April 21, 2014                [Page 33]
+
+Internet-Draft                   HPACK                      October 2013
+
+
    All the header fields in this second header set are indexed in the
    header table, therefore, all are kept in the reference set of header
    fields, which becomes:
@@ -1841,13 +1858,6 @@ Internet-Draft                   HPACK                      October 2013
    :path, /my-example/resources/script.js
    user-agent, my-user-agent
    mynewheader, second
-
-
-
-
-Peon & Ruellan           Expires April 21, 2014                [Page 33]
-
-Internet-Draft                   HPACK                      October 2013
 
 
 Authors' Addresses
@@ -1862,16 +1872,6 @@ Authors' Addresses
    Canon CRF
 
    EMail: herve.ruellan@crf.canon.fr
-
-
-
-
-
-
-
-
-
-
 
 
 
