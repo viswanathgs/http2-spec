@@ -1486,19 +1486,23 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.6.5.p.1">The SETTINGS frame (type=0x4) conveys configuration parameters that affect how endpoints communicate. The parameters are either
                constraints on peer behavior or preferences.
             </p>
-            <p id="rfc.section.6.5.p.2">SETTINGS frames MUST be sent at the start of a connection, and MAY be sent at any other time by either endpoint over the lifetime
+            <p id="rfc.section.6.5.p.2">Settings are not negotiated. Settings are sent independently by both peers. Different values for the same setting can be advertised
+               by each peer. For example, a client might set a high initial flow control window, whereas a server might set a lower value
+               to conserve resources.
+            </p>
+            <p id="rfc.section.6.5.p.3">SETTINGS frames MUST be sent at the start of a connection, and MAY be sent at any other time by either endpoint over the lifetime
                of the connection.
             </p>
-            <p id="rfc.section.6.5.p.3">Implementations MUST support all of the settings defined by this specification and MAY support additional settings defined
+            <p id="rfc.section.6.5.p.4">Implementations MUST support all of the settings defined by this specification and MAY support additional settings defined
                by extensions. Unsupported or unrecognized settings MUST be ignored. New settings MUST NOT be defined or implemented in a
                way that requires endpoints to understand them in order to communicate successfully.
             </p>
-            <p id="rfc.section.6.5.p.4">Each setting in a SETTINGS frame replaces the existing value for that setting. Settings are processed in the order in which
+            <p id="rfc.section.6.5.p.5">Each setting in a SETTINGS frame replaces the existing value for that setting. Settings are processed in the order in which
                they appear, and a receiver of a SETTINGS frame does not need to maintain any state other than the current value of settings.
                Therefore, the value of a setting is the last value that is seen by a receiver. This permits the inclusion of the same settings
                multiple times in the same SETTINGS frame, though doing so does nothing other than waste connection capacity.
             </p>
-            <p id="rfc.section.6.5.p.5">The SETTINGS frame defines the following flag: </p>
+            <p id="rfc.section.6.5.p.6">The SETTINGS frame defines the following flag: </p>
             <dl>
                <dt>ACK (0x1):</dt>
                <dd>Bit 1 being set indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame. When this bit
@@ -1506,11 +1510,11 @@ Upgrade: HTTP/2.0
                   value other than 0 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FRAME_SIZE_ERROR" class="smpl">FRAME_SIZE_ERROR</a>. For more info, see Settings Synchronization (<a href="#SettingsSync" title="Settings Synchronization">Section&nbsp;6.5.3</a>).
                </dd>
             </dl>
-            <p id="rfc.section.6.5.p.6">SETTINGS frames always apply to a connection, never a single stream. The stream identifier for a settings frame MUST be zero.
+            <p id="rfc.section.6.5.p.7">SETTINGS frames always apply to a connection, never a single stream. The stream identifier for a settings frame MUST be zero.
                If an endpoint receives a SETTINGS frame whose stream identifier field is anything other than 0x0, the endpoint MUST respond
                with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.5.p.7">The SETTINGS frame affects connection state. A badly formed or incomplete SETTINGS frame MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            <p id="rfc.section.6.5.p.8">The SETTINGS frame affects connection state. A badly formed or incomplete SETTINGS frame MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
             <div id="SettingFormat">
                <h3 id="rfc.section.6.5.1"><a href="#rfc.section.6.5.1">6.5.1</a>&nbsp;<a href="#SettingFormat">Setting Format</a></h3>
@@ -1533,19 +1537,20 @@ Upgrade: HTTP/2.0
                   <dt id="SETTINGS_HEADER_TABLE_SIZE">SETTINGS_HEADER_TABLE_SIZE (1):</dt>
                   <dd>
                      <p>Allows the sender to inform the remote endpoint of the size of the header compression table used to decode header blocks.
-                        The default value is 4096 bytes.
+                        The space available for encoding cannot be changed; it is determined by the setting sent by the peer that receives the header
+                        blocks. The initial value is 4096 bytes.
                      </p>
                   </dd>
                   <dt id="SETTINGS_ENABLE_PUSH">SETTINGS_ENABLE_PUSH (2):</dt>
                   <dd>
-                     <p>This setting can be use to disable server push (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>). An endpoint MUST NOT send a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame if it receives this setting set to a value of 0. The default value is 1, which indicates that push is permitted.
+                     <p>This setting can be use to disable server push (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>). An endpoint MUST NOT send a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame if it receives this setting set to a value of 0. The initial value is 1, which indicates that push is permitted.
                      </p>
                   </dd>
                   <dt id="SETTINGS_MAX_CONCURRENT_STREAMS">SETTINGS_MAX_CONCURRENT_STREAMS (4):</dt>
                   <dd>
                      <p>Indicates the maximum number of concurrent streams that the sender will allow. This limit is directional: it applies to the
-                        number of streams that the sender permits the receiver to create. By default there is no limit. It is recommended that this
-                        value be no smaller than 100, so as to not unnecessarily limit parallelism.
+                        number of streams that the sender permits the receiver to create. Initially there is no limit to this value. It is recommended
+                        that this value be no smaller than 100, so as to not unnecessarily limit parallelism.
                      </p>
                   </dd>
                   <dt id="SETTINGS_INITIAL_WINDOW_SIZE">SETTINGS_INITIAL_WINDOW_SIZE (7):</dt>
