@@ -5,8 +5,8 @@
 HTTPbis Working Group                                            R. Peon
 Internet-Draft                                               Google, Inc
 Intended status: Informational                                H. Ruellan
-Expires: April 28, 2014                                        Canon CRF
-                                                        October 25, 2013
+Expires: May 02, 2014                                          Canon CRF
+                                                        October 29, 2013
 
 
                 HPACK - Header Compression for HTTP/2.0
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on April 28, 2014.
+   This Internet-Draft will expire on May 02, 2014.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 1]
+Peon & Ruellan            Expires May 02, 2014                  [Page 1]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -84,8 +84,8 @@ Table of Contents
        3.2.1.  Header Field Representation Processing  . . . . . . .   7
        3.2.2.  Reference Set Emission  . . . . . . . . . . . . . . .   8
        3.2.3.  Header Set Completion . . . . . . . . . . . . . . . .   8
-     3.3.  Header Table Management . . . . . . . . . . . . . . . . .   9
-       3.3.1.  Maximum Table Size  . . . . . . . . . . . . . . . . .   9
+     3.3.  Header Table Management . . . . . . . . . . . . . . . . .   8
+       3.3.1.  Maximum Table Size  . . . . . . . . . . . . . . . . .   8
        3.3.2.  Entry Eviction When Header Table Size Changes . . . .   9
        3.3.3.  Entry Eviction when Adding New Entries  . . . . . . .   9
    4.  Detailed Format . . . . . . . . . . . . . . . . . . . . . . .  10
@@ -93,7 +93,7 @@ Table of Contents
        4.1.1.  Integer representation  . . . . . . . . . . . . . . .  10
        4.1.2.  String Literal Representation . . . . . . . . . . . .  12
      4.2.  Indexed Header Field Representation . . . . . . . . . . .  13
-     4.3.  Literal Header Field Representation . . . . . . . . . . .  14
+     4.3.  Literal Header Field Representation . . . . . . . . . . .  13
        4.3.1.  Literal Header Field without Indexing . . . . . . . .  14
        4.3.2.  Literal Header Field with Incremental Indexing  . . .  15
    5.  Security Considerations . . . . . . . . . . . . . . . . . . .  16
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 2]
+Peon & Ruellan            Expires May 02, 2014                  [Page 2]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -165,7 +165,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 3]
+Peon & Ruellan            Expires May 02, 2014                  [Page 3]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -221,7 +221,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 4]
+Peon & Ruellan            Expires May 02, 2014                  [Page 4]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -277,7 +277,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 5]
+Peon & Ruellan            Expires May 02, 2014                  [Page 5]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -333,7 +333,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 6]
+Peon & Ruellan            Expires May 02, 2014                  [Page 6]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -389,7 +389,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 7]
+Peon & Ruellan            Expires May 02, 2014                  [Page 7]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -408,7 +408,8 @@ Internet-Draft                   HPACK                      October 2013
       *  The header field corresponding to the referenced entry is
          emitted.
 
-      *  The referenced header table entry is added to the header table.
+      *  The referenced header table entry is added to the reference
+         set.
 
    A _literal representation_ that is _not added_ to the header table
    entails the following action:
@@ -437,22 +438,17 @@ Internet-Draft                   HPACK                      October 2013
    the remaining items in the reference set have been emitted, the
    header set is complete.
 
-
-
-
-
-
-
-
-
-Peon & Ruellan           Expires April 28, 2014                 [Page 8]
-
-Internet-Draft                   HPACK                      October 2013
-
-
 3.3.  Header Table Management
 
 3.3.1.  Maximum Table Size
+
+
+
+
+Peon & Ruellan            Expires May 02, 2014                  [Page 8]
+
+Internet-Draft                   HPACK                      October 2013
+
 
    To limit the memory requirements on the decoder side, the size of the
    the header table is bounded.  The size of the header table MUST stay
@@ -498,16 +494,17 @@ Internet-Draft                   HPACK                      October 2013
 
    If the size of the new entry is less than or equal to
    SETTINGS_HEADER_TABLE_SIZE, that entry is added to the table.  It is
+   not an error to attempt to add an entry that is larger than
+   SETTINGS_HEADER_TABLE_SIZE.
 
 
 
-Peon & Ruellan           Expires April 28, 2014                 [Page 9]
+
+
+Peon & Ruellan            Expires May 02, 2014                  [Page 9]
 
 Internet-Draft                   HPACK                      October 2013
 
-
-   not an error to attempt to add an entry that is larger than
-   SETTINGS_HEADER_TABLE_SIZE.
 
 4.  Detailed Format
 
@@ -555,15 +552,15 @@ Internet-Draft                   HPACK                      October 2013
 
    The value 10 is to be encoded with a 5-bit prefix.
 
+   o  10 is less than 31 (= 2^5 - 1) and is represented using the 5-bit
+      prefix.
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 10]
+
+Peon & Ruellan            Expires May 02, 2014                 [Page 10]
 
 Internet-Draft                   HPACK                      October 2013
 
-
-   o  10 is less than 31 (= 2^5 - 1) and is represented using the 5-bit
-      prefix.
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
@@ -610,15 +607,15 @@ Internet-Draft                   HPACK                      October 2013
    | X | X | X | 1 | 1 | 1 | 1 | 1 |  Prefix = 31, I = 1306
    | 1 | 0 | 0 | 1 | 1 | 0 | 1 | 0 |  1306>=128, encode(154), I=1306/128
    | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 |  10<128, encode(10), done
+   +---+---+---+---+---+---+---+---+
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 11]
+
+
+Peon & Ruellan            Expires May 02, 2014                 [Page 11]
 
 Internet-Draft                   HPACK                      October 2013
-
-
-   +---+---+---+---+---+---+---+---+
 
 
 4.1.2.  String Literal Representation
@@ -666,16 +663,16 @@ Internet-Draft                   HPACK                      October 2013
    signal the end of the huffman-encoded key data or the end of the
    huffman-encoded value data.  Given that only between 0-7 bits of the
    EOS symbol is included in any huffman-encoded string, and given that
+   the EOS symbol is at least 8 bits long, it is expected that it should
+   never be successfully decoded.
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 12]
+
+Peon & Ruellan            Expires May 02, 2014                 [Page 12]
 
 Internet-Draft                   HPACK                      October 2013
 
-
-   the EOS symbol is at least 8 bits long, it is expected that it should
-   never be successfully decoded.
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
@@ -722,15 +719,16 @@ Internet-Draft                   HPACK                      October 2013
    the index of the matching pair, represented as an integer with a
    7-bit prefix.
 
+4.3.  Literal Header Field Representation
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 13]
+
+
+Peon & Ruellan            Expires May 02, 2014                 [Page 13]
 
 Internet-Draft                   HPACK                      October 2013
 
-
-4.3.  Literal Header Field Representation
 
    Literal header field representations contain a literal header field
    value.  Header field names are either provided as a literal or by
@@ -781,7 +779,9 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 14]
+
+
+Peon & Ruellan            Expires May 02, 2014                 [Page 14]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -837,7 +837,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 15]
+Peon & Ruellan            Expires May 02, 2014                 [Page 15]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -893,7 +893,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 16]
+Peon & Ruellan            Expires May 02, 2014                 [Page 16]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -949,7 +949,7 @@ A.1.  Since draft-ietf-httpbis-header-compression-03
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 17]
+Peon & Ruellan            Expires May 02, 2014                 [Page 17]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1005,7 +1005,7 @@ A.4.  Since draft-ietf-httpbis-header-compression-01
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 18]
+Peon & Ruellan            Expires May 02, 2014                 [Page 18]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1061,7 +1061,7 @@ Appendix B.  Static Table
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 19]
+Peon & Ruellan            Expires May 02, 2014                 [Page 19]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1117,7 +1117,7 @@ Appendix C.  Huffman Codes For Requests
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 20]
+Peon & Ruellan            Expires May 02, 2014                 [Page 20]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1173,7 +1173,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 21]
+Peon & Ruellan            Expires May 02, 2014                 [Page 21]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1229,7 +1229,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 22]
+Peon & Ruellan            Expires May 02, 2014                 [Page 22]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1285,7 +1285,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 23]
+Peon & Ruellan            Expires May 02, 2014                 [Page 23]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1341,7 +1341,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 24]
+Peon & Ruellan            Expires May 02, 2014                 [Page 24]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1397,7 +1397,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 25]
+Peon & Ruellan            Expires May 02, 2014                 [Page 25]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1453,7 +1453,7 @@ Appendix D.  Huffman Codes for Responses
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 26]
+Peon & Ruellan            Expires May 02, 2014                 [Page 26]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1509,7 +1509,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 27]
+Peon & Ruellan            Expires May 02, 2014                 [Page 27]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1565,7 +1565,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 28]
+Peon & Ruellan            Expires May 02, 2014                 [Page 28]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1621,7 +1621,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 29]
+Peon & Ruellan            Expires May 02, 2014                 [Page 29]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1677,7 +1677,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 30]
+Peon & Ruellan            Expires May 02, 2014                 [Page 30]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1733,7 +1733,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 31]
+Peon & Ruellan            Expires May 02, 2014                 [Page 31]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1789,7 +1789,7 @@ E.1.  Request Decoding Example With Huffman
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 32]
+Peon & Ruellan            Expires May 02, 2014                 [Page 32]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1845,7 +1845,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 33]
+Peon & Ruellan            Expires May 02, 2014                 [Page 33]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1901,7 +1901,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 34]
+Peon & Ruellan            Expires May 02, 2014                 [Page 34]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -1957,7 +1957,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 35]
+Peon & Ruellan            Expires May 02, 2014                 [Page 35]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2013,7 +2013,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 36]
+Peon & Ruellan            Expires May 02, 2014                 [Page 36]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2069,7 +2069,7 @@ E.2.  Request Decoding Example Without Huffman
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 37]
+Peon & Ruellan            Expires May 02, 2014                 [Page 37]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2125,7 +2125,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 38]
+Peon & Ruellan            Expires May 02, 2014                 [Page 38]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2181,7 +2181,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 39]
+Peon & Ruellan            Expires May 02, 2014                 [Page 39]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2237,7 +2237,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 40]
+Peon & Ruellan            Expires May 02, 2014                 [Page 40]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2293,7 +2293,7 @@ E.3.  Response Decoding Example With Huffman
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 41]
+Peon & Ruellan            Expires May 02, 2014                 [Page 41]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2349,7 +2349,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 42]
+Peon & Ruellan            Expires May 02, 2014                 [Page 42]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2405,7 +2405,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 43]
+Peon & Ruellan            Expires May 02, 2014                 [Page 43]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2461,7 +2461,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 44]
+Peon & Ruellan            Expires May 02, 2014                 [Page 44]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2517,7 +2517,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 45]
+Peon & Ruellan            Expires May 02, 2014                 [Page 45]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2573,7 +2573,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 46]
+Peon & Ruellan            Expires May 02, 2014                 [Page 46]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2629,7 +2629,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 47]
+Peon & Ruellan            Expires May 02, 2014                 [Page 47]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2685,7 +2685,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 48]
+Peon & Ruellan            Expires May 02, 2014                 [Page 48]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2741,7 +2741,7 @@ E.4.  Response Decoding Example Without Huffman
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 49]
+Peon & Ruellan            Expires May 02, 2014                 [Page 49]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2797,7 +2797,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 50]
+Peon & Ruellan            Expires May 02, 2014                 [Page 50]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2853,7 +2853,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 51]
+Peon & Ruellan            Expires May 02, 2014                 [Page 51]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2909,7 +2909,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 52]
+Peon & Ruellan            Expires May 02, 2014                 [Page 52]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -2965,7 +2965,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 53]
+Peon & Ruellan            Expires May 02, 2014                 [Page 53]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -3021,7 +3021,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 54]
+Peon & Ruellan            Expires May 02, 2014                 [Page 54]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -3077,7 +3077,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 55]
+Peon & Ruellan            Expires May 02, 2014                 [Page 55]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -3133,7 +3133,7 @@ Internet-Draft                   HPACK                      October 2013
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 56]
+Peon & Ruellan            Expires May 02, 2014                 [Page 56]
 
 Internet-Draft                   HPACK                      October 2013
 
@@ -3188,4 +3188,4 @@ Authors' Addresses
 
 
 
-Peon & Ruellan           Expires April 28, 2014                [Page 57]
+Peon & Ruellan            Expires May 02, 2014                 [Page 57]
