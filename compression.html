@@ -418,7 +418,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires May 17, 2014";
+       content: "Expires May 18, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -456,7 +456,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-11-13">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-11-14">
       <meta name="dct.abstract" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
       <meta name="description" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
    </head>
@@ -476,12 +476,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: May 17, 2014</td>
+               <td class="left">Expires: May 18, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">November 13, 2013</td>
+               <td class="right">November 14, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -505,7 +505,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on May 17, 2014.</p>
+         <p>This Internet-Draft will expire on May 18, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -691,7 +691,7 @@ samp, tt, code, pre {
             <div id="header.table">
                <h3 id="rfc.section.3.1.2"><a href="#rfc.section.3.1.2">3.1.2</a>&nbsp;<a href="#header.table">Header Table</a></h3>
                <p id="rfc.section.3.1.2.p.1">A header table consists of a list of header fields maintained in first-in, first-out order. The first and newest entry in
-                  a header table is always at index 0, and the oldest entry of a header table is at the index len(header table)-1.
+                  a header table is always at index 1, and the oldest entry of a header table is at the index len(header table).
                </p>
                <p id="rfc.section.3.1.2.p.2">The header table is initially empty.</p>
                <p id="rfc.section.3.1.2.p.3">There is typically no need for the header table to contain duplicate entries. However, duplicate entries MUST NOT be treated
@@ -710,7 +710,7 @@ samp, tt, code, pre {
                <p id="rfc.section.3.1.3.p.3">The reference set is updated during the processing of a set of header field representations (see header field representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>)).
                </p>
                <p id="rfc.section.3.1.3.p.4">The reference set enables differential encoding, whereby only differences between the previous header set and the current
-                  header set need to be encoded.
+                  header set need to be encoded. The use of differential encoding is optional for any header set.
                </p>
                <p id="rfc.section.3.1.3.p.5">When an entry is evicted from the header table, if it was referenced from the reference set, its reference is removed from
                   the reference set.
@@ -744,7 +744,7 @@ samp, tt, code, pre {
        &lt;----------  Index Address Space ----------&gt;
        &lt;-- Header  Table --&gt;  &lt;-- Static  Table --&gt;
        +---+-----------+---+  +---+-----------+---+
-       | 0 |    ...    | k |  |k+1|    ...    | n |
+       | 1 |    ...    | k |  |k+1|    ...    | n |
        +---+-----------+---+  +---+-----------+---+
        ^                   |
        |                   V
@@ -752,12 +752,13 @@ Insertion Point       Drop Point
 
                                     </pre><p class="figure">Figure 1: Index Address Space</p> 
                      <ul class="empty">
-                        <li>Indices between 0 and len(header table)-1, inclusive, refer to elements in the header table, with index 0 referring to the
-                           beginning of the table.
+                        <li>Indices between 1 and len(header table), inclusive, refer to elements in the header table, with index 1 referring to the beginning
+                           of the table.
                         </li>
-                        <li>Indices between len(header table) and len(header table)+len(static table)-1, inclusive, refer to elements in the static table,
-                           where the index len(header table) refers to the first entry in the static table.
+                        <li>Indices between len(header table)+1 and len(header table)+len(static table), inclusive, refer to elements in the static table,
+                           where the index len(header table)+1 refers to the first entry in the static table.
                         </li>
+                        <li>Index 0 signals that the reference set MUST be emptied.</li>
                         <li>Any other indices MUST be treated as erroneous, and the compression context considered corrupt and unusable.</li>
                      </ul> 
                   </dd>
@@ -792,12 +793,17 @@ Insertion Point       Drop Point
                <p id="rfc.section.3.2.1.p.1">All the header field representations contained in a header block are processed in the order in which they are presented, as
                   specified below.
                </p>
-               <p id="rfc.section.3.2.1.p.2">An <em>indexed representation</em> corresponding to an entry <em>present</em> in the reference set entails the following actions: 
+               <p id="rfc.section.3.2.1.p.2">An <em>indexed representation</em> with an index value of 0 entails the following actions: 
+               </p>
+               <ul>
+                  <li>The reference set is emptied.</li>
+               </ul>
+               <p id="rfc.section.3.2.1.p.3">An <em>indexed representation</em> corresponding to an entry <em>present</em> in the reference set entails the following actions: 
                </p>
                <ul>
                   <li>The entry is removed from the reference set.</li>
                </ul>
-               <p id="rfc.section.3.2.1.p.3">An <em>indexed representation</em> corresponding to an entry <em>not present</em> in the reference set entails the following actions: 
+               <p id="rfc.section.3.2.1.p.4">An <em>indexed representation</em> corresponding to an entry <em>not present</em> in the reference set entails the following actions: 
                </p>
                <ul>
                   <li>If referencing an element of the static table: 
@@ -816,12 +822,12 @@ Insertion Point       Drop Point
                      </ul> 
                   </li>
                </ul>
-               <p id="rfc.section.3.2.1.p.4">A <em>literal representation</em> that is <em>not added</em> to the header table entails the following action: 
+               <p id="rfc.section.3.2.1.p.5">A <em>literal representation</em> that is <em>not added</em> to the header table entails the following action: 
                </p>
                <ul>
                   <li>The header field is emitted.</li>
                </ul>
-               <p id="rfc.section.3.2.1.p.5">A <em>literal representation</em> that is <em>added</em> to the header table entails the following actions: 
+               <p id="rfc.section.3.2.1.p.6">A <em>literal representation</em> that is <em>added</em> to the header table entails the following actions: 
                </p>
                <ul>
                   <li>The header field is emitted.</li>
@@ -1040,6 +1046,7 @@ Else
             <p id="rfc.section.4.2.p.3">This representation starts with the '1' 1-bit pattern, followed by the index of the matching pair, represented as an integer
                with a 7-bit prefix.
             </p>
+            <p id="rfc.section.4.2.p.4">The index value of 0 is reserved for signalling that the reference set is emptied.</p>
          </div>
          <div id="literal.header.representation">
             <h2 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3</a>&nbsp;<a href="#literal.header.representation">Literal Header Field Representation</a></h2>
@@ -1074,8 +1081,8 @@ Else
 </pre><p class="figure">Figure 6: Literal Header Field without Indexing - New Name</p>
                <p id="rfc.section.4.3.1.p.4">This representation starts with the '01' 2-bit pattern.</p>
                <p id="rfc.section.4.3.1.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
-                  the header field name can be represented using the index of that entry. In this case, the index of the entry, increased by
-                  one (index + 1), is represented as an integer with a 6-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
+                  the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
+                  is strictly greater than 0), is represented as an integer with a 6-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                </p>
                <p id="rfc.section.4.3.1.p.6">Otherwise, the header field name is represented as a literal. The value 0 is represented on 6 bits followed by the header
                   field name (see <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
@@ -1110,8 +1117,8 @@ Else
 </pre><p class="figure">Figure 8: Literal Header Field with Incremental Indexing -                         New Name</p>
                <p id="rfc.section.4.3.2.p.4">This representation starts with the '00' 2-bit pattern.</p>
                <p id="rfc.section.4.3.2.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
-                  the header field name can be represented using the index of that entry. In this case, the index of the entry, increased by
-                  one (index + 1), is represented as an integer with a 6-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
+                  the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
+                  is strictly greater than 0), is represented as an integer with a 6-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                </p>
                <p id="rfc.section.4.3.2.p.6">Otherwise, the header field name is represented as a literal. The value 0 is represented on 6 bits followed by the header
                   field name (see <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
@@ -1208,6 +1215,7 @@ Else
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;Since draft-ietf-httpbis-header-compression-04
             </h2>
             <ul>
+               <li>Added reference set emptying.</li>
                <li>Editorial changes and clarifications.</li>
                <li>Added "host" header to the static table.</li>
                <li>Specify emission order constraints.</li>
@@ -1268,7 +1276,8 @@ Else
       <div id="static.table">
          <h1 id="rfc.section.B"><a href="#rfc.section.B">B.</a>&nbsp;<a href="#static.table">Static Table</a></h1>
          <p id="rfc.section.B.p.1">The static table consists of an unchangable ordered list of (name, value) pairs. The first entry in the table is always represented
-            by the index len(header table), and the last entry in the table is represented by the index len(header table)+len(static table)-1.
+            by the index len(header table)+1, and the last entry in the table is represented by the index len(header table)+len(static
+            table).
          </p>
          <p id="rfc.section.B.p.2"><span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: The ordering of these tables is currently arbitrary. The tables in this section should be updated and ordered such that the
                table entries with the smallest indices are those which, based on a statistical analysis of the frequency of use weighted
@@ -2134,7 +2143,8 @@ Else
                     </pre></div>
       <div id="examples">
          <h1 id="rfc.section.E"><a href="#rfc.section.E">E.</a>&nbsp;<a href="#examples">Examples</a></h1>
-         <p id="rfc.section.E.p.1">A number of examples are worked through here, for both requests and responses, and with and without huffman coding.</p>
+         <p id="rfc.section.E.p.1">A number of examples are worked through here, for both requests and responses, and with and without huffman coding. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: These examples don't take into account the use of index 0 for signalling the emptying of the reference set.]</span> 
+         </p>
          <div id="request.huffman.decoding.example">
             <h2 id="rfc.section.E.1"><a href="#rfc.section.E.1">E.1</a>&nbsp;<a href="#request.huffman.decoding.example">Request Decoding Example With Huffman</a></h2>
             <p id="rfc.section.E.1.p.1"></p>
@@ -2820,8 +2830,8 @@ QWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKH\
 QWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEO\
 IUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOP\
 IUAXQWEOIUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234ZZZZZZZZZZ\
-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1234ma\
-x-age=3600; version=1"
+ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1234 m\
+ax-age=3600; version=1"
 
 INDEX_OPCODE:
         opcodeLengthInBits: 1
@@ -2944,8 +2954,8 @@ QWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKH\
 QWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEO\
 IUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOP\
 IUAXQWEOIUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234AAAAAAAAAA\
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234ma\
-x-age=3600; version=1"
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234 m\
+ax-age=3600; version=1"
 
 INDEX_OPCODE:
         opcodeLengthInBits: 1
@@ -3199,8 +3209,8 @@ QWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKH\
 QWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEO\
 IUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOP\
 IUAXQWEOIUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234ZZZZZZZZZZ\
-ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1234ma\
-x-age=3600; version=1"
+ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1234 m\
+ax-age=3600; version=1"
 
 INDEX_OPCODE:
         opcodeLengthInBits: 1
@@ -3322,8 +3332,8 @@ QWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKH\
 QWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOPIUAXQWEO\
 IUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234LASDJKHQKBZXOQWEOP\
 IUAXQWEOIUAXLJKHQWOEIUALQWEOIUAXLQEUAXLLKJASDQWEOUIAXN1234AAAAAAAAAA\
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234ma\
-x-age=3600; version=1"
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1234 m\
+ax-age=3600; version=1"
 
 INDEX_OPCODE:
         opcodeLengthInBits: 1
