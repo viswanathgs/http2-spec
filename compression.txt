@@ -72,7 +72,7 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Overview  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
-     2.1.  Outline . . . . . . . . . . . . . . . . . . . . . . . . .   3
+     2.1.  Outline . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Header Field Encoding . . . . . . . . . . . . . . . . . . . .   4
      3.1.  Encoding Concepts . . . . . . . . . . . . . . . . . . . .   4
        3.1.1.  Encoding Context  . . . . . . . . . . . . . . . . . .   5
@@ -90,7 +90,7 @@ Table of Contents
        3.3.3.  Entry Eviction when Adding New Entries  . . . . . . .  10
    4.  Detailed Format . . . . . . . . . . . . . . . . . . . . . . .  10
      4.1.  Low-level representations . . . . . . . . . . . . . . . .  10
-       4.1.1.  Integer representation  . . . . . . . . . . . . . . .  11
+       4.1.1.  Integer representation  . . . . . . . . . . . . . . .  10
        4.1.2.  String Literal Representation . . . . . . . . . . . .  13
      4.2.  Indexed Header Field Representation . . . . . . . . . . .  14
      4.3.  Literal Header Field Representation . . . . . . . . . . .  15
@@ -119,21 +119,28 @@ Internet-Draft                   HPACK                     November 2013
    Appendix C.  Huffman Codes For Requests . . . . . . . . . . . . .  22
    Appendix D.  Huffman Codes for Responses  . . . . . . . . . . . .  28
    Appendix E.  Examples . . . . . . . . . . . . . . . . . . . . . .  33
-     E.1.  Request Examples With Huffman . . . . . . . . . . . . . .  34
-       E.1.1.  First request . . . . . . . . . . . . . . . . . . . .  34
-       E.1.2.  Second request  . . . . . . . . . . . . . . . . . . .  35
-       E.1.3.  Third request . . . . . . . . . . . . . . . . . . . .  36
-     E.2.  Request Examples Without Huffman  . . . . . . . . . . . .  38
-       E.2.1.  First request . . . . . . . . . . . . . . . . . . . .  38
-       E.2.2.  Second request  . . . . . . . . . . . . . . . . . . .  39
-       E.2.3.  Third request . . . . . . . . . . . . . . . . . . . .  41
-     E.3.  Response Examples With Huffman  . . . . . . . . . . . . .  42
-       E.3.1.  First response  . . . . . . . . . . . . . . . . . . .  42
-       E.3.2.  Second response . . . . . . . . . . . . . . . . . . .  45
-     E.4.  Response Examples Without Huffman . . . . . . . . . . . .  47
-       E.4.1.  First response  . . . . . . . . . . . . . . . . . . .  47
+     E.1.  Header Field Representation Examples  . . . . . . . . . .  33
+       E.1.1.  Literal Header Field with Indexing  . . . . . . . . .  33
+       E.1.2.  Literal Header Field without Indexing . . . . . . . .  34
+       E.1.3.  Indexed Header Field  . . . . . . . . . . . . . . . .  35
+       E.1.4.  Indexed Header Field from Static Table  . . . . . . .  36
+     E.2.  Request Examples without Huffman  . . . . . . . . . . . .  37
+       E.2.1.  First request . . . . . . . . . . . . . . . . . . . .  37
+       E.2.2.  Second request  . . . . . . . . . . . . . . . . . . .  38
+       E.2.3.  Third request . . . . . . . . . . . . . . . . . . . .  39
+     E.3.  Request Examples with Huffman . . . . . . . . . . . . . .  41
+       E.3.1.  First request . . . . . . . . . . . . . . . . . . . .  41
+       E.3.2.  Second request  . . . . . . . . . . . . . . . . . . .  42
+       E.3.3.  Third request . . . . . . . . . . . . . . . . . . . .  44
+     E.4.  Response Examples without Huffman . . . . . . . . . . . .  46
+       E.4.1.  First response  . . . . . . . . . . . . . . . . . . .  46
        E.4.2.  Second response . . . . . . . . . . . . . . . . . . .  48
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  51
+       E.4.3.  Third response  . . . . . . . . . . . . . . . . . . .  49
+     E.5.  Response Examples with Huffman  . . . . . . . . . . . . .  51
+       E.5.1.  First response  . . . . . . . . . . . . . . . . . . .  51
+       E.5.2.  Second response . . . . . . . . . . . . . . . . . . .  54
+       E.5.3.  Third response  . . . . . . . . . . . . . . . . . . .  55
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  58
 
 1.  Introduction
 
@@ -154,13 +161,6 @@ Internet-Draft                   HPACK                     November 2013
    redundant header fields.  However, that aproach exposed a security
    risk as demonstrated by the CRIME [CRIME].
 
-   This document describes HPACK, a new compressor for header fields
-   which eliminates redundant header fields, is not vulnerable to known
-   security attacks, and which also has a bounded memory cost for use in
-   constrained environments.
-
-2.1.  Outline
-
 
 
 
@@ -169,6 +169,13 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 3]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+   This document describes HPACK, a new compressor for header fields
+   which eliminates redundant header fields, is not vulnerable to known
+   security attacks, and which also has a bounded memory cost for use in
+   constrained environments.
+
+2.1.  Outline
 
    The HTTP header field encoding described in this document is based on
    a header table that map (name, value) pairs to index values.  Header
@@ -211,13 +218,6 @@ Internet-Draft                   HPACK                     November 2013
 
    Reference Set:  The reference set (see Section 3.1.3) is a component
       containing an unordered set of references to entries in the header
-      table.  This is used for the differential encoding of a new header
-      set.
-
-   Header Set:  A header set is a potentially ordered group of header
-      fields that are encoded jointly.  A complete set of key-value
-      pairs contained in a HTTP request or response is a header set.
-
 
 
 
@@ -225,6 +225,13 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 4]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+      table.  This is used for the differential encoding of a new header
+      set.
+
+   Header Set:  A header set is a potentially ordered group of header
+      fields that are encoded jointly.  A complete set of key-value
+      pairs contained in a HTTP request or response is a header set.
 
    Header Field Representation:  A header field can be represented in
       encoded form either as a literal or as an index (see
@@ -267,13 +274,6 @@ Internet-Draft                   HPACK                     November 2013
    entries.  However, duplicate entries MUST NOT be treated as an error
    by a decoder.
 
-   The encoder decides how to update the header table and as such can
-   control how much memory is used by the header table.  To limit the
-   memory requirements on the decoder side, the header table size is
-   strictly bounded (see Section 3.3.1).
-
-
-
 
 
 
@@ -281,6 +281,11 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 5]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+   The encoder decides how to update the header table and as such can
+   control how much memory is used by the header table.  To limit the
+   memory requirements on the decoder side, the header table size is
+   strictly bounded (see Section 3.3.1).
 
    The header table is updated during the processing of a set of header
    field representations (see header field representation processing
@@ -325,11 +330,6 @@ Internet-Draft                   HPACK                     November 2013
 
       Two different literal representations are provided:
 
-      *  A literal representation that does not add the header field to
-         the header table (see Section 4.3.1).
-
-      *  A literal representation that adds the header field as a new
-         entry at the beginning of the header table (see Section 4.3.2).
 
 
 
@@ -337,6 +337,12 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 6]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+      *  A literal representation that does not add the header field to
+         the header table (see Section 4.3.1).
+
+      *  A literal representation that adds the header field as a new
+         entry at the beginning of the header table (see Section 4.3.2).
 
    Indexed Representation:  The indexed representation defines a header
       field as a reference to an entry in either the header table or the
@@ -380,12 +386,6 @@ Internet-Draft                   HPACK                     November 2013
    to keep in memory the header table and the reference set.  This
    bounds the amount of memory used by the decoder, even in presence of
    a very large set of header fields.  The management of memory for
-   handling very large sets of header fields can therefore be deferred
-   to the application.
-
-
-
-
 
 
 
@@ -393,6 +393,9 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 7]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+   handling very large sets of header fields can therefore be deferred
+   to the application.
 
    When a header field is a NULL-separated list of values, each value
    within the list MAY be emitted separately, with the same header field
@@ -439,9 +442,6 @@ Internet-Draft                   HPACK                     November 2013
       *  The referenced static entry is inserted at the beginning of the
          header table.
 
-      *  A reference to this new header table entry is added to the
-         reference set (except if this new entry didn't fit in the
-         header table).
 
 
 
@@ -449,6 +449,10 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 8]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+      *  A reference to this new header table entry is added to the
+         reference set (except if this new entry didn't fit in the
+         header table).
 
    o  If referencing an element of the header table:
 
@@ -494,10 +498,6 @@ Internet-Draft                   HPACK                     November 2013
    lower than or equal to the value of the HTTP/2.0 setting
    SETTINGS_HEADER_TABLE_SIZE (see [HTTP2]).
 
-   The size of the the header table is the sum of the size of its
-   entries.
-
-
 
 
 
@@ -505,6 +505,9 @@ Peon & Ruellan            Expires May 25, 2014                  [Page 9]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+   The size of the the header table is the sum of the size of its
+   entries.
 
    The size of an entry is the sum of its name's length in octets (as
    defined in Section 4.1.2), of its value's length in octets
@@ -549,10 +552,7 @@ Internet-Draft                   HPACK                     November 2013
 
 4.1.  Low-level representations
 
-
-
-
-
+4.1.1.  Integer representation
 
 
 
@@ -561,8 +561,6 @@ Peon & Ruellan            Expires May 25, 2014                 [Page 10]
 
 Internet-Draft                   HPACK                     November 2013
 
-
-4.1.1.  Integer representation
 
    Integers are used to represent name indexes, pair indexes or string
    lengths.  To allow for optimized processing, an integer
@@ -610,15 +608,14 @@ Internet-Draft                   HPACK                     November 2013
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | X | X | X | 0 | 1 | 0 | 1 | 0 |   10 stored on 5 bits
+   +---+---+---+---+---+---+---+---+
+
 
 
 
 Peon & Ruellan            Expires May 25, 2014                 [Page 11]
 
 Internet-Draft                   HPACK                     November 2013
-
-
-   +---+---+---+---+---+---+---+---+
 
 
 4.1.1.2.  Example 2: Encoding 1337 using a 5-bit prefix
@@ -665,6 +662,9 @@ Internet-Draft                   HPACK                     November 2013
 
 4.1.1.3.  Example 3: Encoding 42 starting at an octet-boundary
 
+   The value 42 is to be encoded starting at an octet-boundary.  This
+   implies that a 8-bit prefix is used.
+
 
 
 
@@ -673,9 +673,6 @@ Peon & Ruellan            Expires May 25, 2014                 [Page 12]
 
 Internet-Draft                   HPACK                     November 2013
 
-
-   The value 42 is to be encoded starting at an octet-boundary.  This
-   implies that a 8-bit prefix is used.
 
    o  42 is less than 255 (= 2^8 - 1) and is represented using the 8-bit
       prefix.
@@ -720,7 +717,10 @@ Internet-Draft                   HPACK                     November 2013
    String literals sent in the client to server direction which use
    huffman encoding are encoded with the codes within the request
    huffman code table (Appendix C) (see Request Examples With Huffman
-   (Appendix E.1)).
+   (Appendix E.3)).
+
+
+
 
 
 
@@ -733,7 +733,7 @@ Internet-Draft                   HPACK                     November 2013
    String literals sent in the server to client direction which use
    huffman encoding are encoded with the codes within the response
    huffman code table (Appendix D) (see Response Examples With Huffman
-   (Appendix E.3)).
+   (Appendix E.5)).
 
    The EOS symbol is represented with value 256, and is used solely to
    signal the end of the huffman-encoded key data or the end of the
@@ -1833,13 +1833,13 @@ Internet-Draft                   HPACK                     November 2013
 Appendix E.  Examples
 
    A number of examples are worked through here, for both requests and
-   responses, and with and without huffman coding.  [[These examples
-   don't take into account the use of index 0 for signalling the
-   emptying of the reference set.]]
+   responses, and with and without huffman coding.
 
+E.1.  Header Field Representation Examples
 
+   This section show several independent representation examples.
 
-
+E.1.1.  Literal Header Field with Indexing
 
 
 
@@ -1850,12 +1850,182 @@ Peon & Ruellan            Expires May 25, 2014                 [Page 33]
 Internet-Draft                   HPACK                     November 2013
 
 
-E.1.  Request Examples With Huffman
-
-E.1.1.  First request
+   The header field representation uses a literal name and a literal
+   value.
 
    Header set to encode:
 
+   custom-key: custom-header
+
+
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   000a 6375 7374 6f6d 2d6b 6579 0d63 7573 | ..custom-key.cus
+   746f 6d2d 6865 6164 6572                | tom-header
+
+
+   Decoding process:
+
+   00                                      | == Literal indexed ==
+   0a                                      |   Literal name (len = 10)
+   6375 7374 6f6d 2d6b 6579                | custom-key
+   0d                                      |   Literal value (len = 13)
+   6375 7374 6f6d 2d68 6561 6465 72        | custom-header
+                                           | -> custom-key: custom-head\
+                                           |   er
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  55) custom-key: custom-header
+         Table size:  55
+
+
+   Decoded header set:
+
+   custom-key: custom-header
+
+
+E.1.2.  Literal Header Field without Indexing
+
+   The header field representation uses an indexed name and a literal
+   value.
+
+   Header set to encode:
+
+   :path: /sample/path
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 34]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   440c 2f73 616d 706c 652f 7061 7468      | D./sample/path
+
+
+   Decoding process:
+
+   44                                      | == Literal not indexed ==
+                                           |   Indexed name (idx = 4)
+                                           |     :path
+   0c                                      |   Literal value (len = 12)
+   2f73 616d 706c 652f 7061 7468           | /sample/path
+                                           | -> :path: /sample/path
+
+
+   Header table (after decoding): empty.
+
+   Decoded header set:
+
+   :path: /sample/path
+
+
+E.1.3.  Indexed Header Field
+
+   The header field representation uses an indexed header field, from
+   the static table.  Upon using it, the static table entry is copied
+   into the header table.
+
+   Header set to encode:
+
+   :method: GET
+
+
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   82                                      | .
+
+
+   Decoding process:
+
+   82                                      | == Indexed - Add ==
+                                           |   idx = 2
+                                           | -> :method: GET
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 35]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  42) :method: GET
+         Table size:  42
+
+
+   Decoded header set:
+
+   :method: GET
+
+
+E.1.4.  Indexed Header Field from Static Table
+
+   The header field representation uses an indexed header field, from
+   the static table.  In this example, the SETTINGS_HEADER_TABLE_SIZE is
+   set to 0, therefore, the entry is not copied into the header table.
+
+   Header set to encode:
+
+   :method: GET
+
+
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   82                                      | .
+
+
+   Decoding process:
+
+   82                                      | == Indexed - Add ==
+                                           |   idx = 2
+                                           | -> :method: GET
+
+
+   Header table (after decoding): empty.
+
+   Decoded header set:
+
+   :method: GET
+
+
+
+
+
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 36]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+E.2.  Request Examples without Huffman
+
+   This section shows several consecutive header sets, corresponding to
+   HTTP requests, on the same connection.
+
+E.2.1.  First request
+
+   Header set to encode:
 
    :method: GET
    :scheme: http
@@ -1863,18 +2033,87 @@ E.1.1.  First request
    :authority: www.example.com
 
 
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   8287 8604 0f77 7777 2e65 7861 6d70 6c65 | .....www.example
+   2e63 6f6d                               | .com
+
+
+   Decoding process:
+
+   82                                      | == Indexed - Add ==
+                                           |   idx = 2
+                                           | -> :method: GET
+   87                                      | == Indexed - Add ==
+                                           |   idx = 7
+                                           | -> :scheme: http
+   86                                      | == Indexed - Add ==
+                                           |   idx = 6
+                                           | -> :path: /
+   04                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 4)
+                                           |     :authority
+   0f                                      |   Literal value (len = 15)
+   7777 772e 6578 616d 706c 652e 636f 6d   | www.example.com
+                                           | -> :authority: www.example\
+                                           |   .com
+
+
+   Header Table (after decoding):
+
+
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 37]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   [  1] (s =  57) :authority: www.example.com
+   [  2] (s =  38) :path: /
+   [  3] (s =  43) :scheme: http
+   [  4] (s =  42) :method: GET
+         Table size: 180
+
+
+   Decoded header set:
+
+   :method: GET
+   :scheme: http
+   :path: /
+   :authority: www.example.com
+
+
+E.2.2.  Second request
+
+   This request takes advantage of the differential encoding of header
+   sets.
+
+   Header set to encode:
+
+   :method: GET
+   :scheme: http
+   :path: /
+   :authority: www.example.com
+   cache-control: no-cache
+
 
    Reference set:
 
-
-
+   [  1] :authority: www.example.com
+   [  2] :path: /
+   [  3] :scheme: http
+   [  4] :method: GET
 
 
    Hexdump of encoded data:
 
-
-   8287 8604 8bdb 6d88 3e68 d1cb 1225 ba7f | ......m..h...%..
-
+   1b08 6e6f 2d63 6163 6865                | ..no-cache
 
 
    Decoding process:
@@ -1886,6 +2125,107 @@ E.1.1.  First request
 
 
 
+Peon & Ruellan            Expires May 25, 2014                 [Page 38]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   1b                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 27)
+                                           |     cache-control
+   08                                      |   Literal value (len = 8)
+   6e6f 2d63 6163 6865                     | no-cache
+                                           | -> cache-control: no-cache
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  53) cache-control: no-cache
+   [  2] (s =  57) :authority: www.example.com
+   [  3] (s =  38) :path: /
+   [  4] (s =  43) :scheme: http
+   [  5] (s =  42) :method: GET
+         Table size: 233
+
+
+   Decoded header set:
+
+   cache-control: no-cache
+   :authority: www.example.com
+   :path: /
+   :scheme: http
+   :method: GET
+
+
+E.2.3.  Third request
+
+   This request has not enough headers in common with the previous
+   request to take advantage of the differential encoding.  Therefore,
+   the reference set is emptied before encoding the header fields.
+
+   Header set to encode:
+
+   :method: GET
+   :scheme: https
+   :path: /index.html
+   :authority: www.example.com
+   custom-key: custom-value
+
+
+   Reference set:
+
+
+
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 39]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   [  1] cache-control: no-cache
+   [  2] :authority: www.example.com
+   [  3] :path: /
+   [  4] :scheme: http
+   [  5] :method: GET
+
+
+   Hexdump of encoded data:
+
+   8085 8c8b 8400 0a63 7573 746f 6d2d 6b65 | .......custom-ke
+   790c 6375 7374 6f6d 2d76 616c 7565      | y.custom-value
+
+
+   Decoding process:
+
+   80                                      | == Empty reference set ==
+                                           |   idx = 0
+   85                                      | == Indexed - Add ==
+                                           |   idx = 5
+                                           | -> :method: GET
+   8c                                      | == Indexed - Add ==
+                                           |   idx = 12
+                                           | -> :scheme: https
+   8b                                      | == Indexed - Add ==
+                                           |   idx = 11
+                                           | -> :path: /index.html
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> :authority: www.example\
+                                           |   .com
+   00                                      | == Literal indexed ==
+   0a                                      |   Literal name (len = 10)
+   6375 7374 6f6d 2d6b 6579                | custom-key
+   0c                                      |   Literal value (len = 12)
+   6375 7374 6f6d 2d76 616c 7565           | custom-value
+                                           | -> custom-key: custom-valu\
+                                           |   e
+
+
+   Header Table (after decoding):
 
 
 
@@ -1897,11 +2237,63 @@ E.1.1.  First request
 
 
 
+Peon & Ruellan            Expires May 25, 2014                 [Page 40]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   [  1] (s =  54) custom-key: custom-value
+   [  2] (s =  48) :path: /index.html
+   [  3] (s =  44) :scheme: https
+   [  4] (s =  53) cache-control: no-cache
+   [  5] (s =  57) :authority: www.example.com
+   [  6] (s =  38) :path: /
+   [  7] (s =  43) :scheme: http
+   [  8] (s =  42) :method: GET
+         Table size: 379
+
+
+   Decoded header set:
+
+   :method: GET
+   :scheme: https
+   :path: /index.html
+   :authority: www.example.com
+   custom-key: custom-value
+
+
+E.3.  Request Examples with Huffman
+
+   This section shows the same examples as the previous section, but
+   using Huffman encoding for the literal values.
+
+E.3.1.  First request
+
+   Header set to encode:
+
+   :method: GET
+   :scheme: http
+   :path: /
+   :authority: www.example.com
+
+
+   Reference set: empty.
+
+   Hexdump of encoded data:
+
+   8287 8604 8bdb 6d88 3e68 d1cb 1225 ba7f | ......m..h...%..
+
+
+   Decoding process:
 
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 34]
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 41]
 
 Internet-Draft                   HPACK                     November 2013
 
@@ -1927,9 +2319,16 @@ Internet-Draft                   HPACK                     November 2013
                                            |   .com
 
 
+   Header Table (after decoding):
+
+   [  1] (s =  57) :authority: www.example.com
+   [  2] (s =  38) :path: /
+   [  3] (s =  43) :scheme: http
+   [  4] (s =  42) :method: GET
+         Table size: 180
+
 
    Decoded header set:
-
 
    :method: GET
    :scheme: http
@@ -1937,56 +2336,48 @@ Internet-Draft                   HPACK                     November 2013
    :authority: www.example.com
 
 
+E.3.2.  Second request
 
-E.1.2.  Second request
+   This request takes advantage of the differential encoding of header
+   sets.
 
    Header set to encode:
 
 
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 42]
+
+Internet-Draft                   HPACK                     November 2013
+
+
    :method: GET
-   :scheme: https
+   :scheme: http
    :path: /
    :authority: www.example.com
    cache-control: no-cache
 
 
-
    Reference set:
 
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 35]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   [  0] :authority: www.example.com
-   [  1] :path: /
-   [  2] :scheme: http
-   [  3] :method: GET
-
+   [  1] :authority: www.example.com
+   [  2] :path: /
+   [  3] :scheme: http
+   [  4] :method: GET
 
 
    Hexdump of encoded data:
 
-
-   838b 1c86 6365 4a13 98ff                | ....ceJ...
-
+   1b86 6365 4a13 98ff                     | ..ceJ...
 
 
    Decoding process:
 
-
-   83                                      | == Indexed - Remove ==
-                                           |   idx = 3
-                                           | -> :scheme: http
-   8b                                      | == Indexed - Add ==
-                                           |   idx = 11
-                                           | -> :scheme: https
-   1c                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 28)
+   1b                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 27)
                                            |     cache-control
    86                                      |   Literal value (len = 8)
                                            |     Huffman encoded:
@@ -1996,56 +2387,64 @@ Internet-Draft                   HPACK                     November 2013
                                            | -> cache-control: no-cache
 
 
+   Header Table (after decoding):
+
+   [  1] (s =  53) cache-control: no-cache
+   [  2] (s =  57) :authority: www.example.com
+   [  3] (s =  38) :path: /
+   [  4] (s =  43) :scheme: http
+   [  5] (s =  42) :method: GET
+         Table size: 233
+
 
    Decoded header set:
 
 
-   :scheme: https
-   cache-control: no-cache
-   :authority: www.example.com
-   :path: /
-   :method: GET
-
-
-
-E.1.3.  Third request
 
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 36]
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 43]
 
 Internet-Draft                   HPACK                     November 2013
 
 
-   Header set to encode:
+   cache-control: no-cache
+   :authority: www.example.com
+   :path: /
+   :scheme: http
+   :method: GET
 
+
+E.3.3.  Third request
+
+   This request has not enough headers in common with the previous
+   request to take advantage of the differential encoding.  Therefore,
+   the reference set is emptied before encoding the header fields.
+
+   Header set to encode:
 
    :method: GET
    :scheme: https
-   :path: /
+   :path: /index.html
    :authority: www.example.com
    custom-key: custom-value
 
 
-
    Reference set:
 
-
-   [  0] cache-control: no-cache
-   [  1] :scheme: https
+   [  1] cache-control: no-cache
    [  2] :authority: www.example.com
    [  3] :path: /
+   [  4] :scheme: http
    [  5] :method: GET
-
 
 
    Hexdump of encoded data:
 
-
-   8100 884e b08b 7497 90fa 7f89 4eb0 8b74 | ...N..t.....N..t
-   979a 17a8 ff                            | .....
-
+   8085 8c8b 8400 884e b08b 7497 90fa 7f89 | .......N..t.....
+   4eb0 8b74 979a 17a8 ff                  | N..t.....
 
 
    Decoding process:
@@ -2062,21 +2461,26 @@ Internet-Draft                   HPACK                     November 2013
 
 
 
-
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 37]
+Peon & Ruellan            Expires May 25, 2014                 [Page 44]
 
 Internet-Draft                   HPACK                     November 2013
 
 
-   81                                      | == Indexed - Remove ==
-                                           |   idx = 1
-                                           | -> cache-control: no-cache
+   80                                      | == Empty reference set ==
+                                           |   idx = 0
+   85                                      | == Indexed - Add ==
+                                           |   idx = 5
+                                           | -> :method: GET
+   8c                                      | == Indexed - Add ==
+                                           |   idx = 12
+                                           | -> :scheme: https
+   8b                                      | == Indexed - Add ==
+                                           |   idx = 11
+                                           | -> :path: /index.html
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> :authority: www.example\
+                                           |   .com
    00                                      | == Literal indexed ==
    88                                      |   Literal name (len = 10)
                                            |     Huffman encoded:
@@ -2092,242 +2496,128 @@ Internet-Draft                   HPACK                     November 2013
                                            |   e
 
 
+   Header Table (after decoding):
+
+   [  1] (s =  54) custom-key: custom-value
+   [  2] (s =  48) :path: /index.html
+   [  3] (s =  44) :scheme: https
+   [  4] (s =  53) cache-control: no-cache
+   [  5] (s =  57) :authority: www.example.com
+   [  6] (s =  38) :path: /
+   [  7] (s =  43) :scheme: http
+   [  8] (s =  42) :method: GET
+         Table size: 379
+
 
    Decoded header set:
 
 
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 45]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   :method: GET
+   :scheme: https
+   :path: /index.html
+   :authority: www.example.com
    custom-key: custom-value
-   :scheme: https
-   :authority: www.example.com
-   :path: /
-   :method: GET
 
 
+E.4.  Response Examples without Huffman
 
-E.2.  Request Examples Without Huffman
+   This section shows several consecutive header sets, corresponding to
+   HTTP responses, on the same connection.  SETTINGS_HEADER_TABLE_SIZE
+   is set to the value of 256 octets, causing some evictions to occur.
 
-E.2.1.  First request
+E.4.1.  First response
 
    Header set to encode:
 
-
-   :method: GET
-   :scheme: http
-   :path: /
-   :authority: www.example.com
-
+   :status: 302
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:21 GMT
+   location: https://www.example.com
 
 
-
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 38]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   Reference set:
-
-
-
-
+   Reference set: empty.
 
    Hexdump of encoded data:
 
-
-   8287 8604 0f77 7777 2e65 7861 6d70 6c65 | .....www.example
-   2e63 6f6d                               | .com
-
+   0803 3330 3218 0770 7269 7661 7465 221d | ..302..private".
+   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
+   2032 303a 3133 3a32 3120 474d 5430 1768 |  20:13:21 GMT0.h
+   7474 7073 3a2f 2f77 7777 2e65 7861 6d70 | ttps://www.examp
+   6c65 2e63 6f6d                          | le.com
 
 
    Decoding process:
 
 
-   82                                      | == Indexed - Add ==
-                                           |   idx = 2
-                                           | -> :method: GET
-   87                                      | == Indexed - Add ==
-                                           |   idx = 7
-                                           | -> :scheme: http
-   86                                      | == Indexed - Add ==
-                                           |   idx = 6
-                                           | -> :path: /
-   04                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 4)
-                                           |     :authority
-   0f                                      |   Literal value (len = 15)
-   7777 772e 6578 616d 706c 652e 636f 6d   | www.example.com
-                                           | -> :authority: www.example\
-                                           |   .com
-
-
-
-   Decoded header set:
-
-
-   :method: GET
-   :scheme: http
-   :path: /
-   :authority: www.example.com
-
-
-
-E.2.2.  Second request
 
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 39]
+
+
+
+
+
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 46]
 
 Internet-Draft                   HPACK                     November 2013
 
 
-   Header set to encode:
-
-
-   :method: GET
-   :scheme: https
-   :path: /
-   :authority: www.example.com
-   cache-control: no-cache
-
-
-
-   Reference set:
-
-
-   [  0] :authority: www.example.com
-   [  1] :path: /
-   [  2] :scheme: http
-   [  3] :method: GET
-
-
-
-   Hexdump of encoded data:
-
-
-   838b 1c08 6e6f 2d63 6163 6865           | ....no-cache
-
-
-
-   Decoding process:
-
-
-   83                                      | == Indexed - Remove ==
-                                           |   idx = 3
-                                           | -> :scheme: http
-   8b                                      | == Indexed - Add ==
-                                           |   idx = 11
-                                           | -> :scheme: https
-   1c                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 28)
+   08                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 8)
+                                           |     :status
+   03                                      |   Literal value (len = 3)
+   3330 32                                 | 302
+                                           | -> :status: 302
+   18                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 24)
                                            |     cache-control
-   08                                      |   Literal value (len = 8)
-   6e6f 2d63 6163 6865                     | no-cache
-                                           | -> cache-control: no-cache
+   07                                      |   Literal value (len = 7)
+   7072 6976 6174 65                       | private
+                                           | -> cache-control: private
+   22                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 34)
+                                           |     date
+   1d                                      |   Literal value (len = 29)
+   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
+   2032 303a 3133 3a32 3120 474d 54        |  20:13:21 GMT
+                                           | -> date: Mon, 21 Oct 2013 \
+                                           |   20:13:21 GMT
+   30                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 48)
+                                           |     location
+   17                                      |   Literal value (len = 23)
+   6874 7470 733a 2f2f 7777 772e 6578 616d | https://www.exam
+   706c 652e 636f 6d                       | ple.com
+                                           | -> location: https://www.e\
+                                           |   xample.com
 
 
+   Header Table (after decoding):
 
-   Decoded header set:
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 40]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   :scheme: https
-   cache-control: no-cache
-   :authority: www.example.com
-   :path: /
-   :method: GET
-
-
-
-E.2.3.  Third request
-
-   Header set to encode:
-
-
-   :method: GET
-   :scheme: https
-   :path: /
-   :authority: www.example.com
-   custom-key: custom-value
-
-
-
-   Reference set:
-
-
-   [  0] cache-control: no-cache
-   [  1] :scheme: https
-   [  2] :authority: www.example.com
-   [  3] :path: /
-   [  5] :method: GET
-
-
-
-   Hexdump of encoded data:
-
-
-   8100 0a63 7573 746f 6d2d 6b65 790c 6375 | ...custom-key.cu
-   7374 6f6d 2d76 616c 7565                | stom-value
-
-
-
-   Decoding process:
-
-
-
-
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 41]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   81                                      | == Indexed - Remove ==
-                                           |   idx = 1
-                                           | -> cache-control: no-cache
-   00                                      | == Literal indexed ==
-   0a                                      |   Literal name (len = 10)
-   6375 7374 6f6d 2d6b 6579                | custom-key
-   0c                                      |   Literal value (len = 12)
-   6375 7374 6f6d 2d76 616c 7565           | custom-value
-                                           | -> custom-key: custom-valu\
-                                           |   e
-
+   [  1] (s =  63) location: https://www.example.com
+   [  2] (s =  65) date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  3] (s =  52) cache-control: private
+   [  4] (s =  42) :status: 302
+         Table size: 222
 
 
    Decoded header set:
-
-
-   custom-key: custom-value
-   :scheme: https
-   :authority: www.example.com
-   :path: /
-   :method: GET
-
-
-
-E.3.  Response Examples With Huffman
-
-E.3.1.  First response
-
-   Header set to encode:
-
 
    :status: 302
    cache-control: private
@@ -2336,29 +2626,244 @@ E.3.1.  First response
 
 
 
-   Reference set:
 
 
 
-
-
-   Hexdump of encoded data:
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 42]
+Peon & Ruellan            Expires May 25, 2014                 [Page 47]
 
 Internet-Draft                   HPACK                     November 2013
 
 
+E.4.2.  Second response
+
+   The (":status", "302") header field is evicted from the header table
+   to free space to allow adding the (":status", "200") header field to
+   be copied from the static table into the header table.
+
+   Header set to encode:
+
+   :status: 200
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:21 GMT
+   location: https://www.example.com
+
+
+   Reference set:
+
+   [  1] location: https://www.example.com
+   [  2] date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  3] cache-control: private
+   [  4] :status: 302
+
+
+   Hexdump of encoded data:
+
+   848c                                    | ..
+
+
+   Decoding process:
+
+   84                                      | == Indexed - Remove ==
+                                           |   idx = 4
+                                           | -> :status: 302
+   8c                                      | == Indexed - Add ==
+                                           |   idx = 12
+                                           | - evict: :status: 302
+                                           | -> :status: 200
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  42) :status: 200
+   [  2] (s =  63) location: https://www.example.com
+   [  3] (s =  65) date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  4] (s =  52) cache-control: private
+         Table size: 222
+
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 48]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   Decoded header set:
+
+   :status: 200
+   location: https://www.example.com
+   date: Mon, 21 Oct 2013 20:13:21 GMT
+   cache-control: private
+
+
+E.4.3.  Third response
+
+   Several header fields are evicted from the header table during the
+   processing of this header set.  Before evicting a header belonging to
+   the reference set, it is emitted, by coding it twice as an Indexed
+   Representation.  The first representation removes the header field
+   from the reference set, the second one adds it again to the reference
+   set, also emitting it.
+
+   Header set to encode:
+
+   :status: 200
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:22 GMT
+   location: https://www.example.com
+   content-encoding: gzip
+   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1
+
+
+   Reference set:
+
+   [  1] :status: 200
+   [  2] location: https://www.example.com
+   [  3] date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  4] cache-control: private
+
+
+   Hexdump of encoded data:
+
+   8384 8403 1d4d 6f6e 2c20 3231 204f 6374 | .....Mon, 21 Oct
+   2032 3031 3320 3230 3a31 333a 3232 2047 |  2013 20:13:22 G
+   4d54 1d04 677a 6970 8484 8383 3a38 666f | MT..gzip....:8fo
+   6f3d 4153 444a 4b48 514b 425a 584f 5157 | o=ASDJKHQKBZXOQW
+   454f 5049 5541 5851 5745 4f49 553b 206d | EOPIUAXQWEOIU; m
+   6178 2d61 6765 3d33 3630 303b 2076 6572 | ax-age=3600; ver
+   7369 6f6e 3d31                          | sion=1
+
+
+   Decoding process:
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 49]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   83                                      | == Indexed - Remove ==
+                                           |   idx = 3
+                                           | -> date: Mon, 21 Oct 2013 \
+                                           |   20:13:21 GMT
+   84                                      | == Indexed - Remove ==
+                                           |   idx = 4
+                                           | -> cache-control: private
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> cache-control: private
+   03                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 3)
+                                           |     date
+   1d                                      |   Literal value (len = 29)
+   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
+   2032 303a 3133 3a32 3220 474d 54        |  20:13:22 GMT
+                                           | - evict: cache-control: pr\
+                                           |   ivate
+                                           | -> date: Mon, 21 Oct 2013 \
+                                           |   20:13:22 GMT
+   1d                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 29)
+                                           |     content-encoding
+   04                                      |   Literal value (len = 4)
+   677a 6970                               | gzip
+                                           | - evict: date: Mon, 21 Oct\
+                                           |    2013 20:13:21 GMT
+                                           | -> content-encoding: gzip
+   84                                      | == Indexed - Remove ==
+                                           |   idx = 4
+                                           | -> location: https://www.e\
+                                           |   xample.com
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> location: https://www.e\
+                                           |   xample.com
+   83                                      | == Indexed - Remove ==
+                                           |   idx = 3
+                                           | -> :status: 200
+   83                                      | == Indexed - Add ==
+                                           |   idx = 3
+                                           | -> :status: 200
+   3a                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 58)
+                                           |     set-cookie
+   38                                      |   Literal value (len = 56)
+   666f 6f3d 4153 444a 4b48 514b 425a 584f | foo=ASDJKHQKBZXO
+   5157 454f 5049 5541 5851 5745 4f49 553b | QWEOPIUAXQWEOIU;
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 50]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   206d 6178 2d61 6765 3d33 3630 303b 2076 |  max-age=3600; v
+   6572 7369 6f6e 3d31                     | ersion=1
+                                           | - evict: location: https:/\
+                                           |   /www.example.com
+                                           | - evict: :status: 200
+                                           | -> set-cookie: foo=ASDJKHQ\
+                                           |   KBZXOQWEOPIUAXQWEOIU; ma\
+                                           |   x-age=3600; version=1
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  98) set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age\
+                    =3600; version=1
+   [  2] (s =  52) content-encoding: gzip
+   [  3] (s =  65) date: Mon, 21 Oct 2013 20:13:22 GMT
+         Table size: 215
+
+
+   Decoded header set:
+
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:22 GMT
+   content-encoding: gzip
+   location: https://www.example.com
+   :status: 200
+   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1
+
+
+E.5.  Response Examples with Huffman
+
+   This section shows the same examples as the previous section, but
+   using Huffman encoding for the literal values.  The eviction
+   mechanism uses the length of the decoded literal values, so the same
+   evictions occurs as in the previous section.
+
+E.5.1.  First response
+
+   Header set to encode:
+
+   :status: 302
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:21 GMT
+   location: https://www.example.com
+
+
+   Reference set: empty.
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 51]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   Hexdump of encoded data:
+
    0882 409f 1886 c31b 39bf 387f 2292 a2fb | ..@.....9.8."...
    a203 20f2 ab30 3124 018b 490d 3209 e877 | .. ..01$..I.2..w
-   2f93 e39e 7864 dd7a fd3d 3d24 8747 db87 | /...xd.z.==$.G..
+   3093 e39e 7864 dd7a fd3d 3d24 8747 db87 | 0...xd.z.==$.G..
    2849 55f6 ff                            | (IU..
-
 
 
    Decoding process:
@@ -2404,8 +2909,7 @@ Internet-Draft                   HPACK                     November 2013
 
 
 
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 43]
+Peon & Ruellan            Expires May 25, 2014                 [Page 52]
 
 Internet-Draft                   HPACK                     November 2013
 
@@ -2440,8 +2944,8 @@ Internet-Draft                   HPACK                     November 2013
                                            | GMT
                                            | -> date: Mon, 21 Oct 2013 \
                                            |   20:13:21 GMT
-   2f                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 47)
+   30                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 48)
                                            |     location
    93                                      |   Literal value (len = 23)
                                            |     Huffman encoded:
@@ -2453,18 +2957,27 @@ Internet-Draft                   HPACK                     November 2013
                                            |   xample.com
 
 
-
-   Decoded header set:
-
+   Header Table (after decoding):
 
 
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 44]
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 53]
 
 Internet-Draft                   HPACK                     November 2013
 
+
+   [  1] (s =  63) location: https://www.example.com
+   [  2] (s =  65) date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  3] (s =  52) cache-control: private
+   [  4] (s =  42) :status: 302
+         Table size: 222
+
+
+   Decoded header set:
 
    :status: 302
    cache-control: private
@@ -2472,43 +2985,31 @@ Internet-Draft                   HPACK                     November 2013
    location: https://www.example.com
 
 
+E.5.2.  Second response
 
-E.3.2.  Second response
+   The (":status", "302") header field is evicted from the header table
+   to free space to allow adding the (":status", "200") header field to
+   be copied from the static table into the header table.
 
    Header set to encode:
 
-
    :status: 200
    cache-control: private
-   date: Mon, 21 Oct 2013 20:13:22 GMT
+   date: Mon, 21 Oct 2013 20:13:21 GMT
    location: https://www.example.com
-   content-encoding: gzip
-   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKHQWOEIUALQWEOIU; max\
-   -age=3600; version=1
-
 
 
    Reference set:
 
-
-   [  0] location: https://www.example.com
-   [  1] date: Mon, 21 Oct 2013 20:13:21 GMT
-   [  2] cache-control: private
-   [  3] :status: 302
-
+   [  1] location: https://www.example.com
+   [  2] date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  3] cache-control: private
+   [  4] :status: 302
 
 
    Hexdump of encoded data:
 
-
-   8284 8c03 92a2 fba2 0320 f2ab 3031 2401 | ......... ..01$.
-   8b49 0d33 09e8 771f 84e1 fbb3 0f3c c8df | .I.3..w.........
-   7dfb 36d3 d9e1 fcfc 3faf e7ab fcfe fcbf | }.6.....?.......
-   af3e df2f 977f d36f f7fd 79f6 f977 fd36 | .../...o..y..w.6
-   ff7f 1f0f e7e1 fd79 f976 f7fd 36fc 7faf | .......y.v..6...
-   3edf 2eff a7bc 2d7f 48df c21b 1128 8fbc | ......-.H....(..
-   39c3 1cac beed 85                       | 9......
-
+   848c                                    | ..
 
 
    Decoding process:
@@ -2517,21 +3018,98 @@ E.3.2.  Second response
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 45]
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 54]
 
 Internet-Draft                   HPACK                     November 2013
 
 
-   82                                      | == Indexed - Remove ==
-                                           |   idx = 2
-                                           | -> date: Mon, 21 Oct 2013 \
-                                           |   20:13:21 GMT
    84                                      | == Indexed - Remove ==
                                            |   idx = 4
                                            | -> :status: 302
    8c                                      | == Indexed - Add ==
                                            |   idx = 12
+                                           | - evict: :status: 302
                                            | -> :status: 200
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  42) :status: 200
+   [  2] (s =  63) location: https://www.example.com
+   [  3] (s =  65) date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  4] (s =  52) cache-control: private
+         Table size: 222
+
+
+   Decoded header set:
+
+   :status: 200
+   location: https://www.example.com
+   date: Mon, 21 Oct 2013 20:13:21 GMT
+   cache-control: private
+
+
+E.5.3.  Third response
+
+   Several header fields are evicted from the header table during the
+   processing of this header set.  Before evicting a header belonging to
+   the reference set, it is emitted, by coding it twice as an Indexed
+   Representation.  The first representation removes the header field
+   from the reference set, the second one adds it again to the reference
+   set, also emitting it.
+
+   Header set to encode:
+
+   :status: 200
+   cache-control: private
+   date: Mon, 21 Oct 2013 20:13:22 GMT
+   location: https://www.example.com
+   content-encoding: gzip
+   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1
+
+
+   Reference set:
+
+
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 55]
+
+Internet-Draft                   HPACK                     November 2013
+
+
+   [  1] :status: 200
+   [  2] location: https://www.example.com
+   [  3] date: Mon, 21 Oct 2013 20:13:21 GMT
+   [  4] cache-control: private
+
+
+   Hexdump of encoded data:
+
+   8384 8403 92a2 fba2 0320 f2ab 3031 2401 | ......... ..01$.
+   8b49 0d33 09e8 771d 84e1 fbb3 0f84 8483 | .I.3..w.........
+   833a b3df 7dfb 36d3 d9e1 fcfc 3faf e7ab | .:..}.6.....?...
+   fcfe fcbf af3e df2f 977f d36f f7fd 79f6 | ......./...o..y.
+   f977 fd3d e16b fa46 fe10 d889 447d e1ce | .w.=.k.F....D}..
+   18e5 65f7 6c2f                          | ..e.l/
+
+
+   Decoding process:
+
+   83                                      | == Indexed - Remove ==
+                                           |   idx = 3
+                                           | -> date: Mon, 21 Oct 2013 \
+                                           |   20:13:21 GMT
+   84                                      | == Indexed - Remove ==
+                                           |   idx = 4
+                                           | -> cache-control: private
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> cache-control: private
    03                                      | == Literal indexed ==
                                            |   Indexed name (idx = 3)
                                            |     date
@@ -2542,274 +3120,88 @@ Internet-Draft                   HPACK                     November 2013
                                            |     Decoded:
                                            | Mon, 21 Oct 2013 20:13:22 \
                                            | GMT
+                                           | - evict: cache-control: pr\
+                                           |   ivate
                                            | -> date: Mon, 21 Oct 2013 \
                                            |   20:13:22 GMT
-   1f                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 31)
+   1d                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 29)
                                            |     content-encoding
    84                                      |   Literal value (len = 4)
                                            |     Huffman encoded:
    e1fb b30f                               | ....
+
+
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 56]
+
+Internet-Draft                   HPACK                     November 2013
+
+
                                            |     Decoded:
                                            | gzip
+                                           | - evict: date: Mon, 21 Oct\
+                                           |    2013 20:13:21 GMT
                                            | -> content-encoding: gzip
-   3c                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 60)
+   84                                      | == Indexed - Remove ==
+                                           |   idx = 4
+                                           | -> location: https://www.e\
+                                           |   xample.com
+   84                                      | == Indexed - Add ==
+                                           |   idx = 4
+                                           | -> location: https://www.e\
+                                           |   xample.com
+   83                                      | == Indexed - Remove ==
+                                           |   idx = 3
+                                           | -> :status: 200
+   83                                      | == Indexed - Add ==
+                                           |   idx = 3
+                                           | -> :status: 200
+   3a                                      | == Literal indexed ==
+                                           |   Indexed name (idx = 58)
                                            |     set-cookie
-   c8                                      |   Literal value (len = 76)
+   b3                                      |   Literal value (len = 56)
                                            |     Huffman encoded:
    df7d fb36 d3d9 e1fc fc3f afe7 abfc fefc | .}.6.....?......
    bfaf 3edf 2f97 7fd3 6ff7 fd79 f6f9 77fd | ..../...o..y..w.
-   36ff 7f1f 0fe7 e1fd 79f9 76f7 fd36 fc7f | 6.......y.v..6..
-   af3e df2e ffa7 bc2d 7f48 dfc2 1b11 288f | .......-.H....(.
-   bc39 c31c acbe ed85                     | .9......
+   3de1 6bfa 46fe 10d8 8944 7de1 ce18 e565 | =.k.F....D}....e
+   f76c 2f                                 | .l/
                                            |     Decoded:
                                            | foo=ASDJKHQKBZXOQWEOPIUAXQ\
-                                           | WEOIUAXLJKHQWOEIUALQWEOIU;\
-                                           |  max-age=3600; version=1
+                                           | WEOIU; max-age=3600; versi\
+                                           | on=1
+                                           | - evict: location: https:/\
+                                           |   /www.example.com
+                                           | - evict: :status: 200
                                            | -> set-cookie: foo=ASDJKHQ\
-                                           |   KBZXOQWEOPIUAXQWEOIUAXLJ\
-                                           |   KHQWOEIUALQWEOIU; max-ag\
+                                           |   KBZXOQWEOPIUAXQWEOIU; ma\
+                                           |   x-age=3600; version=1
+
+
+   Header Table (after decoding):
+
+   [  1] (s =  98) set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age\
+                    =3600; version=1
+   [  2] (s =  52) content-encoding: gzip
+   [  3] (s =  65) date: Mon, 21 Oct 2013 20:13:22 GMT
+         Table size: 215
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 46]
+
+Peon & Ruellan            Expires May 25, 2014                 [Page 57]
 
 Internet-Draft                   HPACK                     November 2013
-
-
-                                           |   e=3600; version=1
-
 
 
    Decoded header set:
 
-
-   :status: 200
-   date: Mon, 21 Oct 2013 20:13:22 GMT
-   content-encoding: gzip
-   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKHQWOEIUALQWEOIU; max\
-   -age=3600; version=1
-   location: https://www.example.com
-   cache-control: private
-
-
-
-E.4.  Response Examples Without Huffman
-
-E.4.1.  First response
-
-   Header set to encode:
-
-
-   :status: 302
-   cache-control: private
-   date: Mon, 21 Oct 2013 20:13:21 GMT
-   location: https://www.example.com
-
-
-
-   Reference set:
-
-
-
-
-
-   Hexdump of encoded data:
-
-
-   0803 3330 3218 0770 7269 7661 7465 221d | ..302..private".
-   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
-   2032 303a 3133 3a32 3120 474d 542f 1768 |  20:13:21 GMT/.h
-   7474 7073 3a2f 2f77 7777 2e65 7861 6d70 | ttps://www.examp
-   6c65 2e63 6f6d                          | le.com
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 47]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   Decoding process:
-
-
-   08                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 8)
-                                           |     :status
-   03                                      |   Literal value (len = 3)
-   3330 32                                 | 302
-                                           | -> :status: 302
-   18                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 24)
-                                           |     cache-control
-   07                                      |   Literal value (len = 7)
-   7072 6976 6174 65                       | private
-                                           | -> cache-control: private
-   22                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 34)
-                                           |     date
-   1d                                      |   Literal value (len = 29)
-   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
-   2032 303a 3133 3a32 3120 474d 54        |  20:13:21 GMT
-                                           | -> date: Mon, 21 Oct 2013 \
-                                           |   20:13:21 GMT
-   2f                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 47)
-                                           |     location
-   17                                      |   Literal value (len = 23)
-   6874 7470 733a 2f2f 7777 772e 6578 616d | https://www.exam
-   706c 652e 636f 6d                       | ple.com
-                                           | -> location: https://www.e\
-                                           |   xample.com
-
-
-
-   Decoded header set:
-
-
-   :status: 302
-   cache-control: private
-   date: Mon, 21 Oct 2013 20:13:21 GMT
-   location: https://www.example.com
-
-
-
-E.4.2.  Second response
-
-   Header set to encode:
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 48]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   :status: 200
    cache-control: private
    date: Mon, 21 Oct 2013 20:13:22 GMT
-   location: https://www.example.com
    content-encoding: gzip
-   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKHQWOEIUALQWEOIU; max\
-   -age=3600; version=1
-
-
-
-   Reference set:
-
-
-   [  0] location: https://www.example.com
-   [  1] date: Mon, 21 Oct 2013 20:13:21 GMT
-   [  2] cache-control: private
-   [  3] :status: 302
-
-
-
-   Hexdump of encoded data:
-
-
-   8284 8c03 1d4d 6f6e 2c20 3231 204f 6374 | .....Mon, 21 Oct
-   2032 3031 3320 3230 3a31 333a 3232 2047 |  2013 20:13:22 G
-   4d54 1f04 677a 6970 3c4c 666f 6f3d 4153 | MT..gzip.Lfoo=AS
-   444a 4b48 514b 425a 584f 5157 454f 5049 | DJKHQKBZXOQWEOPI
-   5541 5851 5745 4f49 5541 584c 4a4b 4851 | UAXQWEOIUAXLJKHQ
-   574f 4549 5541 4c51 5745 4f49 553b 206d | WOEIUALQWEOIU; m
-   6178 2d61 6765 3d33 3630 303b 2076 6572 | ax-age=3600; ver
-   7369 6f6e 3d31                          | sion=1
-
-
-
-   Decoding process:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 49]
-
-Internet-Draft                   HPACK                     November 2013
-
-
-   82                                      | == Indexed - Remove ==
-                                           |   idx = 2
-                                           | -> date: Mon, 21 Oct 2013 \
-                                           |   20:13:21 GMT
-   84                                      | == Indexed - Remove ==
-                                           |   idx = 4
-                                           | -> :status: 302
-   8c                                      | == Indexed - Add ==
-                                           |   idx = 12
-                                           | -> :status: 200
-   03                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 3)
-                                           |     date
-   1d                                      |   Literal value (len = 29)
-   4d6f 6e2c 2032 3120 4f63 7420 3230 3133 | Mon, 21 Oct 2013
-   2032 303a 3133 3a32 3220 474d 54        |  20:13:22 GMT
-                                           | -> date: Mon, 21 Oct 2013 \
-                                           |   20:13:22 GMT
-   1f                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 31)
-                                           |     content-encoding
-   04                                      |   Literal value (len = 4)
-   677a 6970                               | gzip
-                                           | -> content-encoding: gzip
-   3c                                      | == Literal indexed ==
-                                           |   Indexed name (idx = 60)
-                                           |     set-cookie
-   4c                                      |   Literal value (len = 76)
-   666f 6f3d 4153 444a 4b48 514b 425a 584f | foo=ASDJKHQKBZXO
-   5157 454f 5049 5541 5851 5745 4f49 5541 | QWEOPIUAXQWEOIUA
-   584c 4a4b 4851 574f 4549 5541 4c51 5745 | XLJKHQWOEIUALQWE
-   4f49 553b 206d 6178 2d61 6765 3d33 3630 | OIU; max-age=360
-   303b 2076 6572 7369 6f6e 3d31           | 0; version=1
-                                           | -> set-cookie: foo=ASDJKHQ\
-                                           |   KBZXOQWEOPIUAXQWEOIUAXLJ\
-                                           |   KHQWOEIUALQWEOIU; max-ag\
-                                           |   e=3600; version=1
-
-
-
-   Decoded header set:
-
-
-
-
-
-
-
-
-
-
-Peon & Ruellan            Expires May 25, 2014                 [Page 50]
-
-Internet-Draft                   HPACK                     November 2013
-
-
+   location: https://www.example.com
    :status: 200
-   date: Mon, 21 Oct 2013 20:13:22 GMT
-   content-encoding: gzip
-   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIUAXLJKHQWOEIUALQWEOIU; max\
-   -age=3600; version=1
-   location: https://www.example.com
-   cache-control: private
-
+   set-cookie: foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1
 
 
 Authors' Addresses
@@ -2852,4 +3244,4 @@ Authors' Addresses
 
 
 
-Peon & Ruellan            Expires May 25, 2014                 [Page 51]
+Peon & Ruellan            Expires May 25, 2014                 [Page 58]
