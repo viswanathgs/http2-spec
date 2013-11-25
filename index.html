@@ -419,7 +419,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires May 25, 2014";
+       content: "Expires May 29, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -463,7 +463,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-11-21">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-11-25">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2.0 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged. This version of the draft has been marked for implementation. Interoperability testing will occur in the HTTP/2.0 interim in Zurich, CH, starting 2014-01-22.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2.0 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged. This version of the draft has been marked for implementation. Interoperability testing will occur in the HTTP/2.0 interim in Zurich, CH, starting 2014-01-22.">
    </head>
@@ -483,7 +483,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: May 25, 2014</td>
+               <td class="left">Expires: May 29, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -504,7 +504,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">November 21, 2013</td>
+               <td class="right">November 25, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -536,7 +536,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on May 25, 2014.</p>
+         <p>This Internet-Draft will expire on May 29, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -1953,14 +1953,34 @@ Upgrade: HTTP/2.0
             </p>
             <div id="informational-responses">
                <h3 id="rfc.section.8.1.1"><a href="#rfc.section.8.1.1">8.1.1</a>&nbsp;<a href="#informational-responses">Informational Responses</a></h3>
-               <p id="rfc.section.8.1.1.p.1"><span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: This section is likely to change significantly. This only captures the high points.]</span> 
+               <p id="rfc.section.8.1.1.p.1">The 1xx series of HTTP response status codes (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#status.1xx" title="Informational 1xx">Section 6.2</a>) are not supported in HTTP/2.0.
                </p>
-               <p id="rfc.section.8.1.1.p.2">The 1xx series of HTTP response codes (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#status.1xx" title="Informational 1xx">Section 6.2</a>) are not supported by HTTP/2.0.
+               <p id="rfc.section.8.1.1.p.2">The most common use case for 1xx is using a Expect header field with a <samp>100-continue</samp> token (colloquially, "Expect/continue") to indicate that the client expects a 100 (Continue) non-final response status code,
+                  receipt of which indicating that the client should continue sending the request body if it has not already done so.
                </p>
-               <p id="rfc.section.8.1.1.p.3">An intermediary that translates HTTP/1.1 requests to HTTP/2.0 MUST generate any mandatory informational responses. For instance,
-                  a translating intermediary generates a 100 (Continue) response if a request includes an Expect header field with a <samp>100-continue</samp> token (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#header.expect" title="Expect">Section 5.1.1</a>).
+               <p id="rfc.section.8.1.1.p.3">Typically, Expect/continue is used by clients wishing to avoid sending a large amount of data in a request body, only to have
+                  the request rejected by the origin server.
                </p>
-               <p id="rfc.section.8.1.1.p.4">An intermediary that translates HTTP/1.1 responses to HTTP/2.0 MUST ignore informational responses.</p>
+               <p id="rfc.section.8.1.1.p.4">HTTP/2.0 does not enable the Expect/continue mechanism; if the server sends a final status code to reject the request, it
+                  can do so without making the underlying connection unusable.
+               </p>
+               <p id="rfc.section.8.1.1.p.5">Note that this means HTTP/2.0 clients sending requests with bodies may waste at least one round trip of sent data when the
+                  request is rejected. This can be mitigated by restricting the amount of data sent for the first round trip by bandwidth-constrained
+                  clients, in anticipation of a final status code.
+               </p>
+               <p id="rfc.section.8.1.1.p.6">Other defined 1xx status codes are not applicable to HTTP/2.0; the semantics of 101 (Switching Protocols) is better expressed
+                  using a distinct frame type, since they apply to the entire connection, not just one stream. Likewise, 102 (Processing) is
+                  no longer necessary, because HTTP/2.0 has a separate means of keeping the connection alive.
+               </p>
+               <p id="rfc.section.8.1.1.p.7">This difference between protocol versions necessitates special handling by intermediaries that translate between them: </p>
+               <ul>
+                  <li>An intermediary that gateways HTTP/1.1 to HTTP/2.0 MUST generate a 100 (Continue) response if a received request includes
+                     and Expect header field with a <samp>100-continue</samp> token (<a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#header.expect" title="Expect">Section 5.1.1</a>), unless it can immediately generate a final status code. It MUST NOT forward the <samp>100-continue</samp> expectation in the request header fields.
+                  </li>
+                  <li>An intermediary that gateways HTTP/2.0 to HTTP/1.1 MAY add an Expect header field with a <samp>100-continue</samp> expectation when forwarding a request that has a body; see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#header.expect" title="Expect">Section 5.1.1</a> for specific requirements.
+                  </li>
+                  <li>An intermediary that gateways HTTP/2.0 to HTTP/1.1 MUST discard all other 1xx informational responses.</li>
+               </ul>
             </div>
             <div>
                <h3 id="rfc.section.8.1.2"><a href="#rfc.section.8.1.2">8.1.2</a>&nbsp;Examples
@@ -2192,7 +2212,7 @@ Upgrade: HTTP/2.0
                   server from sending PUSH_PROMISE frames; clients need to reset any promised streams that are not wanted.
                </p>
                <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to push the resource using the same-origin
-                  policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+                  policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, a HTTP/2.0 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
                </p>
             </div>
          </div>
@@ -2249,7 +2269,7 @@ Upgrade: HTTP/2.0
          <div>
             <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;Use of TLS Features
             </h2>
-            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
+            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
                   of early drafts.]</span> 
             </p>
             <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2.0 clients MUST indicate the target domain name when negotiating TLS.
@@ -2289,7 +2309,7 @@ Upgrade: HTTP/2.0
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.5">[<a href="#rfc.comment.5" class="smpl">rfc.comment.5</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
