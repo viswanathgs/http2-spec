@@ -3,8 +3,7 @@
 <html lang="en">
    <head profile="http://dublincore.org/documents/2008/08/04/dc-html/">
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <title>HPACK - Header Compression for HTTP/2.0 </title>
-      <meta name="viewport" content="initial-scale=1"><script>
+      <title>HPACK - Header Compression for HTTP/2.0 </title><script>
 var buttonsAdded = false;
 
 function init() {
@@ -141,8 +140,11 @@ h2 {
   line-height: 15pt;
   page-break-after: avoid;
 }
-h3, h4, h5, h6 {
+h3 {
   font-size: 110%;
+  page-break-after: avoid;
+}
+h4, h5, h6 {
   page-break-after: avoid;
 }
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
@@ -410,7 +412,7 @@ samp, tt, code, pre {
        content: "Internet-Draft";
   }
   @top-right {
-       content: "November 2013";
+       content: "December 2013";
   }
   @top-center {
        content: "HPACK";
@@ -419,7 +421,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires May 26, 2014";
+       content: "Expires June 5, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -451,13 +453,13 @@ samp, tt, code, pre {
       <link rel="Appendix" title="C Huffman Codes For Requests" href="#rfc.section.C">
       <link rel="Appendix" title="D Huffman Codes for Responses" href="#rfc.section.D">
       <link rel="Appendix" title="E Examples" href="#rfc.section.E">
-      <meta name="generator" content="http://greenbytes.de/tech/webdav/rfc2629.xslt, Revision 1.608, 2013/11/05 01:54:09, XSLT vendor: SAXON 9.1.0.8 from Saxonica http://www.saxonica.com/">
+      <meta name="generator" content="http://greenbytes.de/tech/webdav/rfc2629.xslt, Revision 1.611, 2013/11/27 12:23:51, XSLT vendor: SAXON 9.1.0.8 from Saxonica http://www.saxonica.com/">
       <meta name="keywords" content="HTTP, Header">
       <link rel="schema.dct" href="http://purl.org/dc/terms/">
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-11-22">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-12-02">
       <meta name="dct.abstract" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
       <meta name="description" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
    </head>
@@ -477,12 +479,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: May 26, 2014</td>
+               <td class="left">Expires: June 5, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">November 22, 2013</td>
+               <td class="right">December 2, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -506,7 +508,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on May 26, 2014.</p>
+         <p>This Internet-Draft will expire on June 5, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -701,7 +703,7 @@ samp, tt, code, pre {
                <dt>Header Block:</dt>
                <dd>The entire set of encoded header field representations which, when decoded, yield a complete header set.</dd>
                <dt>Header Field Emission:</dt>
-               <dd>When decoding a set of header field representations, some operations emit a header field (see <a href="#header.emission" title="Header Field Emission">Section&nbsp;3.1.5</a>). Emitted headers can be safely passed to the upper processing layers as part of the current Header Set.
+               <dd>When decoding a set of header field representations, some operations emit a header field (see <a href="#header.emission" title="Header Field Emission">Section&nbsp;3.1.5</a>). Emitted header fields can be safely passed to the upper processing layers as part of the current Header Set.
                </dd>
             </dl>
             <div id="encoding.context">
@@ -794,17 +796,16 @@ Insertion Point       Drop Point
             </div>
             <div id="header.emission">
                <h3 id="rfc.section.3.1.5"><a href="#rfc.section.3.1.5">3.1.5</a>&nbsp;<a href="#header.emission">Header Field Emission</a></h3>
-               <p id="rfc.section.3.1.5.p.1">The emission of a header field is the process of passing that header field to the application, so that the application can
-                  process and react to header field data.
+               <p id="rfc.section.3.1.5.p.1">The emission of a header field is the process of marking a header field as belonging to the current header set. Once a header
+                  has been emitted, it cannot be removed from the current header set.
                </p>
-               <p id="rfc.section.3.1.5.p.2">By emitting header fields instead of emitting header sets, the decoder can be implemented in a streaming way, and as such
+               <p id="rfc.section.3.1.5.p.2">On the decoding side, an emitted header field can be safely passed to the upper processing layer as part of the current header
+                  set. The decoder MAY pass the emitted header fields to the upper processing layer in any order.
+               </p>
+               <p id="rfc.section.3.1.5.p.3">By emitting header fields instead of emitting header sets, the decoder can be implemented in a streaming way, and as such
                   has only to keep in memory the header table and the reference set. This bounds the amount of memory used by the decoder, even
                   in presence of a very large set of header fields. The management of memory for handling very large sets of header fields can
-                  therefore be deferred to the application.
-               </p>
-               <p id="rfc.section.3.1.5.p.3">The decoder MUST pass the header fields to the application in their emission order, except for the header fields emitted during
-                  the reference set emission (see <a href="#reference.set.emission" title="Reference Set Emission">Section&nbsp;3.2.2</a>). The header fields emitted during the reference set emission MUST be emitted after the emission of all the other header
-                  fields, but MAY be emitted in any order.
+                  therefore be deferred to the upper processing layers.
                </p>
             </div>
          </div>
