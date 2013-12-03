@@ -421,7 +421,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires June 5, 2014";
+       content: "Expires June 6, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -465,7 +465,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.creator" content="Melnikov, A.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-12-02">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-12-03">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2.0 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged. This version of the draft has been marked for implementation. Interoperability testing will occur in the HTTP/2.0 interim in Zurich, CH, starting 2014-01-22.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2.0 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged. This version of the draft has been marked for implementation. Interoperability testing will occur in the HTTP/2.0 interim in Zurich, CH, starting 2014-01-22.">
    </head>
@@ -485,7 +485,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: June 5, 2014</td>
+               <td class="left">Expires: June 6, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -506,7 +506,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">December 2, 2013</td>
+               <td class="right">December 3, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -538,7 +538,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on June 5, 2014.</p>
+         <p>This Internet-Draft will expire on June 6, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -632,8 +632,9 @@ samp, tt, code, pre {
                      <li><a href="#rfc.section.8.1.3">8.1.3</a>&nbsp;&nbsp;&nbsp;<a href="#HttpHeaders">HTTP Header Fields</a><ul>
                            <li><a href="#rfc.section.8.1.3.1">8.1.3.1</a>&nbsp;&nbsp;&nbsp;<a href="#HttpRequest">Request Header Fields</a></li>
                            <li><a href="#rfc.section.8.1.3.2">8.1.3.2</a>&nbsp;&nbsp;&nbsp;<a href="#HttpResponse">Response Header Fields</a></li>
-                           <li><a href="#rfc.section.8.1.3.3">8.1.3.3</a>&nbsp;&nbsp;&nbsp;<a href="#CompressCookie">Compressing the Cookie Header Field</a></li>
-                           <li><a href="#rfc.section.8.1.3.4">8.1.3.4</a>&nbsp;&nbsp;&nbsp;<a href="#malformed">Malformed Requests and Responses</a></li>
+                           <li><a href="#rfc.section.8.1.3.3">8.1.3.3</a>&nbsp;&nbsp;&nbsp;<a href="#HeaderOrdering">Header Field Ordering</a></li>
+                           <li><a href="#rfc.section.8.1.3.4">8.1.3.4</a>&nbsp;&nbsp;&nbsp;<a href="#CompressCookie">Compressing the Cookie Header Field</a></li>
+                           <li><a href="#rfc.section.8.1.3.5">8.1.3.5</a>&nbsp;&nbsp;&nbsp;<a href="#malformed">Malformed Requests and Responses</a></li>
                         </ul>
                      </li>
                      <li><a href="#rfc.section.8.1.4">8.1.4</a>&nbsp;&nbsp;&nbsp;<a href="#Reliability">Request Reliability Mechanisms in HTTP/2.0</a></li>
@@ -1022,26 +1023,29 @@ Upgrade: HTTP/2.0
             <p id="rfc.section.4.3.p.1">A header field in HTTP/2.0 is a name-value pair with one or more associated values. They are used within HTTP request and
                response messages as well as server push operations (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
             </p>
-            <p id="rfc.section.4.3.p.2">Header lists are ordered collections of zero or more header fields arranged at the application layer. When transmitted over
-               a connection, a header list is serialized into a header block using <a href="#COMPRESSION">HTTP Header Compression</a> <cite title="HPACK - Header Compression for HTTP/2.0">[COMPRESSION]</cite>. The serialized header block is then divided into one or more octet sequences, called header block fragments, and transmitted
+            <p id="rfc.section.4.3.p.2">Header sets are collections of zero or more header fields arranged at the application layer. When transmitted over a connection,
+               a header set is serialized into a header block using <a href="#COMPRESSION">HTTP Header Compression</a> <cite title="HPACK - Header Compression for HTTP/2.0">[COMPRESSION]</cite>. The serialized header block is then divided into one or more octet sequences, called header block fragments, and transmitted
                within the payload of HEADERS (<a href="#HEADERS" title="HEADERS">Section&nbsp;6.2</a>), PUSH_PROMISE (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;6.6</a>) or CONTINUATION (<a href="#CONTINUATION" title="CONTINUATION">Section&nbsp;6.10</a>) frames.
             </p>
-            <p id="rfc.section.4.3.p.3">The <a href="#COOKIE">Cookie header field</a> <cite title="HTTP State Management Mechanism">[COOKIE]</cite> is treated specially by the HTTP mapping, see <a href="#CompressCookie" title="Compressing the Cookie Header Field">Section&nbsp;8.1.3.3</a>.
+            <p id="rfc.section.4.3.p.3">HTTP Header Compression does not preserve the relative ordering of header fields. Header fields with multiple values are encoded
+               into a single header field using a special delimiter, see <a href="#HeaderOrdering" title="Header Field Ordering">Section&nbsp;8.1.3.3</a>.
             </p>
-            <p id="rfc.section.4.3.p.4">A receiving endpoint reassembles the header block by concatenating the individual fragments, then decompresses the block to
+            <p id="rfc.section.4.3.p.4">The <a href="#COOKIE">Cookie header field</a> <cite title="HTTP State Management Mechanism">[COOKIE]</cite> is treated specially by the HTTP mapping, see <a href="#CompressCookie" title="Compressing the Cookie Header Field">Section&nbsp;8.1.3.4</a>.
+            </p>
+            <p id="rfc.section.4.3.p.5">A receiving endpoint reassembles the header block by concatenating the individual fragments, then decompresses the block to
                reconstruct the header set.
             </p>
-            <p id="rfc.section.4.3.p.5">A complete header block consists of either: </p>
+            <p id="rfc.section.4.3.p.6">A complete header block consists of either: </p>
             <ul>
                <li>a single <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame each respectively with the END_HEADERS or END_PUSH_PROMISE flag set, or
                </li>
                <li>a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_HEADERS or END_PUSH_PROMISE flag cleared and one or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, where the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame has the END_HEADER flag set.
                </li>
             </ul>
-            <p id="rfc.section.4.3.p.6">Header blocks MUST be transmitted as a contiguous sequence of frames, with no interleaved frames of any other type, or from
+            <p id="rfc.section.4.3.p.7">Header blocks MUST be transmitted as a contiguous sequence of frames, with no interleaved frames of any other type, or from
                any other stream. The last frame in a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. The last frame in a sequence of <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_PUSH_PROMISE or END_HEADERS flag set (respectively).
             </p>
-            <p id="rfc.section.4.3.p.7">Header block fragments can only be sent as the payload of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames carry data that can modify the compression context maintained by a receiver. An endpoint receiving <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST reassemble header blocks and perform decompression even if the frames are to be discarded. A receiver MUST terminate
+            <p id="rfc.section.4.3.p.8">Header block fragments can only be sent as the payload of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames. <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames carry data that can modify the compression context maintained by a receiver. An endpoint receiving <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST reassemble header blocks and perform decompression even if the frames are to be discarded. A receiver MUST terminate
                the connection with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#COMPRESSION_ERROR" class="smpl">COMPRESSION_ERROR</a>, if it does not decompress a header block.
             </p>
          </div>
@@ -2057,12 +2061,12 @@ Upgrade: HTTP/2.0
                </p>
                <p id="rfc.section.8.1.3.p.2">HTTP header field names are strings of ASCII characters that are compared in a case-insensitive fashion. Header field names
                   MUST be converted to lowercase prior to their encoding in HTTP/2.0. A request or response containing uppercase header field
-                  names MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.4</a>).
+                  names MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.5</a>).
                </p>
                <p id="rfc.section.8.1.3.p.3">The semantics of HTTP header fields are not altered by this specification, though header fields relating to connection management
                   or request framing are no longer necessary. An HTTP/2.0 request or response MUST NOT include any of the following header fields:
                   Connection, Keep-Alive, Proxy-Connection, TE, Transfer-Encoding, and Upgrade. A request or response containing these header
-                  fields MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.4</a>). 
+                  fields MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.5</a>). 
                </p>
                <dl>
                   <dt>Note:</dt>
@@ -2094,7 +2098,7 @@ Upgrade: HTTP/2.0
                         </p>
                      </li>
                   </ul>
-                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.4</a>).
+                  <p> All HTTP/2.0 requests MUST include exactly one valid value for all of these header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.5</a>).
                   </p>
                   <p id="rfc.section.8.1.3.1.p.2">Header field names that contain a colon are only valid in the HTTP/2.0 context. These are not HTTP header fields. Implementations
                      MUST NOT generate header fields that start with a colon, but they MUST ignore any header field that starts with a colon. In
@@ -2104,34 +2108,52 @@ Upgrade: HTTP/2.0
                </div>
                <div id="HttpResponse">
                   <h4 id="rfc.section.8.1.3.2"><a href="#rfc.section.8.1.3.2">8.1.3.2</a>&nbsp;<a href="#HttpResponse">Response Header Fields</a></h4>
-                  <p id="rfc.section.8.1.3.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses, otherwise the response is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.4</a>).
+                  <p id="rfc.section.8.1.3.2.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#HTTP-p2"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p2-semantics.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses, otherwise the response is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.3.5</a>).
                   </p>
                   <p id="rfc.section.8.1.3.2.p.2">HTTP/2.0 does not define a way to carry the version or reason phrase that is included in an HTTP/1.1 status line.</p>
                </div>
-               <div id="CompressCookie">
-                  <h4 id="rfc.section.8.1.3.3"><a href="#rfc.section.8.1.3.3">8.1.3.3</a>&nbsp;<a href="#CompressCookie">Compressing the Cookie Header Field</a></h4>
-                  <p id="rfc.section.8.1.3.3.p.1">The <a href="#COOKIE">Cookie header field</a> <cite title="HTTP State Management Mechanism">[COOKIE]</cite> can carry a significant amount of redundant data.
+               <div id="HeaderOrdering">
+                  <h4 id="rfc.section.8.1.3.3"><a href="#rfc.section.8.1.3.3">8.1.3.3</a>&nbsp;<a href="#HeaderOrdering">Header Field Ordering</a></h4>
+                  <p id="rfc.section.8.1.3.3.p.1"><a href="#COMPRESSION">HTTP Header Compression</a> <cite title="HPACK - Header Compression for HTTP/2.0">[COMPRESSION]</cite> does not preserve the order of header fields. The relative order of header fields with different names is not important. However,
+                     the same header field can be repeated to form a comma-separated list (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p1-messaging.html#field.order" title="Field Order">Section 3.2.2</a>), where the relative order of header field values is significant. This repetition can occur either as a single header field
+                     with a comma-separated list of values, or as several header fields with a single value, or any combination thereof.
                   </p>
-                  <p id="rfc.section.8.1.3.3.p.2">The Cookie header field uses a semi-colon (";") to delimit cookie-pairs (or "crumbs"). This header field doesn't follow the
+                  <p id="rfc.section.8.1.3.3.p.2">To preserve the order of a comma-separated list, the ordered values for a single header field name appearing in different
+                     header fields are concatenated into a single value. A zero-valued octet (0x0) is used to delimit multiple values.
+                  </p>
+                  <p id="rfc.section.8.1.3.3.p.3">After decompression, header fields that have values containing zero octets (0x0) MUST be split into multiple header fields
+                     before being processed.
+                  </p>
+                  <p id="rfc.section.8.1.3.3.p.4">Header fields containing multiple values MUST be concatenated into a single value unless the ordering of that header field
+                     is known to be not significant.
+                  </p>
+                  <p id="rfc.section.8.1.3.3.p.5">The special case of <samp>set-cookie</samp> - which does not form a comma-separated list, but can have multiple values - does not depend on ordering. The <samp>set-cookie</samp> header field MAY be encoded as multiple header field values, or as a single concatenated value.
+                  </p>
+               </div>
+               <div id="CompressCookie">
+                  <h4 id="rfc.section.8.1.3.4"><a href="#rfc.section.8.1.3.4">8.1.3.4</a>&nbsp;<a href="#CompressCookie">Compressing the Cookie Header Field</a></h4>
+                  <p id="rfc.section.8.1.3.4.p.1">The <a href="#COOKIE">Cookie header field</a> <cite title="HTTP State Management Mechanism">[COOKIE]</cite> can carry a significant amount of redundant data.
+                  </p>
+                  <p id="rfc.section.8.1.3.4.p.2">The Cookie header field uses a semi-colon (";") to delimit cookie-pairs (or "crumbs"). This header field doesn't follow the
                      list construction rules in HTTP (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/25/p1-messaging.html#field.order" title="Field Order">Section 3.2.2</a>), which prevents cookie-pairs from being separated into different name-value pairs. This can significantly reduce compression
                      efficiency as individual cookie-pairs are updated.
                   </p>
-                  <p id="rfc.section.8.1.3.3.p.3">To allow for better compression efficiency, the Cookie header field MAY be split into separate header fields, each with one
+                  <p id="rfc.section.8.1.3.4.p.3">To allow for better compression efficiency, the Cookie header field MAY be split into separate header fields, each with one
                      or more cookie-pairs. If there are multiple Cookie header fields after decompression, these MUST be concatenated into a single
                      octet string using the two octet delimiter of 0x3B, 0x20 (the ASCII string "; ").
                   </p>
                </div>
                <div id="malformed">
-                  <h4 id="rfc.section.8.1.3.4"><a href="#rfc.section.8.1.3.4">8.1.3.4</a>&nbsp;<a href="#malformed">Malformed Requests and Responses</a></h4>
-                  <p id="rfc.section.8.1.3.4.p.1">A malformed request or response is one that uses a valid sequence of HTTP/2.0 frames, but is otherwise invalid due to the
+                  <h4 id="rfc.section.8.1.3.5"><a href="#rfc.section.8.1.3.5">8.1.3.5</a>&nbsp;<a href="#malformed">Malformed Requests and Responses</a></h4>
+                  <p id="rfc.section.8.1.3.5.p.1">A malformed request or response is one that uses a valid sequence of HTTP/2.0 frames, but is otherwise invalid due to the
                      presence of prohibited header fields, the absence of mandatory header fields, or the inclusion of uppercase header field names.
                   </p>
-                  <p id="rfc.section.8.1.3.4.p.2">A request or response that includes an entity body can include a <samp>content-length</samp> header field. A request or response is also malformed if the value of a <samp>content-length</samp> header field does not equal the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths that form the body.
+                  <p id="rfc.section.8.1.3.5.p.2">A request or response that includes an entity body can include a <samp>content-length</samp> header field. A request or response is also malformed if the value of a <samp>content-length</samp> header field does not equal the sum of the <a href="#DATA" class="smpl">DATA</a> frame payload lengths that form the body.
                   </p>
-                  <p id="rfc.section.8.1.3.4.p.3">Intermediaries that process HTTP requests or responses (i.e., all intermediaries other than those acting as tunnels) MUST
+                  <p id="rfc.section.8.1.3.5.p.3">Intermediaries that process HTTP requests or responses (i.e., all intermediaries other than those acting as tunnels) MUST
                      NOT forward a malformed request or response.
                   </p>
-                  <p id="rfc.section.8.1.3.4.p.4">Implementations that detect malformed requests or responses need to ensure that the stream ends. For malformed requests, a
+                  <p id="rfc.section.8.1.3.5.p.4">Implementations that detect malformed requests or responses need to ensure that the stream ends. For malformed requests, a
                      server MAY send an HTTP response to prior to closing or resetting the stream. Clients MUST NOT accept a malformed response.
                   </p>
                </div>
@@ -2727,6 +2749,7 @@ Upgrade: HTTP/2.0
          <div id="changes.since.draft-ietf-httpbis-http2-08">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-08">Since draft-ietf-httpbis-http2-08</a></h2>
             <p id="rfc.section.A.1.p.1">Added cookie crumbling for more efficient header compression.</p>
+            <p id="rfc.section.A.1.p.2">Added header field ordering with the value-concatenation mechanism.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-07">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-07">Since draft-ietf-httpbis-http2-07</a></h2>

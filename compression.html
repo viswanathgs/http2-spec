@@ -421,7 +421,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires June 5, 2014";
+       content: "Expires June 6, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -459,7 +459,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2013-12-02">
+      <meta name="dct.issued" scheme="ISO8601" content="2013-12-03">
       <meta name="dct.abstract" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
       <meta name="description" content="This document describes HPACK, a format adapted to efficiently represent HTTP header fields in the context of HTTP/2.0.">
    </head>
@@ -479,12 +479,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: June 5, 2014</td>
+               <td class="left">Expires: June 6, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">December 2, 2013</td>
+               <td class="right">December 3, 2013</td>
             </tr>
          </tbody>
       </table>
@@ -508,7 +508,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on June 5, 2014.</p>
+         <p>This Internet-Draft will expire on June 6, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -645,7 +645,7 @@ samp, tt, code, pre {
       </div>
       <div id="overview">
          <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a href="#overview">Overview</a></h1>
-         <p id="rfc.section.2.p.1">In HTTP/1.X (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), header fields are sent without any form of compression. As web pages have grown to include dozens to hundreds of requests,
+         <p id="rfc.section.2.p.1">In HTTP (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), header fields are sent without any form of compression. As web pages have grown to include dozens to hundreds of requests,
             the redundant header fields in these requests now pose a problem of measurable latency and unnecessary bandwidth (see <a href="#PERF1"><cite title="IETF83: SPDY and What to Consider for HTTP/2.0">[PERF1]</cite></a> and <a href="#PERF2"><cite title="SPDY: What I Like About You">[PERF2]</cite></a>).
          </p>
          <p id="rfc.section.2.p.2"><a href="#SPDY">SPDY</a> <cite title="SPDY Protocol">[SPDY]</cite> initially addressed this redundancy by compressing header fields with Deflate, which proved very effective at eliminating
@@ -657,8 +657,8 @@ samp, tt, code, pre {
          <div>
             <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;Outline
             </h2>
-            <p id="rfc.section.2.1.p.1">The HTTP header field encoding described in this document is based on a header table that map (name, value) pairs to index
-               values. Header tables are incrementally updated during the HTTP/2.0 session.
+            <p id="rfc.section.2.1.p.1">The HTTP header field encoding described in this document is based on a header table that map name-value pairs to index values.
+               Header tables are incrementally updated during the HTTP/2.0 session.
             </p>
             <p id="rfc.section.2.1.p.2">The encoder is responsible for deciding which header fields to insert as new entries in the header table. The decoder then
                does exactly what the encoder prescribes, ending in a state that exactly matches the encoder's state. This enables decoders
@@ -668,7 +668,10 @@ samp, tt, code, pre {
                from the previous set of header fields. The goal is to only encode the changes (header fields present in one of the set and
                not in the other) between the two sets of header fields.
             </p>
-            <p id="rfc.section.2.1.p.4">Examples illustrating the use of these different mechanisms to represent header fields are available in <a href="#examples" title="Examples">Appendix&nbsp;E</a>.
+            <p id="rfc.section.2.1.p.4">HTTP header field compression treats a set of header fields as an unordered collection of name-value pairs. Names and values
+               are opaque sequences of octets. The order of header fields is not guaranteed to be preserved after being compression and decompression.
+            </p>
+            <p id="rfc.section.2.1.p.5">Examples illustrating the use of these different mechanisms to represent header fields are available in <a href="#examples" title="Examples">Appendix&nbsp;E</a>.
             </p>
          </div>
       </div>
@@ -679,8 +682,7 @@ samp, tt, code, pre {
             <p id="rfc.section.3.1.p.1">The encoding and decoding of header fields relies on some components and concepts: </p>
             <dl>
                <dt>Header Field:</dt>
-               <dd>A key, value pair. HPACK allows a header field value to be either a value as specified by HTTP/1.X (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>).
-               </dd>
+               <dd>A name-value pair. Both name and value are sequences of octets.</dd>
                <dt>Header Table:</dt>
                <dd>The header table (see <a href="#header.table" title="Header Table">Section&nbsp;3.1.2</a>) is a component used to associate stored header fields to index values. The data stored in this table is in first-in, first-out
                   order.
@@ -1245,7 +1247,7 @@ Else
                <li>Added reference set emptying.</li>
                <li>Editorial changes and clarifications.</li>
                <li>Added "host" header to the static table.</li>
-               <li>Specify emission order constraints.</li>
+               <li>Ordering for list of values (either NULL- or comma-separated).</li>
             </ul>
          </div>
          <div id="changes.since.draft-ietf-httpbis-header-compression-03">
