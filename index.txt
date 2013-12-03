@@ -30,7 +30,8 @@ Abstract
 
    This version of the draft has been marked for implementation.
    Interoperability testing will occur in the HTTP/2.0 interim in
-   Zurich, CH, starting 2014-01-22.
+   Zurich, CH, starting 2014-01-22.  This replaces -08, which was
+   originally identified as an implementation draft.
 
 Editorial Note (To be removed by RFC Editor)
 
@@ -47,9 +48,8 @@ Status of This Memo
    This Internet-Draft is submitted in full conformance with the
    provisions of BCP 78 and BCP 79.
 
-
-
-
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
 
 
 
@@ -58,8 +58,6 @@ Belshe, et al.           Expires June 06, 2014                  [Page 1]
 Internet-Draft                  HTTP/2.0                   December 2013
 
 
-   Internet-Drafts are working documents of the Internet Engineering
-   Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
    Drafts is at http://datatracker.ietf.org/drafts/current/.
 
@@ -106,6 +104,8 @@ Table of Contents
      4.2.  Frame Size  . . . . . . . . . . . . . . . . . . . . . . .  13
      4.3.  Header Compression and Decompression  . . . . . . . . . .  13
    5.  Streams and Multiplexing  . . . . . . . . . . . . . . . . . .  14
+     5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  15
+       5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  19
 
 
 
@@ -114,8 +114,6 @@ Belshe, et al.           Expires June 06, 2014                  [Page 2]
 Internet-Draft                  HTTP/2.0                   December 2013
 
 
-     5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  15
-       5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  19
        5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  20
      5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  20
        5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  21
@@ -162,6 +160,8 @@ Internet-Draft                  HTTP/2.0                   December 2013
      10.1.  Server Authority and Same-Origin . . . . . . . . . . . .  54
      10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  55
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  55
+     10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  55
+     10.5.  Denial of Service Considerations . . . . . . . . . . . .  56
 
 
 
@@ -170,8 +170,6 @@ Belshe, et al.           Expires June 06, 2014                  [Page 3]
 Internet-Draft                  HTTP/2.0                   December 2013
 
 
-     10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  55
-     10.5.  Denial of Service Considerations . . . . . . . . . . . .  56
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  57
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  57
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  57
@@ -218,6 +216,8 @@ Internet-Draft                  HTTP/2.0                   December 2013
    can result in excessive latency when multiple requests are made on a
    single new TCP connection.
 
+   This document addresses these issues by defining an optimized mapping
+   of HTTP's semantics to an underlying connection.  Specifically, it
 
 
 
@@ -226,8 +226,6 @@ Belshe, et al.           Expires June 06, 2014                  [Page 4]
 Internet-Draft                  HTTP/2.0                   December 2013
 
 
-   This document addresses these issues by defining an optimized mapping
-   of HTTP's semantics to an underlying connection.  Specifically, it
    allows interleaving of request and response messages on the same
    connection and uses an efficient coding for HTTP header fields.  It
    also allows prioritization of requests, letting more important
@@ -274,6 +272,8 @@ Internet-Draft                  HTTP/2.0                   December 2013
    connection error:  An error on the HTTP/2.0 connection.
 
    endpoint:  Either the client or server of the connection.
+
+
 
 
 
@@ -3333,7 +3333,7 @@ Internet-Draft                  HTTP/2.0                   December 2013
       Jitu Padhye, Roberto Peon, Rob Trace (Flow control)
 
    o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
-      Bishop (Substantial editorial contributions)
+      Bishop, Herve Ruellan (Substantial editorial contributions)
 
 14.  References
 
@@ -3341,8 +3341,8 @@ Internet-Draft                  HTTP/2.0                   December 2013
 
    [COMPRESSION]
               Ruellan, H. and R. Peon, "HPACK - Header Compression for
-              HTTP/2.0", draft-ietf-httpbis-header-compression-04 (work
-              in progress), October 2013.
+              HTTP/2.0", draft-ietf-httpbis-header-compression-05 (work
+              in progress), December 2013.
 
    [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
               April 2011.
