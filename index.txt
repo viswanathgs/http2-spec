@@ -161,7 +161,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
      12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  59
      12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  60
      12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  60
-   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  61
+     12.6.  PRI Method Registration  . . . . . . . . . . . . . . . .  61
 
 
 
@@ -170,22 +170,23 @@ Belshe, et al.           Expires July 27, 2014                  [Page 3]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  61
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  61
+   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  61
+   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  62
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  62
      14.2.  Informative References . . . . . . . . . . . . . . . . .  63
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  63
-     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  63
-     A.2.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  63
-     A.3.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  63
+                publication) . . . . . . . . . . . . . . . . . . . .  64
+     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  64
+     A.2.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  64
+     A.3.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  64
      A.4.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  64
      A.5.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  64
-     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  64
+     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  65
      A.7.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  65
      A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  65
-     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  65
+     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  66
      A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  66
-     A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  66
+     A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  67
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  67
 
 1.  Introduction
@@ -216,8 +217,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
    also allows prioritization of requests, letting more important
    requests complete more quickly, further improving performance.
 
-   The resulting protocol is designed to be more friendly to the
-   network, because fewer TCP connections can be used, in comparison to
+
 
 
 
@@ -226,6 +226,8 @@ Belshe, et al.           Expires July 27, 2014                  [Page 4]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
+   The resulting protocol is designed to be more friendly to the
+   network, because fewer TCP connections can be used, in comparison to
    HTTP/1.x.  This means less competition with other flows, and longer-
    lived connections, which in turn leads to better utilization of
    available network capacity.
@@ -272,8 +274,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    client:  The endpoint initiating the HTTP connection.
 
    connection:  A transport-level connection between two endpoints.
-
-
 
 
 
@@ -543,17 +543,17 @@ Internet-Draft                  HTTP/2.0                    January 2014
    other means.  For example, [AltSvc] describes a mechanism for
    advertising this capability in an HTTP header field.  A client MAY
    immediately send HTTP/2.0 frames to a server that is known to support
-   HTTP/2.0, after the connection header (Section 3.5).  This only
-   affects the resolution of "http" URIs; servers supporting HTTP/2.0
-   are required to support protocol negotiation in TLS [TLSALPN] for
-   "https" URIs.
+   HTTP/2.0, after the connection header (Section 3.5).  A server can
+   identify such a connection by the use of the "PRI" method in the
+   connection header.  This only affects the resolution of "http" URIs;
+   servers supporting HTTP/2.0 are required to support protocol
+   negotiation in TLS [TLSALPN] for "https" URIs.
 
    Prior support for HTTP/2.0 is not a strong signal that a given server
    will support HTTP/2.0 for future connections.  It is possible for
    server configurations to change or for configurations to differ
    between instances in clustered server.  Interception proxies (a.k.a.
    "transparent" proxies) are another source of variability.
-
 
 
 
@@ -3214,6 +3214,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
 
+   This document registers the "PRI" method for use in HTTP, to avoid
+   collisions with the connection header (Section 3.5).
+
 12.1.  Registration of HTTP/2.0 Identification String
 
    This document creates a registration for the identification of HTTP/
@@ -3239,9 +3242,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    existing flags and could prevent the creation of globally applicable
    flags.
 
-   Initial values for the "HTTP/2.0 Frame Type" registry are shown in
-   Table 1.
-
 
 
 
@@ -3249,6 +3249,9 @@ Belshe, et al.           Expires July 27, 2014                 [Page 58]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Initial values for the "HTTP/2.0 Frame Type" registry are shown in
+   Table 1.
 
    +---------+--------------------+-------------------------+----------+
    | Frame   | Name               | Flags                   | Section  |
@@ -3295,9 +3298,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Error Code:  The 32-bit error code value.
 
-   Name:  A name for the error code.  Specifying an error code name is
-      optional.
-
 
 
 
@@ -3305,6 +3305,9 @@ Belshe, et al.           Expires July 27, 2014                 [Page 59]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Name:  A name for the error code.  Specifying an error code name is
+      optional.
 
    Description:  A description of the conditions where the error code is
       applicable.
@@ -3352,15 +3355,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Header field name:  HTTP2-Settings
 
-   Applicable protocol:  http
-
-
 
 
 Belshe, et al.           Expires July 27, 2014                 [Page 60]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Applicable protocol:  http
 
    Status:  standard
 
@@ -3370,6 +3372,23 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Related information:  This header field is only used by an HTTP/2.0
       client for Upgrade-based negotiation.
+
+12.6.  PRI Method Registration
+
+   This section registers the "PRI" method in the HTTP Method Registry
+   [HTTP-p2].
+
+   Method Name:  PRI
+
+   Safe  No
+
+   Idempotent  No
+
+   Specification document(s)  Section 3.5 of this document
+
+   Related information:  This method is never used by an actual client.
+      This method will appear to be used when an HTTP/1.1 server or
+      intermediary attempts to parse an HTTP/2.0 connection header.
 
 13.  Acknowledgements
 
@@ -3391,6 +3410,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    o  Alexey Melnikov was an editor of this document during 2013.
 
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 61]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    o  A substantial proportion of Martin's contribution was supported by
       Microsoft during his employment there.
 
@@ -3410,13 +3437,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
               Transfer Protocol (HTTP/1.1): Message Syntax and Routing",
               draft-ietf-httpbis-p1-messaging-25 (work in progress),
               November 2013.
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 61]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    [HTTP-p2]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Semantics and Content",
@@ -3447,6 +3467,13 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    [RFC2818]  Rescorla, E., "HTTP Over TLS ", RFC 2818, May 2000.
 
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 62]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66, RFC
               3986, January 2005.
@@ -3466,13 +3493,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    [TCP]      Postel, J., "Transmission Control Protocol ", STD 7, RFC
               793, September 1981.
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 62]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
@@ -3501,6 +3521,15 @@ Internet-Draft                  HTTP/2.0                    January 2014
    [RC4]      Rivest, R., "The RC4 encryption algorithm ", RSA Data
               Security, Inc. , March 1992.
 
+
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 63]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance ", RFC 1323, May 1992.
 
@@ -3512,7 +3541,7 @@ Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-09
 
-   None yet.
+   Reserved PRI method in HTTP/1.1 to avoid possible future collisions.
 
 A.2.  Since draft-ietf-httpbis-http2-08
 
@@ -3521,14 +3550,6 @@ A.2.  Since draft-ietf-httpbis-http2-08
    Added header field ordering with the value-concatenation mechanism.
 
 A.3.  Since draft-ietf-httpbis-http2-07
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 63]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Marked draft for implementation.
 
@@ -3558,6 +3579,13 @@ A.5.  Since draft-ietf-httpbis-http2-05
 
    Editorial clarifications and changes.
 
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 64]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 A.6.  Since draft-ietf-httpbis-http2-04
 
    Added CONTINUATION frame for HEADERS and PUSH_PROMISE.
@@ -3578,13 +3606,6 @@ A.6.  Since draft-ietf-httpbis-http2-04
 
    Added more specific prohibitions for sending of different frame types
    in various stream states.
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 64]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Making the last received setting value the effective value.
 
@@ -3613,6 +3634,14 @@ A.8.  Since draft-ietf-httpbis-http2-02
    Replaced use of "session" with "connection" to avoid confusion with
    other HTTP stateful concepts, like cookies.
 
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 65]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Removed "message".
 
    Switched to TLS ALPN from NPN.
@@ -3633,14 +3662,6 @@ A.9.  Since draft-ietf-httpbis-http2-01
    Removed zlib-based header compression mechanism.
 
    Updated references.
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 65]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Clarified stream identifier reuse.
 
@@ -3669,6 +3690,14 @@ A.10.  Since draft-ietf-httpbis-http2-00
    Changed INTERNAL_ERROR [INTERNAL_ERROR] on GOAWAY [GOAWAY] to have a
    value of 2 [4].
 
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 66]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Replaced abstract and introduction.
 
    Added section on starting HTTP/2.0, including upgrade mechanism.
@@ -3684,19 +3713,6 @@ A.11.  Since draft-mbelshe-httpbis-spdy-00
    Updated authors/editors list.
 
    Added status note.
-
-
-
-
-
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 66]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
 Authors' Addresses
 
@@ -3720,22 +3736,6 @@ Authors' Addresses
    US
 
    EMail: martin.thomson@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
