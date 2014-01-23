@@ -525,7 +525,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
    upgrading to HTTP/2.0.
 
    A server decodes and interprets these values as it would any other
-   SETTINGS [SETTINGS] frame.  Providing these values in the Upgrade
+   SETTINGS [SETTINGS] frame.  Acknowledgement of the settings
+   (Section 6.5.3) is not necessary, since a 101 response serves as
+   implicit acknowledgment.  Providing these values in the Upgrade
    request ensures that the protocol does not require default values for
    the above settings, and gives a client an opportunity to provide
    other settings prior to receiving any frames from the server.
@@ -551,9 +553,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
    servers supporting HTTP/2.0 are required to support protocol
    negotiation in TLS [TLSALPN] for "https" URIs.
 
-   Prior support for HTTP/2.0 is not a strong signal that a given server
-   will support HTTP/2.0 for future connections.  It is possible for
-   server configurations to change or for configurations to differ
+
 
 
 
@@ -562,6 +562,9 @@ Belshe, et al.           Expires July 27, 2014                 [Page 10]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
+   Prior support for HTTP/2.0 is not a strong signal that a given server
+   will support HTTP/2.0 for future connections.  It is possible for
+   server configurations to change or for configurations to differ
    between instances in clustered server.  Interception proxies (a.k.a.
    "transparent" proxies) are another source of variability.
 
@@ -607,9 +610,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Clients and servers MUST terminate the TCP connection if either peer
    does not begin with a valid connection header.  A GOAWAY [GOAWAY]
-   frame (Section 6.8) MAY be omitted if it is clear that the peer is
-   not using HTTP/2.0.
-
 
 
 
@@ -617,6 +617,9 @@ Belshe, et al.           Expires July 27, 2014                 [Page 11]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   frame (Section 6.8) MAY be omitted if it is clear that the peer is
+   not using HTTP/2.0.
 
 4.  HTTP Frames
 
@@ -662,9 +665,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
       Flags that have no defined semantics for a particular frame type
       MUST be ignored, and MUST be left unset (0) when sending.
 
-   R: A reserved 1-bit field.  The semantics of this bit are undefined
-      and the bit MUST remain unset (0) when sending and MUST be ignored
-      when receiving.
 
 
 
@@ -673,6 +673,10 @@ Belshe, et al.           Expires July 27, 2014                 [Page 12]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   R: A reserved 1-bit field.  The semantics of this bit are undefined
+      and the bit MUST remain unset (0) when sending and MUST be ignored
+      when receiving.
 
    Stream Identifier:  A 31-bit stream identifier (see Section 5.1.1).
       The value 0 is reserved for frames that are associated with the
@@ -717,10 +721,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    header fields.  Header fields with multiple values are encoded into a
    single header field using a special delimiter, see Section 8.1.3.3.
 
-   The Cookie header field [COOKIE] is treated specially by the HTTP
-   mapping, see Section 8.1.3.4.
-
-
 
 
 
@@ -729,6 +729,9 @@ Belshe, et al.           Expires July 27, 2014                 [Page 13]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   The Cookie header field [COOKIE] is treated specially by the HTTP
+   mapping, see Section 8.1.3.4.
 
    A receiving endpoint reassembles the header block by concatenating
    the individual fragments, then decompresses the block to reconstruct
@@ -776,15 +779,15 @@ Internet-Draft                  HTTP/2.0                    January 2014
       open streams, with either endpoint interleaving frames from
       multiple streams.
 
-   o  Streams can be established and used unilaterally or shared by
-      either the client or server.
-
 
 
 Belshe, et al.           Expires July 27, 2014                 [Page 14]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   o  Streams can be established and used unilaterally or shared by
+      either the client or server.
 
    o  Streams can be closed by either endpoint.
 
@@ -828,12 +831,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
                           Figure 1: Stream States
 
-
-
-
-
-
-
+   Both endpoints have a subjective view of the state of a stream that
+   could be different when frames are in transit.  Endpoints do not
+   coordinate the creation of streams, they are created unilaterally by
 
 
 
@@ -842,9 +842,6 @@ Belshe, et al.           Expires July 27, 2014                 [Page 15]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
-   Both endpoints have a subjective view of the state of a stream that
-   could be different when frames are in transit.  Endpoints do not
-   coordinate the creation of streams, they are created unilaterally by
    either endpoint.  The negative consequences of a mismatch in states
    are limited to the "closed" state after sending RST_STREAM
    [RST_STREAM], where frames might be received for some time after
@@ -889,6 +886,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
       An endpoint MUST NOT send frames other than than HEADERS [HEADERS]
       or RST_STREAM [RST_STREAM] in this state.
+
+
+
 
 
 
