@@ -606,7 +606,6 @@ samp, tt, code, pre {
                      <li><a href="#rfc.section.6.9.1">6.9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.9.1">The Flow Control Window</a></li>
                      <li><a href="#rfc.section.6.9.2">6.9.2</a>&nbsp;&nbsp;&nbsp;<a href="#InitialWindowSize">Initial Flow Control Window Size</a></li>
                      <li><a href="#rfc.section.6.9.3">6.9.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6.9.3">Reducing the Stream Window Size</a></li>
-                     <li><a href="#rfc.section.6.9.4">6.9.4</a>&nbsp;&nbsp;&nbsp;<a href="#EndFlowControl">Ending Flow Control</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.6.10">6.10</a>&nbsp;&nbsp;&nbsp;<a href="#CONTINUATION">CONTINUATION</a></li>
@@ -1260,15 +1259,14 @@ Upgrade: h2
                   </li>
                   <li>Flow control is directional with overall control provided by the receiver. A receiver MAY choose to set any window size that
                      it desires for each stream and for the entire connection. A sender MUST respect flow control limits imposed by a receiver.
-                     Clients, servers and intermediaries all independently advertise their flow control preferences as a receiver and abide by
-                     the flow control limits set by their peer when sending.
+                     Clients, servers and intermediaries all independently advertise their flow control window as a receiver and abide by the flow
+                     control limits set by their peer when sending.
                   </li>
                   <li>The initial value for the flow control window is 65,535 bytes for both new streams and the overall connection.</li>
                   <li>The frame type determines whether flow control applies to a frame. Of the frames specified in this document, only <a href="#DATA" class="smpl">DATA</a> frames are subject to flow control; all other frame types do not consume space in the advertised flow control window. This
                      ensures that important control frames are not blocked by flow control.
                   </li>
-                  <li>Flow control can be disabled by a receiver. A receiver can choose to disable both forms of flow control by sending the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting. See Ending Flow Control (<a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>) for more details.
-                  </li>
+                  <li>Flow control cannot be disabled.</li>
                   <li>HTTP/2.0 standardizes only the format of the <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> frame (<a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;6.9</a>). This does not stipulate how a receiver decides when to send this frame or the value that it sends. Nor does it specify
                      how a sender chooses to send packets. Implementations are able to select any algorithm that suits their needs.
                   </li>
@@ -1285,8 +1283,8 @@ Upgrade: h2
                   addresses cases where the receiver is unable process data on one stream, yet wants to continue to process other streams in
                   the same connection.
                </p>
-               <p id="rfc.section.5.2.2.p.2">Deployments that do not require this capability SHOULD disable flow control for data that is being received. Note that flow
-                  control cannot be disabled for sending. Sending data is always subject to the flow control window advertised by the receiver.
+               <p id="rfc.section.5.2.2.p.2">Deployments that do not require this capability can advertise a flow control of the maximum size, incrementing the available
+                  space when new data is received. Sending data is always subject to the flow control window advertised by the receiver.
                </p>
                <p id="rfc.section.5.2.2.p.3">Deployments with constrained resources (for example, memory) MAY employ flow control to limit the amount of memory a peer
                   can consume. Note, however, that this can lead to suboptimal use of available network resources if flow control is enabled
@@ -1579,13 +1577,6 @@ Upgrade: h2
                      <p>Values above the maximum flow control window size of 2<sup>31</sup> - 1 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a>.
                      </p>
                   </dd>
-                  <dt id="SETTINGS_FLOW_CONTROL_OPTIONS">SETTINGS_FLOW_CONTROL_OPTIONS (5):</dt>
-                  <dd>
-                     <p>Indicates flow control options. The least significant bit (0x1) of the value is set to indicate that the sender has disabled
-                        all flow control. This bit cannot be cleared once set, see <a href="#EndFlowControl" title="Ending Flow Control">Section&nbsp;6.9.4</a>.
-                     </p>
-                     <p>All bits other than the least significant are reserved.</p>
-                  </dd>
                </dl>
             </div>
             <div id="SettingsSync">
@@ -1844,19 +1835,6 @@ Upgrade: h2
                </ol>
                <p> If a receiver decides to accept streams, both sides MUST recompute the available flow control window based on the initial
                   window size sent in the <a href="#SETTINGS" class="smpl">SETTINGS</a>.
-               </p>
-            </div>
-            <div id="EndFlowControl">
-               <h3 id="rfc.section.6.9.4"><a href="#rfc.section.6.9.4">6.9.4</a>&nbsp;<a href="#EndFlowControl">Ending Flow Control</a></h3>
-               <p id="rfc.section.6.9.4.p.1">After a receiver reads in a frame that marks the end of a stream (for example, a data stream with a END_STREAM flag set),
-                  it MUST cease transmission of WINDOW_UPDATE frames for that stream. A sender is not obligated to maintain the available flow
-                  control window for streams that it is no longer sending on.
-               </p>
-               <p id="rfc.section.6.9.4.p.2">Flow control can be disabled for the entire connection using the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting. This setting ends all forms of flow control. An implementation that does not wish to perform flow control can use
-                  this in the initial <a href="#SETTINGS" class="smpl">SETTINGS</a> exchange.
-               </p>
-               <p id="rfc.section.6.9.4.p.3">Flow control cannot be enabled again once disabled. Any attempt to re-enable flow control - by sending a WINDOW_UPDATE or
-                  by clearing the bits on the <a href="#SETTINGS_FLOW_CONTROL_OPTIONS" class="smpl">SETTINGS_FLOW_CONTROL_OPTIONS</a> setting - MUST be rejected with a <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> error code.
                </p>
             </div>
          </div>
@@ -2391,9 +2369,9 @@ Upgrade: h2
             <h2 id="rfc.section.10.5"><a href="#rfc.section.10.5">10.5</a>&nbsp;Denial of Service Considerations
             </h2>
             <p id="rfc.section.10.5.p.1">An HTTP/2.0 connection can demand a greater commitment of resources to operate than a HTTP/1.1 connection. The use of header
-               compression and flow control require that an implementation commit resources for storing a greater amount of state. Settings
-               for these features ensure that memory commitments for these features are strictly bounded. Processing capacity cannot be guarded
-               in the same fashion.
+               compression and flow control depend on a commitment of resources for storing a greater amount of state. Settings for these
+               features ensure that memory commitments for these features are strictly bounded. Processing capacity cannot be guarded in
+               the same fashion.
             </p>
             <p id="rfc.section.10.5.p.2">The <a href="#SETTINGS" class="smpl">SETTINGS</a> frame can be abused to cause a peer to expend additional processing time. This might be done by pointlessly changing settings,
                setting multiple undefined settings, or changing the same setting multiple times in the same frame. Similarly, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames can be abused to cause an unnecessary waste of resources.
@@ -2791,10 +2769,11 @@ Upgrade: h2
          <h1 id="rfc.section.A" class="np"><a href="#rfc.section.A">A.</a>&nbsp;<a href="#change.log">Change Log (to be removed by RFC Editor before publication)</a></h1>
          <div id="changes.since.draft-ietf-httpbis-http2-09">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-09">Since draft-ietf-httpbis-http2-09</a></h2>
-            <p id="rfc.section.A.1.p.1">Changing the protocol identification token to "h2".</p>
-            <p id="rfc.section.A.1.p.2">Changing the use of :authority to make it optional and to allow userinfo in non-HTTP cases.</p>
-            <p id="rfc.section.A.1.p.3">Allowing split on 0x0 for Cookie.</p>
-            <p id="rfc.section.A.1.p.4">Reserved PRI method in HTTP/1.1 to avoid possible future collisions.</p>
+            <p id="rfc.section.A.1.p.1">Removing the ability to disable flow control.</p>
+            <p id="rfc.section.A.1.p.2">Changing the protocol identification token to "h2".</p>
+            <p id="rfc.section.A.1.p.3">Changing the use of :authority to make it optional and to allow userinfo in non-HTTP cases.</p>
+            <p id="rfc.section.A.1.p.4">Allowing split on 0x0 for Cookie.</p>
+            <p id="rfc.section.A.1.p.5">Reserved PRI method in HTTP/1.1 to avoid possible future collisions.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-08">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-08">Since draft-ietf-httpbis-http2-08</a></h2>
