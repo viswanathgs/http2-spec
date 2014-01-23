@@ -156,12 +156,12 @@ Internet-Draft                  HTTP/2.0                    January 2014
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  56
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  57
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  57
-     12.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  57
-     12.3.  Error Code Registry  . . . . . . . . . . . . . . . . . .  58
-     12.4.  Settings Registry  . . . . . . . . . . . . . . . . . . .  59
-     12.5.  HTTP2-Settings Header Field Registration . . . . . . . .  59
-     12.6.  PRI Method Registration  . . . . . . . . . . . . . . . .  60
-   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  60
+     12.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  57
+     12.3.  HTTP2-Settings Header Field Registration . . . . . . . .  58
+     12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  58
+   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  59
+   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  59
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  59
 
 
 
@@ -170,23 +170,21 @@ Belshe, et al.           Expires July 27, 2014                  [Page 3]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  61
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  61
-     14.2.  Informative References . . . . . . . . . . . . . . . . .  62
+     14.2.  Informative References . . . . . . . . . . . . . . . . .  61
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  63
-     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  63
-     A.2.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  63
-     A.3.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  63
-     A.4.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  63
-     A.5.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  64
-     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  64
-     A.7.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  64
-     A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  65
-     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  65
-     A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  66
-     A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  66
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  66
+                publication) . . . . . . . . . . . . . . . . . . . .  61
+     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  61
+     A.2.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  61
+     A.3.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  62
+     A.4.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  62
+     A.5.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  62
+     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  62
+     A.7.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  63
+     A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  63
+     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  63
+     A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  64
+     A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  64
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  65
 
 1.  Introduction
 
@@ -216,8 +214,10 @@ Internet-Draft                  HTTP/2.0                    January 2014
    also allows prioritization of requests, letting more important
    requests complete more quickly, further improving performance.
 
-   The resulting protocol is designed to be more friendly to the
-   network, because fewer TCP connections can be used, in comparison to
+
+
+
+
 
 
 
@@ -226,6 +226,8 @@ Belshe, et al.           Expires July 27, 2014                  [Page 4]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
+   The resulting protocol is designed to be more friendly to the
+   network, because fewer TCP connections can be used, in comparison to
    HTTP/1.x.  This means less competition with other flows, and longer-
    lived connections, which in turn leads to better utilization of
    available network capacity.
@@ -272,8 +274,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    client:  The endpoint initiating the HTTP connection.
 
    connection:  A transport-level connection between two endpoints.
-
-
 
 
 
@@ -655,8 +655,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Type:  The 8-bit type of the frame.  The frame type determines how
       the remainder of the frame header and payload are interpreted.
-      Implementations MUST ignore frames of unsupported or unrecognized
-      types.
+      Implementations MUST treat the receipt of an unknown frame type
+      (any frame type not defined in this document) as a connection
+      error (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].
 
    Flags:  An 8-bit field reserved for frame-type specific boolean
       flags.
@@ -664,7 +665,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
       Flags are assigned semantics specific to the indicated frame type.
       Flags that have no defined semantics for a particular frame type
       MUST be ignored, and MUST be left unset (0) when sending.
-
 
 
 
@@ -1583,16 +1583,16 @@ Internet-Draft                  HTTP/2.0                    January 2014
 6.5.1.  Setting Format
 
    The payload of a SETTINGS frame consists of zero or more settings.
-   Each setting consists of an 8-bit reserved field, an unsigned 24-bit
-   setting identifier, and an unsigned 32-bit value.
+   Each setting consists of an unsigned 8-bit setting identifier, and an
+   unsigned 32-bit value.
 
    0                   1                   2                   3
    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |  Reserved (8) |            Setting Identifier (24)            |
+   |Identifier (8) |                 Value (32)                  ...
    +---------------+-----------------------------------------------+
-   |                        Value (32)                             |
-   +---------------------------------------------------------------+
+   ...Value        |
+   +---------------+
 
                               Setting Format
 
@@ -1648,6 +1648,10 @@ Internet-Draft                  HTTP/2.0                    January 2014
       be treated as a connection error (Section 5.4.1) of type
       FLOW_CONTROL_ERROR [FLOW_CONTROL_ERROR].
 
+   An endpoint that receives a SETTINGS frame with any other setting
+   identifier MUST treat this as a connection error (Section 5.4.1) of
+   type PROTOCOL_ERROR [PROTOCOL_ERROR].
+
 6.5.3.  Settings Synchronization
 
    Most values in SETTINGS benefit from or require an understanding of
@@ -1668,10 +1672,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    (Section 5.4.1) of type SETTINGS_TIMEOUT [SETTINGS_TIMEOUT].
 
 6.6.  PUSH_PROMISE
-
-
-
-
 
 
 
@@ -3151,9 +3151,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Layer Protocol Negotiation (ALPN) Protocol IDs" registry established
    in [TLSALPN].
 
-   This document establishes registries for frame types, error codes and
-   settings.  These new registries are entered in a new "Hypertext
-   Transfer Protocol (HTTP) 2.0 Parameters" section.
+   This document establishes registries for error codes.  This new
+   registry is entered into a new "Hypertext Transfer Protocol (HTTP)
+   2.0 Parameters" section.
 
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
@@ -3173,60 +3173,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Specification:  This document (RFCXXXX)
 
-12.2.  Frame Type Registry
-
-   This document establishes a registry for HTTP/2.0 frame types.  The
-   "HTTP/2.0 Frame Type" registry operates under the "IETF Review"
-   policy [RFC5226].
-
-   Frame types are an 8-bit value.  When reviewing new frame type
-   registrations, special attention is advised for any frame type-
-   specific flags that are defined.  Frame flags can interact with
-   existing flags and could prevent the creation of globally applicable
-   flags.
-
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 57]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
-
-   Initial values for the "HTTP/2.0 Frame Type" registry are shown in
-   Table 1.
-
-   +---------+--------------------+-------------------------+----------+
-   | Frame   | Name               | Flags                   | Section  |
-   | Type    |                    |                         |          |
-   +---------+--------------------+-------------------------+----------+
-   | 0       | DATA [DATA]        | END_STREAM(1)           | Section  |
-   |         |                    |                         | 6.1      |
-   | 1       | HEADERS [HEADERS]  | END_STREAM(1),          | Section  |
-   |         |                    | END_HEADERS(4),         | 6.2      |
-   |         |                    | PRIORITY(8)             |          |
-   | 2       | PRIORITY           | -                       | Section  |
-   |         | [PRIORITY]         |                         | 6.3      |
-   | 3       | RST_STREAM         | -                       | Section  |
-   |         | [RST_STREAM]       |                         | 6.4      |
-   | 4       | SETTINGS           | ACK(1)                  | Section  |
-   |         | [SETTINGS]         |                         | 6.5      |
-   | 5       | PUSH_PROMISE       | END_PUSH_PROMISE(4)     | Section  |
-   |         | [PUSH_PROMISE]     |                         | 6.6      |
-   | 6       | PING [PING]        | ACK(1)                  | Section  |
-   |         |                    |                         | 6.7      |
-   | 7       | GOAWAY [GOAWAY]    | -                       | Section  |
-   |         |                    |                         | 6.8      |
-   | 9       | WINDOW_UPDATE      | -                       | Section  |
-   |         | [WINDOW_UPDATE]    |                         | 6.9      |
-   | 10      | CONTINUATION       | END_HEADERS(4)          | Section  |
-   |         | [CONTINUATION]     |                         | 6.10     |
-   +---------+--------------------+-------------------------+----------+
-
-                                  Table 1
-
-12.3.  Error Code Registry
+12.2.  Error Code Registry
 
    This document establishes a registry for HTTP/2.0 error codes.  The
    "HTTP/2.0 Error Code" registry manages a 32-bit space.  The "HTTP/2.0
@@ -3240,15 +3187,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    New registrations are advised to provide the following information:
 
-   Error Code:  The 32-bit error code value.
 
 
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 58]
+Belshe, et al.           Expires July 27, 2014                 [Page 57]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Error Code:  The 32-bit error code value.
 
    Name:  A name for the error code.  Specifying an error code name is
       optional.
@@ -3261,50 +3207,12 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    An initial set of error code registrations can be found in Section 7.
 
-12.4.  Settings Registry
-
-   This document establishes a registry for HTTP/2.0 settings.  The
-   "HTTP/2.0 Settings" registry manages a 24-bit space.  The "HTTP/2.0
-   Settings" registry operates under the "Expert Review" policy
-   [RFC5226].
-
-   Registrations for settings are required to include a description of
-   the setting.  An expert reviewer is advised to examine new
-   registrations for possible duplication with existing settings.  Use
-   of existing registrations is to be encouraged, but not mandated.
-
-   New registrations are advised to provide the following information:
-
-   Setting:  The 24-bit setting value.
-
-   Name:  A name for the setting.  Specifying a name is optional.
-
-   Flags:  Any setting-specific flags that apply, including their value
-      and semantics.
-
-   Description:  A description of the setting.  This might include the
-      range of values, any applicable units and how to act upon a value
-      when it is provided.
-
-   Specification:  An optional reference for a specification that
-      defines the setting.
-
-   An initial set of settings registrations can be found in
-   Section 6.5.2.
-
-12.5.  HTTP2-Settings Header Field Registration
+12.3.  HTTP2-Settings Header Field Registration
 
    This section registers the "HTTP2-Settings" header field in the
    Permanent Message Header Field Registry [BCP90].
 
    Header field name:  HTTP2-Settings
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 59]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Applicable protocol:  http
 
@@ -3317,7 +3225,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Related information:  This header field is only used by an HTTP/2.0
       client for Upgrade-based negotiation.
 
-12.6.  PRI Method Registration
+12.4.  PRI Method Registration
 
    This section registers the "PRI" method in the HTTP Method Registry
    [HTTP-p2].
@@ -3333,6 +3241,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Related information:  This method is never used by an actual client.
       This method will appear to be used when an HTTP/1.1 server or
       intermediary attempts to parse an HTTP/2.0 connection header.
+
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 58]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
 
 13.  Acknowledgements
 
@@ -3353,14 +3269,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
       Bishop, Herve Ruellan (Substantial editorial contributions).
 
    o  Alexey Melnikov was an editor of this document during 2013.
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 60]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    o  A substantial proportion of Martin's contribution was supported by
       Microsoft during his employment there.
@@ -3387,6 +3295,17 @@ Internet-Draft                  HTTP/2.0                    January 2014
               draft-ietf-httpbis-p2-semantics-25 (work in progress),
               November 2013.
 
+
+
+
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 59]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Conditional Requests",
               draft-ietf-httpbis-p4-conditional-25 (work in progress),
@@ -3411,13 +3330,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    [RFC2818]  Rescorla, E., "HTTP Over TLS ", RFC 2818, May 2000.
 
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 61]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
-
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66, RFC
               3986, January 2005.
@@ -3440,6 +3352,15 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
+
+
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 60]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
 
    [TLS11]    Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.1", RFC 4346, April 2006.
@@ -3465,15 +3386,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    [RC4]      Rivest, R., "The RC4 encryption algorithm ", RSA Data
               Security, Inc. , March 1992.
 
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 62]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
-
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance ", RFC 1323, May 1992.
 
@@ -3498,6 +3410,14 @@ A.1.  Since draft-ietf-httpbis-http2-09
 
 A.2.  Since draft-ietf-httpbis-http2-08
 
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 61]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Added cookie crumbling for more efficient header compression.
 
    Added header field ordering with the value-concatenation mechanism.
@@ -3521,14 +3441,6 @@ A.4.  Since draft-ietf-httpbis-http2-06
 
    Removing unnecessary and potentially problematic flags from
    CONTINUATION.
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 63]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Added denial of service considerations.
 
@@ -3555,6 +3467,13 @@ A.6.  Since draft-ietf-httpbis-http2-04
    Requiring that intermediaries not forward requests with missing or
    illegal routing :-headers.
 
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 62]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Clarified requirements around handling different frames after stream
    close, stream reset and GOAWAY [GOAWAY].
 
@@ -3578,13 +3497,6 @@ A.7.  Since draft-ietf-httpbis-http2-03
 
    Removed HEADERS+PRIORITY, added optional priority to HEADERS
    [HEADERS] frame.
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 64]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Added PRIORITY [PRIORITY] frame.
 
@@ -3610,6 +3522,14 @@ A.9.  Since draft-ietf-httpbis-http2-01
 
    Added PUSH_PROMISE [PUSH_PROMISE].
 
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 63]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Added globally applicable flags to framing.
 
    Removed zlib-based header compression mechanism.
@@ -3633,14 +3553,6 @@ A.9.  Since draft-ietf-httpbis-http2-01
    servers.
 
    Changed protocol label form based on discussions.
-
-
-
-
-Belshe, et al.           Expires July 27, 2014                 [Page 65]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
 A.10.  Since draft-ietf-httpbis-http2-00
 
@@ -3667,6 +3579,13 @@ A.11.  Since draft-mbelshe-httpbis-spdy-00
 
    Added status note.
 
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 64]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 Authors' Addresses
 
    Mike Belshe
@@ -3692,4 +3611,29 @@ Authors' Addresses
 
 
 
-Belshe, et al.           Expires July 27, 2014                 [Page 66]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.           Expires July 27, 2014                 [Page 65]

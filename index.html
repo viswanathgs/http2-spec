@@ -205,52 +205,6 @@ sup {
 table {
   margin-left: 2em;
 }
-table.tt {
-  vertical-align: top;
-}
-table.full {
-  border-style: outset;
-  border-width: 1px;
-}
-table.headers {
-  border-style: outset;
-  border-width: 1px;
-}
-table.tt td {
-  vertical-align: top;
-}
-table.full td {
-  border-style: inset;
-  border-width: 1px;
-}
-table.tt th {
-  vertical-align: top;
-}
-table.full th {
-  border-style: inset;
-  border-width: 1px;
-}
-table.headers th {
-  border-style: none none inset none;
-  border-width: 1px;
-}
-table.left {
-  margin-right: auto;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-caption {
-  caption-side: bottom;
-  font-weight: bold;
-  font-size: 10pt;
-  margin-top: .5em;
-}
-
 table.header {
   border-spacing: 1px;
   width: 95%;
@@ -652,11 +606,9 @@ samp, tt, code, pre {
          <li><a href="#rfc.section.11">11.</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.11">Privacy Considerations</a></li>
          <li><a href="#rfc.section.12">12.</a>&nbsp;&nbsp;&nbsp;<a href="#iana">IANA Considerations</a><ul>
                <li><a href="#rfc.section.12.1">12.1</a>&nbsp;&nbsp;&nbsp;<a href="#iana-alpn">Registration of HTTP/2.0 Identification String</a></li>
-               <li><a href="#rfc.section.12.2">12.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.2">Frame Type Registry</a></li>
-               <li><a href="#rfc.section.12.3">12.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.3">Error Code Registry</a></li>
-               <li><a href="#rfc.section.12.4">12.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.4">Settings Registry</a></li>
-               <li><a href="#rfc.section.12.5">12.5</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.5">HTTP2-Settings Header Field Registration</a></li>
-               <li><a href="#rfc.section.12.6">12.6</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.6">PRI Method Registration</a></li>
+               <li><a href="#rfc.section.12.2">12.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.2">Error Code Registry</a></li>
+               <li><a href="#rfc.section.12.3">12.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.3">HTTP2-Settings Header Field Registration</a></li>
+               <li><a href="#rfc.section.12.4">12.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.12.4">PRI Method Registration</a></li>
             </ul>
          </li>
          <li><a href="#rfc.section.13">13.</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.13">Acknowledgements</a></li>
@@ -983,7 +935,7 @@ Upgrade: h2
                <dt>Type:</dt>
                <dd>
                   <p>The 8-bit type of the frame. The frame type determines how the remainder of the frame header and payload are interpreted.
-                     Implementations MUST ignore frames of unsupported or unrecognized types.
+                     Implementations MUST treat the receipt of an unknown frame type (any frame type not defined in this document) as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>Flags:</dt>
@@ -1528,16 +1480,16 @@ Upgrade: h2
             </p>
             <div id="SettingFormat">
                <h3 id="rfc.section.6.5.1"><a href="#rfc.section.6.5.1">6.5.1</a>&nbsp;<a href="#SettingFormat">Setting Format</a></h3>
-               <p id="rfc.section.6.5.1.p.1">The payload of a SETTINGS frame consists of zero or more settings. Each setting consists of an 8-bit reserved field, an unsigned
-                  24-bit setting identifier, and an unsigned 32-bit value.
+               <p id="rfc.section.6.5.1.p.1">The payload of a SETTINGS frame consists of zero or more settings. Each setting consists of an unsigned 8-bit setting identifier,
+                  and an unsigned 32-bit value.
                </p>
                <div id="rfc.figure.6"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |  Reserved (8) |            Setting Identifier (24)            |
+ |Identifier (8) |                 Value (32)                  ...
  +---------------+-----------------------------------------------+
- |                        Value (32)                             |
- +---------------------------------------------------------------+
+ ...Value        |
+ +---------------+
 </pre><p class="figure">Figure 6: Setting Format</p>
             </div>
             <div id="SettingValues">
@@ -1578,6 +1530,8 @@ Upgrade: h2
                      </p>
                   </dd>
                </dl>
+               <p id="rfc.section.6.5.2.p.2">An endpoint that receives a SETTINGS frame with any other setting identifier MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               </p>
             </div>
             <div id="SettingsSync">
                <h3 id="rfc.section.6.5.3"><a href="#rfc.section.6.5.3">6.5.3</a>&nbsp;<a href="#SettingsSync">Settings Synchronization</a></h3>
@@ -2404,8 +2358,8 @@ Upgrade: h2
          <p id="rfc.section.12.p.1">A string for identifying HTTP/2.0 is entered into the "Application Layer Protocol Negotiation (ALPN) Protocol IDs" registry
             established in <a href="#TLSALPN"><cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite></a>.
          </p>
-         <p id="rfc.section.12.p.2">This document establishes registries for frame types, error codes and settings. These new registries are entered in a new
-            "Hypertext Transfer Protocol (HTTP) 2.0 Parameters" section.
+         <p id="rfc.section.12.p.2">This document establishes registries for error codes. This new registry is entered into a new "Hypertext Transfer Protocol
+            (HTTP) 2.0 Parameters" section.
          </p>
          <p id="rfc.section.12.p.3">This document registers the <samp>HTTP2-Settings</samp> header field for use in HTTP.
          </p>
@@ -2426,104 +2380,16 @@ Upgrade: h2
             </dl>
          </div>
          <div>
-            <h2 id="rfc.section.12.2"><a href="#rfc.section.12.2">12.2</a>&nbsp;Frame Type Registry
+            <h2 id="rfc.section.12.2"><a href="#rfc.section.12.2">12.2</a>&nbsp;Error Code Registry
             </h2>
-            <p id="rfc.section.12.2.p.1">This document establishes a registry for HTTP/2.0 frame types. The "HTTP/2.0 Frame Type" registry operates under the <a href="#RFC5226">"IETF Review" policy</a> <cite title="Guidelines for Writing an IANA Considerations Section in RFCs">[RFC5226]</cite>.
-            </p>
-            <p id="rfc.section.12.2.p.2">Frame types are an 8-bit value. When reviewing new frame type registrations, special attention is advised for any frame type-specific
-               flags that are defined. Frame flags can interact with existing flags and could prevent the creation of globally applicable
-               flags.
-            </p>
-            <p id="rfc.section.12.2.p.3">Initial values for the "HTTP/2.0 Frame Type" registry are shown in <a href="#IanaInitialFrameType">Table&nbsp;1</a>.
-            </p>
-            <div id="rfc.table.1">
-               <div id="IanaInitialFrameType"></div>
-               <table class="tt full center" cellpadding="3" cellspacing="0">
-                  <caption>Table 1</caption>
-                  <thead>
-                     <tr>
-                        <th>Frame Type</th>
-                        <th>Name</th>
-                        <th>Flags</th>
-                        <th>Section</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     <tr>
-                        <td class="left">0</td>
-                        <td class="left"><a href="#DATA" class="smpl">DATA</a></td>
-                        <td class="left">END_STREAM(1)</td>
-                        <td class="left"><a href="#DATA" title="DATA">Section&nbsp;6.1</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">1</td>
-                        <td class="left"><a href="#HEADERS" class="smpl">HEADERS</a></td>
-                        <td class="left">END_STREAM(1), END_HEADERS(4), PRIORITY(8)</td>
-                        <td class="left"><a href="#HEADERS" title="HEADERS">Section&nbsp;6.2</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">2</td>
-                        <td class="left"><a href="#PRIORITY" class="smpl">PRIORITY</a></td>
-                        <td class="left">-</td>
-                        <td class="left"><a href="#PRIORITY" title="PRIORITY">Section&nbsp;6.3</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">3</td>
-                        <td class="left"><a href="#RST_STREAM" class="smpl">RST_STREAM</a></td>
-                        <td class="left">-</td>
-                        <td class="left"><a href="#RST_STREAM" title="RST_STREAM">Section&nbsp;6.4</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">4</td>
-                        <td class="left"><a href="#SETTINGS" class="smpl">SETTINGS</a></td>
-                        <td class="left">ACK(1)</td>
-                        <td class="left"><a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">5</td>
-                        <td class="left"><a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a></td>
-                        <td class="left">END_PUSH_PROMISE(4)</td>
-                        <td class="left"><a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;6.6</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">6</td>
-                        <td class="left"><a href="#PING" class="smpl">PING</a></td>
-                        <td class="left">ACK(1)</td>
-                        <td class="left"><a href="#PING" title="PING">Section&nbsp;6.7</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">7</td>
-                        <td class="left"><a href="#GOAWAY" class="smpl">GOAWAY</a></td>
-                        <td class="left">-</td>
-                        <td class="left"><a href="#GOAWAY" title="GOAWAY">Section&nbsp;6.8</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">9</td>
-                        <td class="left"><a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a></td>
-                        <td class="left">-</td>
-                        <td class="left"><a href="#WINDOW_UPDATE" title="WINDOW_UPDATE">Section&nbsp;6.9</a></td>
-                     </tr>
-                     <tr>
-                        <td class="left">10</td>
-                        <td class="left"><a href="#CONTINUATION" class="smpl">CONTINUATION</a></td>
-                        <td class="left">END_HEADERS(4)</td>
-                        <td class="left"><a href="#CONTINUATION" title="CONTINUATION">Section&nbsp;6.10</a></td>
-                     </tr>
-                  </tbody>
-               </table>
-            </div>
-         </div>
-         <div>
-            <h2 id="rfc.section.12.3"><a href="#rfc.section.12.3">12.3</a>&nbsp;Error Code Registry
-            </h2>
-            <p id="rfc.section.12.3.p.1">This document establishes a registry for HTTP/2.0 error codes. The "HTTP/2.0 Error Code" registry manages a 32-bit space.
+            <p id="rfc.section.12.2.p.1">This document establishes a registry for HTTP/2.0 error codes. The "HTTP/2.0 Error Code" registry manages a 32-bit space.
                The "HTTP/2.0 Error Code" registry operates under the <a href="#RFC5226">"Expert Review" policy</a> <cite title="Guidelines for Writing an IANA Considerations Section in RFCs">[RFC5226]</cite>.
             </p>
-            <p id="rfc.section.12.3.p.2">Registrations for error codes are required to include a description of the error code. An expert reviewer is advised to examine
+            <p id="rfc.section.12.2.p.2">Registrations for error codes are required to include a description of the error code. An expert reviewer is advised to examine
                new registrations for possible duplication with existing error codes. Use of existing registrations is to be encouraged, but
                not mandated.
             </p>
-            <p id="rfc.section.12.3.p.3">New registrations are advised to provide the following information: </p>
+            <p id="rfc.section.12.2.p.3">New registrations are advised to provide the following information: </p>
             <dl>
                <dt>Error Code:</dt>
                <dd>The 32-bit error code value.</dd>
@@ -2534,41 +2400,13 @@ Upgrade: h2
                <dt>Specification:</dt>
                <dd>An optional reference for a specification that defines the error code.</dd>
             </dl>
-            <p id="rfc.section.12.3.p.4">An initial set of error code registrations can be found in <a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>.
+            <p id="rfc.section.12.2.p.4">An initial set of error code registrations can be found in <a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>.
             </p>
          </div>
          <div>
-            <h2 id="rfc.section.12.4"><a href="#rfc.section.12.4">12.4</a>&nbsp;Settings Registry
+            <h2 id="rfc.section.12.3"><a href="#rfc.section.12.3">12.3</a>&nbsp;HTTP2-Settings Header Field Registration
             </h2>
-            <p id="rfc.section.12.4.p.1">This document establishes a registry for HTTP/2.0 settings. The "HTTP/2.0 Settings" registry manages a 24-bit space. The "HTTP/2.0
-               Settings" registry operates under the <a href="#RFC5226">"Expert Review" policy</a> <cite title="Guidelines for Writing an IANA Considerations Section in RFCs">[RFC5226]</cite>.
-            </p>
-            <p id="rfc.section.12.4.p.2">Registrations for settings are required to include a description of the setting. An expert reviewer is advised to examine
-               new registrations for possible duplication with existing settings. Use of existing registrations is to be encouraged, but
-               not mandated.
-            </p>
-            <p id="rfc.section.12.4.p.3">New registrations are advised to provide the following information: </p>
-            <dl>
-               <dt>Setting:</dt>
-               <dd>The 24-bit setting value.</dd>
-               <dt>Name:</dt>
-               <dd>A name for the setting. Specifying a name is optional.</dd>
-               <dt>Flags:</dt>
-               <dd>Any setting-specific flags that apply, including their value and semantics.</dd>
-               <dt>Description:</dt>
-               <dd>A description of the setting. This might include the range of values, any applicable units and how to act upon a value when
-                  it is provided.
-               </dd>
-               <dt>Specification:</dt>
-               <dd>An optional reference for a specification that defines the setting.</dd>
-            </dl>
-            <p id="rfc.section.12.4.p.4">An initial set of settings registrations can be found in <a href="#SettingValues" title="Defined Settings">Section&nbsp;6.5.2</a>.
-            </p>
-         </div>
-         <div>
-            <h2 id="rfc.section.12.5"><a href="#rfc.section.12.5">12.5</a>&nbsp;HTTP2-Settings Header Field Registration
-            </h2>
-            <p id="rfc.section.12.5.p.1">This section registers the <samp>HTTP2-Settings</samp> header field in the <a href="#BCP90">Permanent Message Header Field Registry</a> <cite title="Registration Procedures for Message Header Fields">[BCP90]</cite>. 
+            <p id="rfc.section.12.3.p.1">This section registers the <samp>HTTP2-Settings</samp> header field in the <a href="#BCP90">Permanent Message Header Field Registry</a> <cite title="Registration Procedures for Message Header Fields">[BCP90]</cite>. 
             </p>
             <dl>
                <dt>Header field name:</dt>
@@ -2587,9 +2425,9 @@ Upgrade: h2
             </dl>
          </div>
          <div>
-            <h2 id="rfc.section.12.6"><a href="#rfc.section.12.6">12.6</a>&nbsp;PRI Method Registration
+            <h2 id="rfc.section.12.4"><a href="#rfc.section.12.4">12.4</a>&nbsp;PRI Method Registration
             </h2>
-            <p id="rfc.section.12.6.p.1">This section registers the <samp>PRI</samp> method in the <a href="#HTTP-p2">HTTP Method Registry</a> <cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite>. 
+            <p id="rfc.section.12.4.p.1">This section registers the <samp>PRI</samp> method in the <a href="#HTTP-p2">HTTP Method Registry</a> <cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[HTTP-p2]</cite>. 
             </p>
             <dl>
                <dt>Method Name:</dt>
