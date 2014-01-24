@@ -591,7 +591,7 @@ samp, tt, code, pre {
          </li>
          <li><a href="#rfc.section.9">9.</a>&nbsp;&nbsp;&nbsp;<a href="#HttpExtra">Additional HTTP Requirements/Considerations</a><ul>
                <li><a href="#rfc.section.9.1">9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.1">Connection Management</a></li>
-               <li><a href="#rfc.section.9.2">9.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.2">Use of TLS Features</a></li>
+               <li><a href="#rfc.section.9.2">9.2</a>&nbsp;&nbsp;&nbsp;<a href="#TLSUsage">Use of TLS Features</a></li>
                <li><a href="#rfc.section.9.3">9.3</a>&nbsp;&nbsp;&nbsp;<a href="#Compression">GZip Content-Encoding</a></li>
             </ul>
          </li>
@@ -1866,6 +1866,9 @@ Upgrade: h2
             <dd>The endpoint detected that its peer is exhibiting a behavior over a given amount of time that has caused it to refuse to process
                further frames.
             </dd>
+            <dt id="INADEQUATE_SECURITY">INADEQUATE_SECURITY (12):</dt>
+            <dd>The underlying transport has properties that do not meet the minimum requirements imposed by this document (see <a href="#TLSUsage" title="Use of TLS Features">Section&nbsp;9.2</a>) or the endpoint.
+            </dd>
          </dl>
       </div>
       <div id="HTTPLayer">
@@ -2238,23 +2241,28 @@ Upgrade: h2
                or terminate any necessary remaining tasks.
             </p>
          </div>
-         <div>
-            <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;Use of TLS Features
-            </h2>
-            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS11">TLS 1.1</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.1">[TLS11]</cite>. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: The working group intends to require at least the use of <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> prior to publication of this document; negotiating TLS 1.1 is permitted to enable the creation of interoperable implementations
-                  of early drafts.]</span> 
+         <div id="TLSUsage">
+            <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;<a href="#TLSUsage">Use of TLS Features</a></h2>
+            <p id="rfc.section.9.2.p.1">Implementations of HTTP/2.0 MUST support <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. The general TLS usage guidance in <a href="#TLSBCP"><cite title="Recommendations for Secure Use of TLS and DTLS">[TLSBCP]</cite></a> SHOULD be followed, with some additional restrictions that are specific to HTTP/2.0.
             </p>
             <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2.0 clients MUST indicate the target domain name when negotiating TLS.
             </p>
-            <p id="rfc.section.9.2.p.3">A server that receives a TLS handshake that does not include either TLS 1.1 or SNI, MUST NOT negotiate HTTP/2.0.</p>
+            <p id="rfc.section.9.2.p.3">The TLS implementation MUST disable compression. TLS compression can lead to the exposure of information that would not otherwise
+               be revealed <a href="#RFC3749"><cite title="Transport Layer Security Protocol Compression Methods">[RFC3749]</cite></a>. Generic compression is unnecessary since HTTP/2.0 provides compression features that are more aware of context and therefore
+               likely to be more appropriate for use for performance, security or other reasons.
+            </p>
             <p id="rfc.section.9.2.p.4">Implementations MUST negotiate ephemeral cipher suites (DHE or ECDHE) with a minimum size of 2048 bits (DHE) or security level
-               of 128 bits (ECDHE). Clients MUST accept DHE sizes of up to 4096 bits. Servers which are unable to negotiate cipher suites
-               which are conformant to this requirement MUST not negotiate HTTP/2.0.
+               of 128 bits (ECDHE). Clients MUST accept DHE sizes of up to 4096 bits.
             </p>
-            <p id="rfc.section.9.2.p.5">Removing HTTP/2.0 protocols from consideration could result in the removal of all protocols from the set of protocols offered
-               by the client. This causes protocol negotiation failure, as described in <a href="http://tools.ietf.org/html/draft-ietf-tls-applayerprotoneg-03#section-3.2">Section 3.2</a> of <a href="#TLSALPN"><cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite></a>.
+            <p id="rfc.section.9.2.p.5">An implementation that negotiates a TLS connection that does not meet the requirements in this section, or any policy-based
+               constraints, SHOULD NOT negotiate HTTP/2.0. Removing HTTP/2.0 protocols from consideration could result in the removal of
+               all protocols from the set of protocols offered by the client. This causes protocol negotiation failure, as described in <a href="http://tools.ietf.org/html/draft-ietf-tls-applayerprotoneg-03#section-3.2">Section 3.2</a> of <a href="#TLSALPN"><cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite></a>.
             </p>
-            <p id="rfc.section.9.2.p.6">Implementations are encouraged not to negotiate TLS cipher suites with known vulnerabilities, such as <a href="#RC4"><cite title="The RC4 encryption algorithm">[RC4]</cite></a>.
+            <p id="rfc.section.9.2.p.6">Due to implementation limitations, it might not be possible to fail TLS negotiation based on all of these requirements. An
+               endpoint MUST terminate a HTTP/2.0 connection that is opened on a TLS session that does not meet these minimum requirements
+               with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#INADEQUATE_SECURITY" class="smpl">INADEQUATE_SECURITY</a>.
+            </p>
+            <p id="rfc.section.9.2.p.7">Implementations are encouraged not to negotiate TLS cipher suites with known vulnerabilities, such as <a href="#RC4"><cite title="The RC4 encryption algorithm">[RC4]</cite></a>.
             </p>
          </div>
          <div id="Compression">
@@ -2285,7 +2293,7 @@ Upgrade: h2
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2.0 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
@@ -2557,11 +2565,6 @@ Upgrade: h2
             </td>
          </tr>
          <tr>
-            <td class="reference"><b id="TLS11">[TLS11]</b></td>
-            <td class="top">Dierks, T. and E. Rescorla, “<a href="http://tools.ietf.org/html/rfc4346">The Transport Layer Security (TLS) Protocol Version 1.1</a>”, RFC&nbsp;4346, April&nbsp;2006.
-            </td>
-         </tr>
-         <tr>
             <td class="reference"><b id="TLS12">[TLS12]</b></td>
             <td class="top">Dierks, T. and E. Rescorla, “<a href="http://tools.ietf.org/html/rfc5246">The Transport Layer Security (TLS) Protocol Version 1.2</a>”, RFC&nbsp;5246, August&nbsp;2008.
             </td>
@@ -2595,8 +2598,18 @@ Upgrade: h2
             </td>
          </tr>
          <tr>
+            <td class="reference"><b id="RFC3749">[RFC3749]</b></td>
+            <td class="top">Hollenbeck, S., “<a href="http://tools.ietf.org/html/rfc3749">Transport Layer Security Protocol Compression Methods</a>”, RFC&nbsp;3749, May&nbsp;2004.
+            </td>
+         </tr>
+         <tr>
             <td class="reference"><b id="TALKING">[TALKING]</b></td>
             <td class="top">Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C. Jackson, “<a href="http://w2spconf.com/2011/papers/websocket.pdf">Talking to Yourself for Fun and Profit</a>”, 2011, &lt;<a href="http://w2spconf.com/2011/papers/websocket.pdf">http://w2spconf.com/2011/papers/websocket.pdf</a>&gt;.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="TLSBCP">[TLSBCP]</b></td>
+            <td class="top"><a href="mailto:yaronf.ietf@gmail.com" title="Porticor">Sheffer, Y.</a> and <a href="mailto:holz@net.in.tum.de" title="Technische Universitaet Muenchen">R. Holz</a>, “<a href="http://tools.ietf.org/html/draft-sheffer-tls-bcp-01">Recommendations for Secure Use of TLS and DTLS</a>”, Internet-Draft&nbsp;draft-sheffer-tls-bcp-01 (work in progress), September&nbsp;2013.
             </td>
          </tr>
       </table>
@@ -2612,13 +2625,15 @@ Upgrade: h2
          <h1 id="rfc.section.A" class="np"><a href="#rfc.section.A">A.</a>&nbsp;<a href="#change.log">Change Log (to be removed by RFC Editor before publication)</a></h1>
          <div id="changes.since.draft-ietf-httpbis-http2-09">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-09">Since draft-ietf-httpbis-http2-09</a></h2>
-            <p id="rfc.section.A.1.p.1">Removing extensibility for frames and settings.</p>
-            <p id="rfc.section.A.1.p.2">Changing setting identifier size.</p>
-            <p id="rfc.section.A.1.p.3">Removing the ability to disable flow control.</p>
-            <p id="rfc.section.A.1.p.4">Changing the protocol identification token to "h2".</p>
-            <p id="rfc.section.A.1.p.5">Changing the use of :authority to make it optional and to allow userinfo in non-HTTP cases.</p>
-            <p id="rfc.section.A.1.p.6">Allowing split on 0x0 for Cookie.</p>
-            <p id="rfc.section.A.1.p.7">Reserved PRI method in HTTP/1.1 to avoid possible future collisions.</p>
+            <p id="rfc.section.A.1.p.1">Adding INADEQUATE_SECURITY error code.</p>
+            <p id="rfc.section.A.1.p.2">Updating TLS usage requirements to 1.2; forbidding TLS compression.</p>
+            <p id="rfc.section.A.1.p.3">Removing extensibility for frames and settings.</p>
+            <p id="rfc.section.A.1.p.4">Changing setting identifier size.</p>
+            <p id="rfc.section.A.1.p.5">Removing the ability to disable flow control.</p>
+            <p id="rfc.section.A.1.p.6">Changing the protocol identification token to "h2".</p>
+            <p id="rfc.section.A.1.p.7">Changing the use of :authority to make it optional and to allow userinfo in non-HTTP cases.</p>
+            <p id="rfc.section.A.1.p.8">Allowing split on 0x0 for Cookie.</p>
+            <p id="rfc.section.A.1.p.9">Reserved PRI method in HTTP/1.1 to avoid possible future collisions.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-08">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-08">Since draft-ietf-httpbis-http2-08</a></h2>

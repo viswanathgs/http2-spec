@@ -156,9 +156,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  57
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  57
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  57
-     12.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  57
+     12.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  58
      12.3.  HTTP2-Settings Header Field Registration . . . . . . . .  58
-     12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  59
+     12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  58
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  59
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  59
      14.1.  Normative References . . . . . . . . . . . . . . . . . .  59
@@ -182,7 +182,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
      A.7.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  63
      A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  64
      A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  64
-     A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  64
+     A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  65
      A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  65
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  65
 
@@ -2246,6 +2246,10 @@ Internet-Draft                  HTTP/2.0                    January 2014
       exhibiting a behavior over a given amount of time that has caused
       it to refuse to process further frames.
 
+   INADEQUATE_SECURITY (12):  The underlying transport has properties
+      that do not meet the minimum requirements imposed by this document
+      (see Section 9.2) or the endpoint.
+
 8.  HTTP Message Exchanges
 
    HTTP/2.0 is intended to be as compatible as possible with current
@@ -2287,10 +2291,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    the first and optional last frames in this sequence do not carry HTTP
    semantics.
 
-   Trailing header fields are carried in a header block that also
-   terminates the stream.  That is, a sequence starting with a HEADERS
-   [HEADERS] frame, followed by zero or more CONTINUATION [CONTINUATION]
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 41]
@@ -2298,6 +2298,9 @@ Belshe, et al.           Expires July 28, 2014                 [Page 41]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
+   Trailing header fields are carried in a header block that also
+   terminates the stream.  That is, a sequence starting with a HEADERS
+   [HEADERS] frame, followed by zero or more CONTINUATION [CONTINUATION]
    frames, where the HEADERS [HEADERS] frame bears an END_STREAM flag.
    Header blocks after the first that do not terminate the stream are
    not part of an HTTP request or response.
@@ -2342,9 +2345,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    because HTTP/2.0 has a separate means of keeping the connection
    alive.
 
-   This difference between protocol versions necessitates special
-   handling by intermediaries that translate between them:
-
 
 
 
@@ -2353,6 +2353,9 @@ Belshe, et al.           Expires July 28, 2014                 [Page 42]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   This difference between protocol versions necessitates special
+   handling by intermediaries that translate between them:
 
    o  An intermediary that gateways HTTP/1.1 to HTTP/2.0 MUST generate a
       100 (Continue) response if a received request includes and Expect
@@ -2399,9 +2402,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    HTTP/1.1 304 Not Modified     HEADERS
    ETag: "xyzzy"            ===>   + END_STREAM
-   Expires: Thu, 23 Jan ...        + END_HEADERS
-                                     :status = 304
-                                     etag: "xyzzy"
 
 
 
@@ -2410,6 +2410,9 @@ Belshe, et al.           Expires July 28, 2014                 [Page 43]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
+   Expires: Thu, 23 Jan ...        + END_HEADERS
+                                     :status = 304
+                                     etag: "xyzzy"
                                      expires: Thu, 23 Jan ...
 
 
@@ -2452,9 +2455,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
                                     DATA
                                       + END_STREAM
                                         {binary data}
-
-
-
 
 
 
@@ -2958,9 +2958,9 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
 9.2.  Use of TLS Features
 
-
-
-
+   Implementations of HTTP/2.0 MUST support TLS 1.2 [TLS12].  The
+   general TLS usage guidance in [TLSBCP] SHOULD be followed, with some
+   additional restrictions that are specific to HTTP/2.0.
 
 
 
@@ -2970,29 +2970,33 @@ Belshe, et al.           Expires July 28, 2014                 [Page 53]
 Internet-Draft                  HTTP/2.0                    January 2014
 
 
-   Implementations of HTTP/2.0 MUST support TLS 1.1 [TLS11].  [[The
-   working group intends to require at least the use of TLS 1.2 [TLS12]
-   prior to publication of this document; negotiating TLS 1.1 is
-   permitted to enable the creation of interoperable implementations of
-   early drafts.]]
-
    The TLS implementation MUST support the Server Name Indication (SNI)
    [TLS-EXT] extension to TLS.  HTTP/2.0 clients MUST indicate the
    target domain name when negotiating TLS.
 
-   A server that receives a TLS handshake that does not include either
-   TLS 1.1 or SNI, MUST NOT negotiate HTTP/2.0.
+   The TLS implementation MUST disable compression.  TLS compression can
+   lead to the exposure of information that would not otherwise be
+   revealed [RFC3749].  Generic compression is unnecessary since HTTP/
+   2.0 provides compression features that are more aware of context and
+   therefore likely to be more appropriate for use for performance,
+   security or other reasons.
 
    Implementations MUST negotiate ephemeral cipher suites (DHE or ECDHE)
    with a minimum size of 2048 bits (DHE) or security level of 128 bits
-   (ECDHE).  Clients MUST accept DHE sizes of up to 4096 bits.  Servers
-   which are unable to negotiate cipher suites which are conformant to
-   this requirement MUST not negotiate HTTP/2.0.
+   (ECDHE).  Clients MUST accept DHE sizes of up to 4096 bits.
 
-   Removing HTTP/2.0 protocols from consideration could result in the
-   removal of all protocols from the set of protocols offered by the
-   client.  This causes protocol negotiation failure, as described in
-   Section 3.2 of [TLSALPN].
+   An implementation that negotiates a TLS connection that does not meet
+   the requirements in this section, or any policy-based constraints,
+   SHOULD NOT negotiate HTTP/2.0.  Removing HTTP/2.0 protocols from
+   consideration could result in the removal of all protocols from the
+   set of protocols offered by the client.  This causes protocol
+   negotiation failure, as described in Section 3.2 of [TLSALPN].
+
+   Due to implementation limitations, it might not be possible to fail
+   TLS negotiation based on all of these requirements.  An endpoint MUST
+   terminate a HTTP/2.0 connection that is opened on a TLS session that
+   does not meet these minimum requirements with a connection error
+   (Section 5.4.1) of type INADEQUATE_SECURITY [INADEQUATE_SECURITY].
 
    Implementations are encouraged not to negotiate TLS cipher suites
    with known vulnerabilities, such as [RC4].
@@ -3013,11 +3017,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
    to determine whether an origin server is permitted to provide
    content.
 
-   A server that is contacted using TLS is authenticated based on the
-   certificate that it offers in the TLS handshake (see [RFC2818],
-   Section 3).  A server is considered authoritative for an "https"
-   resource if it has been successfully authenticated for the domain
-   part of the origin of the resource that it is providing.
+
 
 
 
@@ -3025,6 +3025,12 @@ Belshe, et al.           Expires July 28, 2014                 [Page 54]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   A server that is contacted using TLS is authenticated based on the
+   certificate that it offers in the TLS handshake (see [RFC2818],
+   Section 3).  A server is considered authoritative for an "https"
+   resource if it has been successfully authenticated for the domain
+   part of the origin of the resource that it is providing.
 
    A server is considered authoritative for an "http" resource if the
    connection is established to a resolved IP address for the domain in
@@ -3068,12 +3074,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Pushed resources are responses without an explicit request; the
    request for a pushed resource is synthesized from the request that
-   triggered the push, plus resource identification information provided
-   by the server.  Request header fields are necessary for HTTP cache
-   control validations (such as the Vary header field) to work.  For
-   this reason, caches MUST associate the request header fields from the
-   PUSH_PROMISE frame with the response headers and content delivered on
-   the pushed stream.  This includes the Cookie header field.
 
 
 
@@ -3081,6 +3081,13 @@ Belshe, et al.           Expires July 28, 2014                 [Page 55]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   triggered the push, plus resource identification information provided
+   by the server.  Request header fields are necessary for HTTP cache
+   control validations (such as the Vary header field) to work.  For
+   this reason, caches MUST associate the request header fields from the
+   PUSH_PROMISE frame with the response headers and content delivered on
+   the pushed stream.  This includes the Cookie header field.
 
    Caching resources that are pushed is possible, based on the guidance
    provided by the origin server in the Cache-Control header field.
@@ -3122,13 +3129,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Header compression also offers some opportunities to waste processing
    resources, see [COMPRESSION] for more details on potential abuses.
 
-   In all these cases, there are legitimate reasons to use these
-   protocol mechanisms.  These features become a burden only when they
-   are used unnecessarily or to excess.
-
-
-
-
 
 
 
@@ -3137,6 +3137,10 @@ Belshe, et al.           Expires July 28, 2014                 [Page 56]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   In all these cases, there are legitimate reasons to use these
+   protocol mechanisms.  These features become a burden only when they
+   are used unnecessarily or to excess.
 
    An endpoint that doesn't monitor this behavior exposes itself to a
    risk of denial of service attack.  Implementations SHOULD track the
@@ -3183,16 +3187,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    Specification:  This document (RFCXXXX)
 
-12.2.  Error Code Registry
-
-
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 57]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+12.2.  Error Code Registry
 
    This document establishes a registry for HTTP/2.0 error codes.  The
    "HTTP/2.0 Error Code" registry manages a 32-bit space.  The "HTTP/2.0
@@ -3237,9 +3239,7 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Related information:  This header field is only used by an HTTP/2.0
       client for Upgrade-based negotiation.
 
-
-
-
+12.4.  PRI Method Registration
 
 
 
@@ -3249,8 +3249,6 @@ Belshe, et al.           Expires July 28, 2014                 [Page 58]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
-
-12.4.  PRI Method Registration
 
    This section registers the "PRI" method in the HTTP Method Registry
    [HTTP-p2].
@@ -3298,6 +3296,8 @@ Internet-Draft                  HTTP/2.0                    January 2014
               Ruellan, H. and R. Peon, "HPACK - Header Compression for
               HTTP/2.0", draft-ietf-httpbis-header-compression-05 (work
               in progress), December 2013.
+
+
 
 
 
@@ -3374,9 +3374,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
 
-   [TLS11]    Dierks, T. and E. Rescorla, "The Transport Layer Security
-              (TLS) Protocol Version 1.1", RFC 4346, April 2006.
-
    [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.2", RFC 5246, August 2008.
 
@@ -3401,13 +3398,16 @@ Internet-Draft                  HTTP/2.0                    January 2014
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance ", RFC 1323, May 1992.
 
+   [RFC3749]  Hollenbeck, S., "Transport Layer Security Protocol
+              Compression Methods", RFC 3749, May 2004.
+
    [TALKING]  Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C.
               Jackson, "Talking to Yourself for Fun and Profit ", 2011,
               <http://w2spconf.com/2011/papers/websocket.pdf>.
 
-
-
-
+   [TLSBCP]   Sheffer, Y. and R. Holz, "Recommendations for Secure Use
+              of TLS and DTLS ", draft-sheffer-tls-bcp-01 (work in
+              progress), September 2013.
 
 
 
@@ -3421,6 +3421,10 @@ Internet-Draft                  HTTP/2.0                    January 2014
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-09
+
+   Adding INADEQUATE_SECURITY error code.
+
+   Updating TLS usage requirements to 1.2; forbidding TLS compression.
 
    Removing extensibility for frames and settings.
 
@@ -3463,16 +3467,14 @@ A.4.  Since draft-ietf-httpbis-http2-06
    Removing unnecessary and potentially problematic flags from
    CONTINUATION.
 
-   Added denial of service considerations.
-
-
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 62]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Added denial of service considerations.
 
 A.5.  Since draft-ietf-httpbis-http2-05
 
@@ -3521,14 +3523,14 @@ A.7.  Since draft-ietf-httpbis-http2-03
    Removed HEADERS+PRIORITY, added optional priority to HEADERS
    [HEADERS] frame.
 
-   Added PRIORITY [PRIORITY] frame.
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 63]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Added PRIORITY [PRIORITY] frame.
 
 A.8.  Since draft-ietf-httpbis-http2-02
 
@@ -3576,8 +3578,6 @@ A.9.  Since draft-ietf-httpbis-http2-01
 
    Changed protocol label form based on discussions.
 
-A.10.  Since draft-ietf-httpbis-http2-00
-
 
 
 
@@ -3585,6 +3585,8 @@ Belshe, et al.           Expires July 28, 2014                 [Page 64]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+A.10.  Since draft-ietf-httpbis-http2-00
 
    Changed title throughout.
 
@@ -3631,8 +3633,6 @@ Authors' Addresses
    US
 
    EMail: martin.thomson@gmail.com
-
-
 
 
 
