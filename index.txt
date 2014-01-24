@@ -153,12 +153,12 @@ Internet-Draft                  HTTP/2.0                    January 2014
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  55
      10.4.  Cacheability of Pushed Resources . . . . . . . . . . . .  55
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  56
-   11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  56
+   11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  57
    12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  57
      12.1.  Registration of HTTP/2.0 Identification String . . . . .  57
      12.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  57
      12.3.  HTTP2-Settings Header Field Registration . . . . . . . .  58
-     12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  58
+     12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  59
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  59
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  59
      14.1.  Normative References . . . . . . . . . . . . . . . . . .  59
@@ -172,16 +172,16 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
      14.2.  Informative References . . . . . . . . . . . . . . . . .  61
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  61
-     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  61
+                publication) . . . . . . . . . . . . . . . . . . . .  62
+     A.1.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  62
      A.2.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  62
      A.3.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  62
      A.4.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  62
-     A.5.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  62
-     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  62
+     A.5.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  63
+     A.6.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  63
      A.7.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  63
-     A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  63
-     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  63
+     A.8.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  64
+     A.9.  Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  64
      A.10. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  64
      A.11. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  65
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  65
@@ -2981,11 +2981,18 @@ Internet-Draft                  HTTP/2.0                    January 2014
    target domain name when negotiating TLS.
 
    A server that receives a TLS handshake that does not include either
-   TLS 1.1 or SNI, MUST NOT negotiate HTTP/2.0.  Removing HTTP/2.0
-   protocols from consideration could result in the removal of all
-   protocols from the set of protocols offered by the client.  This
-   causes protocol negotiation failure, as described in Section 3.2 of
-   [TLSALPN].
+   TLS 1.1 or SNI, MUST NOT negotiate HTTP/2.0.
+
+   Implementations MUST negotiate ephemeral cipher suites (DHE or ECDHE)
+   with a minimum size of 2048 bits (DHE) or security level of 128 bits
+   (ECDHE).  Clients MUST accept DHE sizes of up to 4096 bits.  Servers
+   which are unable to negotiate cipher suites which are conformant to
+   this requirement MUST not negotiate HTTP/2.0.
+
+   Removing HTTP/2.0 protocols from consideration could result in the
+   removal of all protocols from the set of protocols offered by the
+   client.  This causes protocol negotiation failure, as described in
+   Section 3.2 of [TLSALPN].
 
    Implementations are encouraged not to negotiate TLS cipher suites
    with known vulnerabilities, such as [RC4].
@@ -3012,19 +3019,19 @@ Internet-Draft                  HTTP/2.0                    January 2014
    resource if it has been successfully authenticated for the domain
    part of the origin of the resource that it is providing.
 
-   A server is considered authoritative for an "http" resource if the
-   connection is established to a resolved IP address for the domain in
-   the origin of the resource.
-
-   A client MUST NOT use, in any way, resources provided by a server
-   that is not authoritative for those resources.
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 54]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   A server is considered authoritative for an "http" resource if the
+   connection is established to a resolved IP address for the domain in
+   the origin of the resource.
+
+   A client MUST NOT use, in any way, resources provided by a server
+   that is not authoritative for those resources.
 
 10.2.  Cross-Protocol Attacks
 
@@ -3068,19 +3075,18 @@ Internet-Draft                  HTTP/2.0                    January 2014
    PUSH_PROMISE frame with the response headers and content delivered on
    the pushed stream.  This includes the Cookie header field.
 
-   Caching resources that are pushed is possible, based on the guidance
-   provided by the origin server in the Cache-Control header field.
-   However, this can cause issues if a single server hosts more than one
-   tenant.  For example, a server might offer multiple users each a
-   small portion of its URI space.
-
-
 
 
 Belshe, et al.           Expires July 28, 2014                 [Page 55]
 
 Internet-Draft                  HTTP/2.0                    January 2014
 
+
+   Caching resources that are pushed is possible, based on the guidance
+   provided by the origin server in the Cache-Control header field.
+   However, this can cause issues if a single server hosts more than one
+   tenant.  For example, a server might offer multiple users each a
+   small portion of its URI space.
 
    Where multiple tenants share space on the same server, that server
    MUST ensure that tenants are not able to push representations of
@@ -3120,6 +3126,18 @@ Internet-Draft                  HTTP/2.0                    January 2014
    protocol mechanisms.  These features become a burden only when they
    are used unnecessarily or to excess.
 
+
+
+
+
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 56]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    An endpoint that doesn't monitor this behavior exposes itself to a
    risk of denial of service attack.  Implementations SHOULD track the
    use of these types of frames and set limits on their use.  An
@@ -3130,14 +3148,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    HTTP/2.0 aims to keep connections open longer between clients and
    servers in order to reduce the latency when a user makes a request.
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 56]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
-
    The maintenance of these connections over time could be used to
    expose private information.  For example, a user using a browser
    hours after the previous user stopped using that browser may be able
@@ -3175,6 +3185,15 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
 12.2.  Error Code Registry
 
+
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 57]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    This document establishes a registry for HTTP/2.0 error codes.  The
    "HTTP/2.0 Error Code" registry manages a 32-bit space.  The "HTTP/2.0
    Error Code" registry operates under the "Expert Review" policy
@@ -3186,13 +3205,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Use of existing registrations is to be encouraged, but not mandated.
 
    New registrations are advised to provide the following information:
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 57]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Error Code:  The 32-bit error code value.
 
@@ -3225,6 +3237,19 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Related information:  This header field is only used by an HTTP/2.0
       client for Upgrade-based negotiation.
 
+
+
+
+
+
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 58]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 12.4.  PRI Method Registration
 
    This section registers the "PRI" method in the HTTP Method Registry
@@ -3241,14 +3266,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
    Related information:  This method is never used by an actual client.
       This method will appear to be used when an HTTP/1.1 server or
       intermediary attempts to parse an HTTP/2.0 connection header.
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 58]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
 13.  Acknowledgements
 
@@ -3282,6 +3299,13 @@ Internet-Draft                  HTTP/2.0                    January 2014
               HTTP/2.0", draft-ietf-httpbis-header-compression-05 (work
               in progress), December 2013.
 
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 59]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
               April 2011.
 
@@ -3294,17 +3318,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
               Transfer Protocol (HTTP/1.1): Semantics and Content",
               draft-ietf-httpbis-p2-semantics-25 (work in progress),
               November 2013.
-
-
-
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 59]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Conditional Requests",
@@ -3341,6 +3354,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
               IANA Considerations Section in RFCs", BCP 26, RFC 5226,
               May 2008.
 
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 60]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
@@ -3352,15 +3373,6 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
-
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 60]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    [TLS11]    Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.1", RFC 4346, April 2006.
@@ -3393,6 +3405,19 @@ Internet-Draft                  HTTP/2.0                    January 2014
               Jackson, "Talking to Yourself for Fun and Profit ", 2011,
               <http://w2spconf.com/2011/papers/websocket.pdf>.
 
+
+
+
+
+
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 61]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-09
@@ -3409,14 +3434,6 @@ A.1.  Since draft-ietf-httpbis-http2-09
    userinfo in non-HTTP cases.
 
    Allowing split on 0x0 for Cookie.
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 61]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Reserved PRI method in HTTP/1.1 to avoid possible future collisions.
 
@@ -3448,6 +3465,15 @@ A.4.  Since draft-ietf-httpbis-http2-06
 
    Added denial of service considerations.
 
+
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 62]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 A.5.  Since draft-ietf-httpbis-http2-05
 
    Marking the draft ready for implementation.
@@ -3464,15 +3490,6 @@ A.6.  Since draft-ietf-httpbis-http2-04
    SETTINGS_MAX_CONCURRENT_STREAMS is zero.
 
    Push expanded to allow all safe methods without a request body.
-
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 62]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Clarified the use of HTTP header fields in requests and responses.
    Prohibited HTTP/1.1 hop-by-hop header fields.
@@ -3506,6 +3523,13 @@ A.7.  Since draft-ietf-httpbis-http2-03
 
    Added PRIORITY [PRIORITY] frame.
 
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 63]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
 A.8.  Since draft-ietf-httpbis-http2-02
 
    Added continuations to frames carrying header blocks.
@@ -3520,15 +3544,6 @@ A.8.  Since draft-ietf-httpbis-http2-02
    Editorial changes.
 
 A.9.  Since draft-ietf-httpbis-http2-01
-
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 63]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
    Added IANA considerations section for frame types, error codes and
    settings.
@@ -3563,6 +3578,14 @@ Internet-Draft                  HTTP/2.0                    January 2014
 
 A.10.  Since draft-ietf-httpbis-http2-00
 
+
+
+
+Belshe, et al.           Expires July 28, 2014                 [Page 64]
+
+Internet-Draft                  HTTP/2.0                    January 2014
+
+
    Changed title throughout.
 
    Removed section on Incompatibilities with SPDY draft#2.
@@ -3577,14 +3600,6 @@ A.10.  Since draft-ietf-httpbis-http2-00
    Removed unused references.
 
    Added flow control principles (Section 5.2.1) based on [5].
-
-
-
-
-Belshe, et al.           Expires July 28, 2014                 [Page 64]
-
-Internet-Draft                  HTTP/2.0                    January 2014
-
 
 A.11.  Since draft-mbelshe-httpbis-spdy-00
 
@@ -3616,21 +3631,6 @@ Authors' Addresses
    US
 
    EMail: martin.thomson@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
