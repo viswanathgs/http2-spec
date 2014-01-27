@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires July 30, 2014";
+       content: "Expires July 31, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -418,7 +418,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-01-26">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-01-27">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -438,7 +438,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: July 30, 2014</td>
+               <td class="left">Expires: July 31, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -451,7 +451,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">January 26, 2014</td>
+               <td class="right">January 27, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -480,7 +480,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on July 30, 2014.</p>
+         <p>This Internet-Draft will expire on July 31, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -1678,18 +1678,17 @@ Upgrade: h2
          </div>
          <div id="GTFO">
             <h2 id="rfc.section.6.8"><a href="#rfc.section.6.8">6.8</a>&nbsp;<a href="#GTFO">GTFO</a></h2>
-            <p id="rfc.section.6.8.p.1">Senders indicate a General Termination of Future Operations by sending a GTFO frame (type=0x7), which informs the remote peer
-               to stop creating streams on this connection. GTFO can be sent by either client or server. Once sent, the sender will ignore
-               frames sent on new streams for the remainder of the connection. Receivers of a GTFO frame MUST NOT open additional streams
-               on the connection, although a new connection can be established for new streams. The purpose of this frame is to allow an
-               endpoint to gracefully stop accepting new streams (perhaps for a reboot or maintenance), while still finishing processing
-               of previously established streams.
+            <p id="rfc.section.6.8.p.1">A General Termination of Future Operations (GTFO) frame (type=0x7) informs the remote peer to stop creating streams on this
+               connection. GTFO can be sent by either client or server. Once sent, the sender will ignore frames sent on new streams for
+               the remainder of the connection. Receivers of a GTFO frame MUST NOT open additional streams on the connection, although a
+               new connection can be established for new streams. The purpose of this frame is to allow an endpoint to gracefully stop accepting
+               new streams (perhaps for a reboot or maintenance), while still finishing processing of previously established streams.
             </p>
             <p id="rfc.section.6.8.p.2">There is an inherent race condition between an endpoint starting new streams and the remote sending a GTFO frame. To deal
-               with this case, the GTFO contains the stream identifier of the last stream which was processed on the sending endpoint in
-               this connection. If the receiver of the GTFO used streams that are newer than the indicated stream identifier, they were not
-               processed by the sender and the receiver may treat the streams as though they had never been created at all (hence the receiver
-               may want to re-create the streams later on a new connection).
+               with this case, the GTFO frame contains the stream identifier of the last stream which was processed on the sending endpoint
+               in this connection. If the receiver of the GTFO frame used streams that are newer than the indicated stream identifier, they
+               were not processed by the sender and the receiver may treat the streams as though they had never been created at all (hence
+               the receiver may want to re-create the streams later on a new connection).
             </p>
             <p id="rfc.section.6.8.p.3">Endpoints SHOULD always send a GTFO frame before closing a connection so that the remote can know whether a stream has been
                partially processed or not. For example, if an HTTP client sends a POST at the same time that a server closes a connection,
@@ -1712,9 +1711,9 @@ Upgrade: h2
             <p id="rfc.section.6.8.p.6">The GTFO frame does not define any flags.</p>
             <p id="rfc.section.6.8.p.7">The GTFO frame applies to the connection, not a specific stream. An endpoint MUST treat a <a href="#GTFO" class="smpl">GTFO</a> frame with a stream identifier other than 0x0 as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.8.p.8">The last stream identifier in the GTFO frame contains the highest numbered stream identifier for which the sender of the GTFO
-               frame has received frames on and might have taken some action on. All streams up to and including the identified stream might
-               have been processed in some way. The last stream identifier is set to 0 if no streams were processed. 
+            <p id="rfc.section.6.8.p.8">The last stream identifier (<samp>Last-Stream-ID</samp>) in the GTFO frame contains the highest numbered stream identifier for which the sender of the GTFO frame has received frames
+               on and might have taken some action on. All streams up to and including the identified stream might have been processed in
+               some way. The last stream identifier is set to 0 if no streams were processed. 
             </p>
             <ul class="empty">
                <li>Note: In this case, "processed" means that some data from the stream was passed to some higher layer of software that might
@@ -1731,9 +1730,11 @@ Upgrade: h2
                until all in-progress streams complete.
             </p>
             <p id="rfc.section.6.8.p.11">The last stream ID MUST be 0 if no streams were acted upon.</p>
-            <p id="rfc.section.6.8.p.12">The GTFO frame also contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) that contains the reason for closing the connection.
+            <p id="rfc.section.6.8.p.12">If an endpoint maintains the connection and continues to exchange frames, ignored frames MUST be counted toward flow control limits (<a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a>) or update header compression state (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). Otherwise, flow control or header compression state can become unsynchronized.
             </p>
-            <p id="rfc.section.6.8.p.13">Endpoints MAY append opaque data to the payload of any GTFO frame. Additional debug data is intended for diagnostic purposes
+            <p id="rfc.section.6.8.p.13">The GTFO frame also contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) that contains the reason for ending communication.
+            </p>
+            <p id="rfc.section.6.8.p.14">Endpoints MAY append opaque data to the payload of any GTFO frame. Additional debug data is intended for diagnostic purposes
                only and carries no semantic value. Debug information could contain security- or privacy-sensitive data. Logged or otherwise
                persistently stored debug data MUST have adequate safeguards to prevent unauthorized access.
             </p>
@@ -2283,8 +2284,8 @@ Upgrade: h2
             </p>
             <p id="rfc.section.9.1.p.3">Servers are encouraged to maintain open connections for as long as possible, but are permitted to terminate idle connections
                if necessary. When either endpoint chooses to close the transport-level TCP connection, the terminating endpoint SHOULD first
-               send a <a href="#GTFO" class="smpl">GTFO</a> (<a href="#GTFO" title="GTFO">Section&nbsp;6.8</a>) frame so that both endpoints can reliably determine whether previously sent frames have been processed and gracefully complete
-               or terminate any necessary remaining tasks.
+               send a GTFO frame (<a href="#GTFO" title="GTFO">Section&nbsp;6.8</a>) so that both endpoints can reliably determine whether previously sent frames have been processed and gracefully complete or
+               terminate any necessary remaining tasks.
             </p>
          </div>
          <div id="TLSUsage">
