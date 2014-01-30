@@ -14,8 +14,8 @@ Expires: August 03, 2014                                       Canon CRF
 
 Abstract
 
-   This document describes HPACK, a format adapted to efficiently
-   represent HTTP header fields in the context of HTTP/2.
+   This specification defines HPACK, a compression format for
+   efficiently representing HTTP header fields in the context of HTTP/2.
 
 Editorial Note (To be removed by RFC Editor)
 
@@ -79,13 +79,13 @@ Table of Contents
        3.1.2.  Header Table  . . . . . . . . . . . . . . . . . . . .   5
        3.1.3.  Reference Set . . . . . . . . . . . . . . . . . . . .   6
        3.1.4.  Header Field Representation . . . . . . . . . . . . .   6
-       3.1.5.  Header Field Emission . . . . . . . . . . . . . . . .   7
+       3.1.5.  Header Field Emission . . . . . . . . . . . . . . . .   8
      3.2.  Header Block Decoding . . . . . . . . . . . . . . . . . .   8
        3.2.1.  Header Field Representation Processing  . . . . . . .   8
        3.2.2.  Reference Set Emission  . . . . . . . . . . . . . . .   9
        3.2.3.  Header Set Completion . . . . . . . . . . . . . . . .   9
      3.3.  Header Table Management . . . . . . . . . . . . . . . . .   9
-       3.3.1.  Maximum Table Size  . . . . . . . . . . . . . . . . .   9
+       3.3.1.  Maximum Table Size  . . . . . . . . . . . . . . . . .  10
        3.3.2.  Entry Eviction When Header Table Size Changes . . . .  10
        3.3.3.  Entry Eviction when Adding New Entries  . . . . . . .  10
    4.  Detailed Format . . . . . . . . . . . . . . . . . . . . . . .  11
@@ -146,21 +146,21 @@ Internet-Draft                   HPACK                      January 2014
 
 1.  Introduction
 
-   This document describes HPACK, a format adapted to efficiently
-   represent HTTP header fields in the context of HTTP/2 (see [HTTP2]).
+   This specification defines HPACK, a compression format for
+   efficiently representing HTTP header fields in the context of HTTP/2
+   (see [HTTP2]).
 
 2.  Overview
 
-   In HTTP (see [HTTP-p1]), header fields are sent without any form of
-   compression.  As web pages have grown to include dozens to hundreds
-   of requests, the redundant header fields in these requests now pose a
-   problem of measurable latency and unnecessary bandwidth (see [PERF1]
-   and [PERF2]).
+   In HTTP (see [HTTP-p1]), header fields are encoded without any form
+   of compression.  As web pages have grown to include dozens to
+   hundreds of requests, the redundant header fields in these requests
+   now measurably increase latency and unnecessarily consume bandwidth
+   (see [PERF1] and [PERF2]).
 
-   SPDY [SPDY] initially addressed this redundancy by compressing header
-   fields with Deflate, which proved very effective at eliminating the
-   redundant header fields.  However, that approach exposed a security
-   risk as demonstrated by the CRIME [CRIME].
+
+
+
 
 
 
@@ -170,33 +170,44 @@ Peon & Ruellan          Expires August 03, 2014                 [Page 3]
 Internet-Draft                   HPACK                      January 2014
 
 
+   SPDY [SPDY] initially addressed this redundancy by compressing header
+   fields using the "deflate" format DEFLATE [DEFLATE], which proved
+   very effective at efficiently representing the redundant header
+   fields.  However, that approach exposed a security risk as
+   demonstrated by the CRIME [CRIME] attack.
+
    This document describes HPACK, a new compressor for header fields
    which eliminates redundant header fields, is not vulnerable to known
-   security attacks, and which also has a bounded memory cost for use in
-   constrained environments.
+   security attacks, and which also has a bounded memory requirement for
+   use in constrained environments.
 
 2.1.  Outline
 
-   The HTTP header field encoding described in this document is based on
-   a header table that map name-value pairs to index values.  Header
-   tables are incrementally updated during the HTTP/2 session.
+   The HTTP header field encoding defined in this document is based on a
+   header table that maps name-value pairs to index values.  The header
+   table is incrementally updated during the HTTP/2 connection.
 
-   The encoder is responsible for deciding which header fields to insert
-   as new entries in the header table.  The decoder then does exactly
-   what the encoder prescribes, ending in a state that exactly matches
-   the encoder's state.  This enables decoders to remain simple and
-   understand a wide variety of encoders.
+   A set of header fields is treated as an unordered collection of name-
+   value pairs.  Names and values are considered to be opaque sequences
+   of octets.  The order of header fields is not guaranteed to be
+   perserved after being compressed and decompressed.
 
    As two consecutive sets of header fields often have header fields in
-   common, each set of header fields is coded as a difference from the
-   previous set of header fields.  The goal is to only encode the
-   changes (header fields present in one of the set and not in the
-   other) between the two sets of header fields.
+   common, each set is coded as a difference from the previous set.  The
+   goal is to only encoded the changes (header fields present in one of
+   the sets that are absent from the other) between the two sets of
+   header fields.
 
-   HTTP header field compression treats a set of header fields as an
-   unordered collection of name-value pairs.  Names and values are
-   opaque sequences of octets.  The order of header fields is not
-   guaranteed to be preserved after being compressed and decompressed.
+   The encoder represents a header field either literally or with a
+   reference to a name-value pair in the header table.  A set of header
+   fields is stored as a set of references to entries in the header
+   table.  Differences between consecutive sets of header fields are
+   encoded as changes to the set of references.  The encoder is
+   responsible for deciding which header fields to insert as new entries
+   in the header table.  The decoder executes the modifications to the
+   header table and reference set perscribed by the encoder,
+   reconstructing the set of header fields in the process.  This enables
+   decoders to remain simple and understand a wide variety of encoders.
 
    Examples illustrating the use of these different mechanisms to
    represent header fields are available in Appendix E.
@@ -208,23 +219,18 @@ Internet-Draft                   HPACK                      January 2014
    The encoding and decoding of header fields relies on some components
    and concepts:
 
-   Header Field:  A name-value pair.  Both name and value are sequences
-      of octets.
-
-   Header Table:  The header table (see Section 3.1.2) is a component
-      used to associate stored header fields to index values.  The data
-      stored in this table is in first-in, first-out order.
-
-
-
-
-
 
 
 Peon & Ruellan          Expires August 03, 2014                 [Page 4]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+   Header Field:  A name-value pair.  Both the name and value are
+      treated as opaque sequences of octets.
+
+   Header Table:  The header table (see Section 3.1.2) is a component
+      used to associate stored header fields to index values.
 
    Static Table:  The static table (see Appendix B) is a component used
       to associate static header fields to index values.  This data is
@@ -236,9 +242,9 @@ Internet-Draft                   HPACK                      January 2014
       table.  This is used for the differential encoding of a new header
       set.
 
-   Header Set:  A header set is a potentially ordered group of header
-      fields that are encoded jointly.  A complete set of key-value
-      pairs contained in a HTTP request or response is a header set.
+   Header Set:  A header set is an unordered group of header fields that
+      are encoded jointly.  A complete set of key-value pairs contained
+      in a HTTP request or response is a header set.
 
    Header Field Representation:  A header field can be represented in
       encoded form either as a literal or as an index (see
@@ -249,8 +255,8 @@ Internet-Draft                   HPACK                      January 2014
 
    Header Field Emission:  When decoding a set of header field
       representations, some operations emit a header field (see
-      Section 3.1.5).  Emitted header fields can be safely passed to the
-      upper processing layers as part of the current Header Set.
+      Section 3.1.5).  Emitted header fields are added to the current
+      header set and cannot be removed.
 
 3.1.1.  Encoding Context
 
@@ -258,22 +264,16 @@ Internet-Draft                   HPACK                      January 2014
    a header table and a reference set.  Everything else is either
    immutable or conceptual.
 
-   Using HTTP, messages are exchanged between a client and a server in
-   both direction.  To keep the encoding of header fields in each
-   direction independent from the other direction, there is one encoding
-   context for each direction.
-
-   The header fields contained in a PUSH_PROMISE frame sent by a server
-   to a client are encoded within the same context as the header fields
-   contained in the HEADERS frame corresponding to a response sent from
-   the server to the client.
+   HTTP messages are exchanged between a client and a server in both
+   directions.  The encoding of header fields in each direction is
+   independent from the other direction.  There is a single encoding
+   context for each direction used to encode all header fields sent in
+   that direction.
 
 3.1.2.  Header Table
 
    A header table consists of a list of header fields maintained in
    first-in, first-out order.  The first and newest entry in a header
-   table is always at index 1, and the oldest entry of a header table is
-   at the index len(header table).
 
 
 
@@ -281,6 +281,9 @@ Peon & Ruellan          Expires August 03, 2014                 [Page 5]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+   table is always at index 1, and the oldest entry of a header table is
+   at the index len(header table).
 
    The header table is initially empty.
 
@@ -290,8 +293,8 @@ Internet-Draft                   HPACK                      January 2014
 
    The encoder decides how to update the header table and as such can
    control how much memory is used by the header table.  To limit the
-   memory requirements on the decoder side, the header table size is
-   strictly bounded (see Section 3.3.1).
+   memory requirements of the decoder, the header table size is strictly
+   bounded (see Section 3.3.1).
 
    The header table is updated during the processing of a set of header
    field representations (see header field representation processing
@@ -326,9 +329,6 @@ Internet-Draft                   HPACK                      January 2014
 
 3.1.4.  Header Field Representation
 
-   An encoded header field can be represented either as a literal or as
-   an index.
-
 
 
 
@@ -337,6 +337,9 @@ Peon & Ruellan          Expires August 03, 2014                 [Page 6]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+   An encoded header field can be represented either as a literal or as
+   an index.
 
    Literal Representation:  A literal representation defines a new
       header field.  The header field name is represented either
@@ -384,15 +387,14 @@ Internet-Draft                   HPACK                      January 2014
          Any other indices MUST be treated as erroneous, and the
          compression context considered corrupt and unusable.
 
-3.1.5.  Header Field Emission
-
-
 
 
 Peon & Ruellan          Expires August 03, 2014                 [Page 7]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+3.1.5.  Header Field Emission
 
    The emission of a header field is the process of marking a header
    field as belonging to the current header set.  Once a header has been
@@ -440,8 +442,6 @@ Internet-Draft                   HPACK                      January 2014
 
    o  If referencing an element of the static table:
 
-      *  The header field corresponding to the referenced entry is
-         emitted.
 
 
 
@@ -449,6 +449,9 @@ Peon & Ruellan          Expires August 03, 2014                 [Page 8]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+      *  The header field corresponding to the referenced entry is
+         emitted.
 
       *  The referenced static entry is inserted at the beginning of the
          header table.
@@ -494,9 +497,6 @@ Internet-Draft                   HPACK                      January 2014
 
 3.3.  Header Table Management
 
-3.3.1.  Maximum Table Size
-
-
 
 
 
@@ -505,6 +505,8 @@ Peon & Ruellan          Expires August 03, 2014                 [Page 9]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+3.3.1.  Maximum Table Size
 
    To limit the memory requirements on the decoder side, the size of the
    header table is bounded.  The size of the header table MUST stay
@@ -551,8 +553,6 @@ Internet-Draft                   HPACK                      January 2014
    are evicted from the end of the header table until the size of the
    header table is less than or equal to (maximum size - new entry
    size), or until the table is empty.
-
-
 
 
 
@@ -1053,11 +1053,11 @@ Internet-Draft                   HPACK                      January 2014
               11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/
               edit#slide=id.g1eb6c1b5_3_6>.
 
+   [DEFLATE]  Deutsch, P., "DEFLATE Compressed Data Format Specification
+              version 1.3", RFC 1951, May 1996.
+
    [HUFF]     Huffman, D. A., "A Method for the Construction of Minimum
               Redundancy Codes", Proceedings of the Institute of Radio
-              Engineers Volume 40, Number 9, pp. 1098-1101, September
-              1952, <http://ieeexplore.ieee.org/xpl/
-              articleDetails.jsp?arnumber=4051119>.
 
 
 
@@ -1065,6 +1065,10 @@ Peon & Ruellan          Expires August 03, 2014                [Page 19]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+              Engineers Volume 40, Number 9, pp. 1098-1101, September
+              1952, <http://ieeexplore.ieee.org/xpl/
+              articleDetails.jsp?arnumber=4051119>.
 
    [PERF1]    Belshe, M., "IETF83: SPDY and What to Consider for HTTP/
               2.0", March 2012, <http://www.ietf.org/proceedings/83/
@@ -1111,16 +1115,16 @@ A.3.  Since draft-ietf-httpbis-header-compression-03
    o  A large number of editorial changes; changed the description of
       evicting/adding new entries.
 
-   o  Removed substitution indexing
-
-   o  Changed 'initial headers' to 'static headers', as per issue #258
-
 
 
 Peon & Ruellan          Expires August 03, 2014                [Page 20]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+   o  Removed substitution indexing
+
+   o  Changed 'initial headers' to 'static headers', as per issue #258
 
    o  Merged 'request' and 'response' static headers, as per issue #259
 
@@ -1167,16 +1171,14 @@ A.6.  Since draft-ietf-httpbis-header-compression-01
       Changed the name of the setting which dictates how much memory the
       compression context should use.
 
-      Removed "specific use cases" section
-
-
-
 
 
 Peon & Ruellan          Expires August 03, 2014                [Page 21]
 
 Internet-Draft                   HPACK                      January 2014
 
+
+      Removed "specific use cases" section
 
       Corrected erroneous statement about what index can be contained in
       one octet
@@ -1224,8 +1226,6 @@ Appendix B.  Static Table
           | 15    | accept-encoding             |              |
           | 16    | accept-language             |              |
           | 17    | accept-ranges               |              |
-          | 18    | accept                      |              |
-          | 19    | access-control-allow-origin |              |
 
 
 
@@ -1234,6 +1234,8 @@ Peon & Ruellan          Expires August 03, 2014                [Page 22]
 Internet-Draft                   HPACK                      January 2014
 
 
+          | 18    | accept                      |              |
+          | 19    | access-control-allow-origin |              |
           | 20    | age                         |              |
           | 21    | allow                       |              |
           | 22    | authorization               |              |
@@ -1278,8 +1280,6 @@ Internet-Draft                   HPACK                      January 2014
           +-------+-----------------------------+--------------+
 
                        Table 1: Static Table Entries
-
-
 
 
 
