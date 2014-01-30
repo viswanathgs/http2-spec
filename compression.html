@@ -666,20 +666,22 @@ samp, tt, code, pre {
                The header table is incrementally updated during the HTTP/2 connection.
             </p>
             <p id="rfc.section.2.1.p.2">A set of header fields is treated as an unordered collection of name-value pairs. Names and values are considered to be opaque
-               sequences of octets. The order of header fields is not guaranteed to be perserved after being compressed and decompressed.
+               sequences of octets. The order of header fields is not guaranteed to be preserved after being compressed and decompressed.
             </p>
             <p id="rfc.section.2.1.p.3">As two consecutive sets of header fields often have header fields in common, each set is coded as a difference from the previous
                set. The goal is to only encoded the changes (header fields present in one of the sets that are absent from the other) between
                the two sets of header fields.
             </p>
-            <p id="rfc.section.2.1.p.4">The encoder represents a header field either literally or with a reference to a name-value pair in the header table. A set
-               of header fields is stored as a set of references to entries in the header table. Differences between consecutive sets of
-               header fields are encoded as changes to the set of references. The encoder is responsible for deciding which header fields
-               to insert as new entries in the header table. The decoder executes the modifications to the header table and reference set
-               perscribed by the encoder, reconstructing the set of header fields in the process. This enables decoders to remain simple
-               and understand a wide variety of encoders.
+            <p id="rfc.section.2.1.p.4">A header field is represented either literally or as a reference to a name-value pair in the header table. A set of header
+               fields is stored as a set of references to entries in the header table (possibly keeping only a subset of it, as some header
+               fields may be missing a corresponding entry in the header table). Differences between consecutive sets of header fields are
+               encoded as changes to the set of references.
             </p>
-            <p id="rfc.section.2.1.p.5">Examples illustrating the use of these different mechanisms to represent header fields are available in <a href="#examples" title="Examples">Appendix&nbsp;E</a>.
+            <p id="rfc.section.2.1.p.5">The encoder is responsible for deciding which header fields to insert as new entries in the header table. The decoder executes
+               the modifications to the header table and reference set prescribed by the encoder, reconstructing the set of header fields
+               in the process. This enables decoders to remain simple and understand a wide variety of encoders.
+            </p>
+            <p id="rfc.section.2.1.p.6">Examples illustrating the use of these different mechanisms to represent header fields are available in <a href="#examples" title="Examples">Appendix&nbsp;E</a>.
             </p>
          </div>
       </div>
@@ -919,7 +921,7 @@ Insertion Point       Drop Point
                   then entries are evicted from the end of the header table until the size of the header table is less than or equal to (maximum
                   size - new entry size), or until the table is empty.
                </p>
-               <p id="rfc.section.3.3.3.p.2">If the size of the new entry is less than or equal to the maxium size, that entry is added to the table. It is not an error
+               <p id="rfc.section.3.3.3.p.2">If the size of the new entry is less than or equal to the maximum size, that entry is added to the table. It is not an error
                   to attempt to add an entry that is larger than the maximum size.
                </p>
             </div>
@@ -950,13 +952,13 @@ else
          encode (I % 128 + 128) on 8 bits
          I = I / 128
     encode I on 8 bits
-</pre><p id="rfc.section.4.1.1.p.5">For informationnal purpose, the algorithm to decode an integer I is as follows: </p>
+</pre><p id="rfc.section.4.1.1.p.5">For informational purpose, the algorithm to decode an integer I is as follows: </p>
                <div id="rfc.figure.u.2"></div><pre class="inline">decode I from the next N bits
 if I &lt; 2^N - 1, return I
 else
     M = 0
     repeat
-        B = next byte
+        B = next octet
         I = I + (B &amp; 127) * 2^M
         M = M + 7
     while B &amp; 128 == 128
@@ -1182,20 +1184,20 @@ else
          <div id="encoding.context.update">
             <h2 id="rfc.section.4.4"><a href="#rfc.section.4.4">4.4</a>&nbsp;<a href="#encoding.context.update">Encoding Context Update</a></h2>
             <p id="rfc.section.4.4.p.1">An indexed value of 0 is reserved for signalling changes in the encoding context. The type of the change is encoded on the
-               following byte(s). Any change in the encoding context is applied immediately.
+               following octet(s). Any change in the encoding context is applied immediately.
             </p>
             <div id="rfc.figure.9"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |             0             | 
 +---+---------------------------+
 </pre><p class="figure">Figure 9: Reference Set Emptying</p>
-            <p id="rfc.section.4.4.p.3">A byte with its high bit set to '1' signals that the reference set is emptied. The remaining bits are set to '0'.</p>
+            <p id="rfc.section.4.4.p.3">An octet with its high bit set to '1' signals that the reference set is emptied. The remaining bits are set to '0'.</p>
             <div id="rfc.figure.10"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 |   New maximum size (7+)   | 
 +---+---------------------------+
 </pre><p class="figure">Figure 10: Maximum Header Table Size Change</p>
-            <p id="rfc.section.4.4.p.5">A byte with its high bit set to '0' signals the new maximum size of the header table. This new maximum size MUST be lower
+            <p id="rfc.section.4.4.p.5">An octet with its high bit set to '0' signals the new maximum size of the header table. This new maximum size MUST be lower
                than or equal to the value of the setting SETTINGS_HEADER_TABLE_SIZE (see <a href="#HTTP2"><cite title="Hypertext Transfer Protocol version 2">[HTTP2]</cite></a>).
             </p>
             <p id="rfc.section.4.4.p.6">The new maximum size is encoded as an integer with a 7-bit prefix.</p>
