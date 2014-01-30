@@ -155,12 +155,12 @@ Internet-Draft                   HTTP/2                     January 2014
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  57
      10.6.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  58
    11. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  58
-   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  59
+   12. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  58
      12.1.  Registration of HTTP/2 Identification String . . . . . .  59
      12.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  59
      12.3.  HTTP2-Settings Header Field Registration . . . . . . . .  60
      12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  60
-   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  61
+   13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  60
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  61
 
 
@@ -3140,16 +3140,12 @@ Internet-Draft                   HTTP/2                     January 2014
 
 10.4.  Cacheability of Pushed Resources
 
-   Pushed resources are responses without an explicit request; the
-   request for a pushed resource is synthesized from the request that
-   triggered the push, plus resource identification information provided
-   by the server.  Request header fields are necessary for HTTP cache
-   control validations (such as the Vary header field) to work.  For
-   this reason, caches MUST associate the request header fields from the
-   PUSH_PROMISE frame with the response headers and content delivered on
-   the pushed stream.  This includes the Cookie header field.
+   Pushed resources are responses without an explicit request from the
+   client.  Request header fields are provided by the server in the
+   PUSH_PROMISE [PUSH_PROMISE] frame.  These header fields are provided
+   so that existing HTTP semantics can be applied.
 
-   Caching resources that are pushed is possible, based on the guidance
+   Caching resources that are pushed is possible based on the guidance
    provided by the origin server in the Cache-Control header field.
    However, this can cause issues if a single server hosts more than one
    tenant.  For example, a server might offer multiple users each a
@@ -3186,6 +3182,10 @@ Internet-Draft                   HTTP/2                     January 2014
    are entirely legitimate, such as the sending of an empty DATA [DATA]
    frame to end a stream.
 
+   Header compression also offers some opportunities to waste processing
+   resources, see [COMPRESSION] for more details on potential abuses.
+
+
 
 
 
@@ -3193,9 +3193,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 57]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-   Header compression also offers some opportunities to waste processing
-   resources, see [COMPRESSION] for more details on potential abuses.
 
    In all these cases, there are legitimate reasons to use these
    protocol mechanisms.  These features become a burden only when they
@@ -3241,6 +3238,9 @@ Internet-Draft                   HTTP/2                     January 2014
    with HTTP in its current form as well, however the short lived
    connections make it less of a risk.
 
+12.  IANA Considerations
+
+
 
 
 
@@ -3249,8 +3249,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 58]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-12.  IANA Considerations
 
    A string for identifying HTTP/2 is entered into the "Application
    Layer Protocol Negotiation (ALPN) Protocol IDs" registry established
@@ -3297,6 +3295,8 @@ Internet-Draft                   HTTP/2                     January 2014
    Name:  A name for the error code.  Specifying an error code name is
       optional.
 
+   Description:  A description of the conditions where the error code is
+      applicable.
 
 
 
@@ -3305,9 +3305,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 59]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-   Description:  A description of the conditions where the error code is
-      applicable.
 
    Specification:  An optional reference for a specification that
       defines the error code.
@@ -3349,7 +3346,10 @@ Internet-Draft                   HTTP/2                     January 2014
       This method will appear to be used when an HTTP/1.1 server or
       intermediary attempts to parse an HTTP/2 connection header.
 
+13.  Acknowledgements
 
+   This document includes substantial input from the following
+   individuals:
 
 
 
@@ -3361,11 +3361,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 60]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-13.  Acknowledgements
-
-   This document includes substantial input from the following
-   individuals:
 
    o  Adam Langley, Wan-Teh Chang, Jim Morrison, Mark Nottingham, Alyssa
       Wilk, Costin Manolache, William Chan, Vitaliy Lvin, Joe Chan, Adam
@@ -3407,6 +3402,11 @@ Internet-Draft                   HTTP/2                     January 2014
               draft-ietf-httpbis-p2-semantics-25 (work in progress),
               November 2013.
 
+   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
+              Transfer Protocol (HTTP/1.1): Conditional Requests",
+              draft-ietf-httpbis-p4-conditional-25 (work in progress),
+              November 2013.
+
 
 
 
@@ -3417,11 +3417,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 61]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
-              Transfer Protocol (HTTP/1.1): Conditional Requests",
-              draft-ietf-httpbis-p4-conditional-25 (work in progress),
-              November 2013.
 
    [HTTP-p5]  Fielding, R., Ed., Lafon, Y., Ed., and J. F. Reschke, Ed.,
               "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
@@ -3465,6 +3460,11 @@ Internet-Draft                   HTTP/2                     January 2014
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
 
+   [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
+              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
+
+
+
 
 
 
@@ -3473,9 +3473,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 62]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-   [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
-              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
 
    [TLSALPN]  Friedl, S., Popov, A., Langley, A., and E. Stephan,
               "Transport Layer Security (TLS) Application Layer Protocol
@@ -3522,6 +3519,9 @@ A.1.  Since draft-ietf-httpbis-http2-09
 
    Renumbering frame types, error codes, and settings.
 
+   Adding INADEQUATE_SECURITY error code.
+
+   Updating TLS usage requirements to 1.2; forbidding TLS compression.
 
 
 
@@ -3529,10 +3529,6 @@ Belshe, et al.          Expires August 03, 2014                [Page 63]
 
 Internet-Draft                   HTTP/2                     January 2014
 
-
-   Adding INADEQUATE_SECURITY error code.
-
-   Updating TLS usage requirements to 1.2; forbidding TLS compression.
 
    Removing extensibility for frames and settings.
 
@@ -3576,6 +3572,10 @@ A.4.  Since draft-ietf-httpbis-http2-06
    CONTINUATION.
 
    Added denial of service considerations.
+
+
+
+
 
 
 
