@@ -650,11 +650,11 @@ samp, tt, code, pre {
       </div>
       <div id="overview">
          <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a href="#overview">Overview</a></h1>
-         <p id="rfc.section.2.p.1">In HTTP (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), header fields are encoded without any form of compression. As web pages have grown to include dozens to hundreds of requests,
+         <p id="rfc.section.2.p.1">In HTTP/1.1 (see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>), header fields are encoded without any form of compression. As web pages have grown to include dozens to hundreds of requests,
             the redundant header fields in these requests now measurably increase latency and unnecessarily consume bandwidth (see <a href="#PERF1"><cite title="IETF83: SPDY and What to Consider for HTTP/2.0">[PERF1]</cite></a> and <a href="#PERF2"><cite title="SPDY: What I Like About You">[PERF2]</cite></a>).
          </p>
-         <p id="rfc.section.2.p.2"><a href="#SPDY">SPDY</a> <cite title="SPDY Protocol">[SPDY]</cite> initially addressed this redundancy by compressing header fields using the "deflate" format <a href="#DEFLATE">DEFLATE</a> <cite title="DEFLATE Compressed Data Format Specification version 1.3">[DEFLATE]</cite>, which proved very effective at efficiently representing the redundant header fields. However, that approach exposed a security
-            risk as demonstrated by the <a href="#CRIME">CRIME</a> <cite title="The Crime Attack">[CRIME]</cite> attack.
+         <p id="rfc.section.2.p.2"><a href="#SPDY">SPDY</a> <cite title="SPDY Protocol">[SPDY]</cite> initially addressed this redundancy by compressing header fields using the "deflate" format <a href="#DEFLATE"><cite title="DEFLATE Compressed Data Format Specification version 1.3">[DEFLATE]</cite></a>, which proved very effective at efficiently representing the redundant header fields. However, that approach exposed a security
+            risk as demonstrated by the CRIME attack (see <a href="#CRIME"><cite title="The CRIME Attack">[CRIME]</cite></a>).
          </p>
          <p id="rfc.section.2.p.3">This document describes HPACK, a new compressor for header fields which eliminates redundant header fields, is not vulnerable
             to known security attacks, and which also has a bounded memory requirement for use in constrained environments.
@@ -739,14 +739,14 @@ samp, tt, code, pre {
                <p id="rfc.section.3.1.2.p.4">The encoder decides how to update the header table and as such can control how much memory is used by the header table. To
                   limit the memory requirements of the decoder, the header table size is strictly bounded (see <a href="#maximum.table.size" title="Maximum Table Size">Section&nbsp;3.3.1</a>).
                </p>
-               <p id="rfc.section.3.1.2.p.5">The header table is updated during the processing of a set of header field representations (see header field representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>)).
+               <p id="rfc.section.3.1.2.p.5">The header table is updated during the processing of a set of header field representations (see <a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
                </p>
             </div>
             <div id="reference.set">
                <h3 id="rfc.section.3.1.3"><a href="#rfc.section.3.1.3">3.1.3</a>&nbsp;<a href="#reference.set">Reference Set</a></h3>
                <p id="rfc.section.3.1.3.p.1">A reference set is an unordered set of references to entries of the header table.</p>
                <p id="rfc.section.3.1.3.p.2">The reference set is initially empty.</p>
-               <p id="rfc.section.3.1.3.p.3">The reference set is updated during the processing of a set of header field representations (see header field representation processing (<a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>)).
+               <p id="rfc.section.3.1.3.p.3">The reference set is updated during the processing of a set of header field representations (see <a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
                </p>
                <p id="rfc.section.3.1.3.p.4">The reference set enables differential encoding, whereby only differences between the previous header set and the current
                   header set need to be encoded. The use of differential encoding is optional for any header set.
@@ -757,7 +757,7 @@ samp, tt, code, pre {
                <p id="rfc.section.3.1.3.p.6">To limit the memory requirements on the decoder side for handling the reference set, only entries within the header table
                   can be contained in the reference set. To still allow entries from the static table to take advantage of the differential
                   encoding, when a header field is represented as a reference to an entry of the static table, this entry is inserted into the
-                  header table ((see <a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
+                  header table (see <a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>).
                </p>
             </div>
             <div id="header.representation">
@@ -778,7 +778,8 @@ samp, tt, code, pre {
                      </ul> 
                   </dd>
                   <dt>Indexed Representation:</dt>
-                  <dd>The indexed representation defines a header field as a reference to an entry in either the header table or the static table(see <a href="#indexed.header.representation" title="Indexed Header Field Representation">Section&nbsp;4.2</a>). 
+                  <dd>The indexed representation defines a header field as a reference to an entry in either the header table or the static table
+                     (see <a href="#indexed.header.representation" title="Indexed Header Field Representation">Section&nbsp;4.2</a>). 
                      <div id="rfc.figure.1"></div><pre class="drawing">                                        
        &lt;----------  Index Address Space ----------&gt;
        &lt;-- Header  Table --&gt;  &lt;-- Static  Table --&gt;
@@ -1041,7 +1042,7 @@ else
                   </li>
                   <li>The encoded data of the string: 
                      <ul>
-                        <li>If H is '1', then the encoded string data is the bitwise concatenation of the <a href="#CANON">canonical</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite><a href="#HUFF">Huffman code</a> <cite title="A Method for the Construction of Minimum Redundancy Codes">[HUFF]</cite> corresponding to each octet of the data, followed by between 0-7 bits of padding.
+                        <li>If H is '1', then the encoded string data is the bitwise concatenation of the <a href="#CANON">canonical</a> <cite title="Generating a canonical prefix encoding">[CANON]</cite> <a href="#HUFF">Huffman code</a> <cite title="A Method for the Construction of Minimum Redundancy Codes">[HUFF]</cite> corresponding to each octet of the data, followed by between 0-7 bits of padding.
                         </li>
                         <li>If H is '0', then the encoded string is the octets of the field value without modification.</li>
                      </ul> 
@@ -1261,7 +1262,7 @@ else
          </tr>
          <tr>
             <td class="reference"><b id="CRIME">[CRIME]</b></td>
-            <td class="top">Rizzo, J. and T. Duong, “<a href="https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6">The Crime Attack</a>”, September&nbsp;2012, &lt;<a href="https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6">https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6</a>&gt;.
+            <td class="top">Rizzo, J. and T. Duong, “<a href="https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6">The CRIME Attack</a>”, September&nbsp;2012, &lt;<a href="https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6">https://docs.google.com/a/twist.com/presentation/d/11eBmGiHbYcHR9gL5nDyZChu_-lCa2GizeuOfaLU2HOU/edit#slide=id.g1eb6c1b5_3_6</a>&gt;.
             </td>
          </tr>
          <tr>
