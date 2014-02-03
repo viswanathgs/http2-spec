@@ -1388,10 +1388,10 @@ Internet-Draft                   HTTP/2                    February 2014
       Setting this flag causes the stream to enter one of the "half
       closed" states or the "closed" state (Section 5.1).
 
-   RESERVED (0x2):  Bit 2 is reserved for future use.
-
-   PAD_LOW (0x4):  Bit 3 being set indicates that the Pad Low field is
-      present.
+   END_SEGMENT (0x2):  Bit 2 being set indicates that this frame is the
+      last for the current segment.  Intermediaries MUST NOT coalesce
+      frames across a segment boundary and MUST preserve segment
+      boundaries when forwarding frames.
 
 
 
@@ -1401,6 +1401,9 @@ Belshe, et al.          Expires August 07, 2014                [Page 25]
 
 Internet-Draft                   HTTP/2                    February 2014
 
+
+   PAD_LOW (0x4):  Bit 3 being set indicates that the Pad Low field is
+      present.
 
    PAD_HIGH (0x8):  Bit 4 being set indicates that the Pad High field is
       present.  This bit MUST NOT be set unless the PAD_LOW flag is also
@@ -1448,15 +1451,14 @@ Internet-Draft                   HTTP/2                    February 2014
 
                            HEADERS Frame Payload
 
-   The HEADERS frame defines the following flags:
-
-
 
 
 Belshe, et al.          Expires August 07, 2014                [Page 26]
 
 Internet-Draft                   HTTP/2                    February 2014
 
+
+   The HEADERS frame defines the following flags:
 
    END_STREAM (0x1):  Bit 1 being set indicates that the header block
       (Section 4.3) is the last that the endpoint will send for the
@@ -1468,7 +1470,10 @@ Internet-Draft                   HTTP/2                    February 2014
       stream.  A CONTINUATION [CONTINUATION] frame cannot be used to
       terminate a stream.
 
-   RESERVED (0x2):  Bit 2 is reserved for future use.
+   END_SEGMENT (0x2):  Bit 2 being set indicates that this frame is the
+      last for the current segment.  Intermediaries MUST NOT coalesce
+      frames across a segment boundary and MUST preserve segment
+      boundaries when forwarding frames.
 
    END_HEADERS (0x4):  Bit 3 being set indicates that this frame
       contains an entire header block (Section 4.3) and is not followed
@@ -1499,13 +1504,8 @@ Internet-Draft                   HTTP/2                    February 2014
 
 6.3.  PRIORITY
 
-   The PRIORITY frame (type=0x2) specifies the sender-advised priority
-   of a stream.  It can be sent at any time for an existing stream.
-   This enables reprioritisation of existing streams.
 
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 
 
 
@@ -1514,6 +1514,13 @@ Belshe, et al.          Expires August 07, 2014                [Page 27]
 Internet-Draft                   HTTP/2                    February 2014
 
 
+   The PRIORITY frame (type=0x2) specifies the sender-advised priority
+   of a stream.  It can be sent at any time for an existing stream.
+   This enables reprioritisation of existing streams.
+
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |X|                        Priority (31)                        |
    +-+-------------------------------------------------------------+
 
@@ -1555,13 +1562,6 @@ Internet-Draft                   HTTP/2                    February 2014
 
                          RST_STREAM Frame Payload
 
-   The RST_STREAM frame contains a single unsigned, 32-bit integer
-   identifying the error code (Section 7).  The error code indicates why
-   the stream is being terminated.
-
-   The RST_STREAM frame does not define any flags.
-
-
 
 
 
@@ -1569,6 +1569,12 @@ Belshe, et al.          Expires August 07, 2014                [Page 28]
 
 Internet-Draft                   HTTP/2                    February 2014
 
+
+   The RST_STREAM frame contains a single unsigned, 32-bit integer
+   identifying the error code (Section 7).  The error code indicates why
+   the stream is being terminated.
+
+   The RST_STREAM frame does not define any flags.
 
    The RST_STREAM frame fully terminates the referenced stream and
    causes it to enter the closed state.  After receiving a RST_STREAM on
@@ -1610,12 +1616,6 @@ Internet-Draft                   HTTP/2                    February 2014
    New settings MUST NOT be defined or implemented in a way that
    requires endpoints to understand them in order to communicate
    successfully.
-
-
-
-
-
-
 
 
 
