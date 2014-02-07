@@ -3339,21 +3339,21 @@ Internet-Draft                   HTTP/2                    February 2014
 
    Padding within HTTP/2 is not intended as a replacement for general
    purpose padding, such as might be provided by TLS [TLS12].  Redundant
-   padding could even be counterproductive.
+   padding could even be counterproductive.  Correct application can
+   depend on having specific knowledge of the data that is being padded.
 
-   Padding can be used to hide the exact size of frame content.  Padding
-   is provided to mitigate specific attacks within HTTP.  For example,
-   attacks where compressed content includes both attacker-controlled
-   plaintext and secret data (see for example, [BREACH]).
+   To mitigate attacks that rely on compression, disabling compression
+   might be preferable to padding as a countermeasure.
+
+   Padding can be used to obscure the exact size of frame content.
+   Padding is provided to mitigate specific attacks within HTTP.  For
+   example, attacks where compressed content includes both attacker-
+   controlled plaintext and secret data (see for example, [BREACH]).
 
    Use of padding can result in less protection than might seem
-   immediately obvious.  In particular, randomized amounts of padding
-   only increase the number of frames that an attacker has to observe to
-   recover the length.  Padding to a constant size is preferable, since
-   that reveals minimal size information.  For attacks based on
-   compression, disabling compression might be preferable to use of
-   padding.
-
+   immediately obvious.  At best, padding only makes it more difficult
+   for an attacker to infer length information by increasing the number
+   of frames an attacker has to observe.  Incorrectly implemented
 
 
 
@@ -3361,6 +3361,12 @@ Belshe, et al.          Expires August 11, 2014                [Page 60]
 
 Internet-Draft                   HTTP/2                    February 2014
 
+
+   padding schemes can be easily defeated.  In particular, randomized
+   padding with a predictable distribution provides very little
+   protection; or padding payloads to a fixed size exposes information
+   as payload sizes cross the fixed size boundary, which could be
+   possible if an attacker can control plaintext.
 
    Intermediaries SHOULD NOT remove padding; though an intermediary
    could remove padding and add differing amounts if the intent is to
@@ -3404,12 +3410,6 @@ Internet-Draft                   HTTP/2                    February 2014
    Identification Sequence:  0x68 0x32 ("h2")
 
    Specification:  This document (RFCXXXX)
-
-
-
-
-
-
 
 
 

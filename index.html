@@ -2484,17 +2484,20 @@ Upgrade: h2
          </div>
          <div id="padding">
             <h2 id="rfc.section.10.6"><a href="#rfc.section.10.6">10.6</a>&nbsp;<a href="#padding">Use of Padding</a></h2>
-            <p id="rfc.section.10.6.p.1">Padding within HTTP/2 is not intended as a replacement for general purpose padding, such as might be provided by <a href="#TLS12">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. Redundant padding could even be counterproductive.
+            <p id="rfc.section.10.6.p.1">Padding within HTTP/2 is not intended as a replacement for general purpose padding, such as might be provided by <a href="#TLS12">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. Redundant padding could even be counterproductive. Correct application can depend on having specific knowledge of the data
+               that is being padded.
             </p>
-            <p id="rfc.section.10.6.p.2">Padding can be used to hide the exact size of frame content. Padding is provided to mitigate specific attacks within HTTP.
+            <p id="rfc.section.10.6.p.2">To mitigate attacks that rely on compression, disabling compression might be preferable to padding as a countermeasure.</p>
+            <p id="rfc.section.10.6.p.3">Padding can be used to obscure the exact size of frame content. Padding is provided to mitigate specific attacks within HTTP.
                For example, attacks where compressed content includes both attacker-controlled plaintext and secret data (see for example, <a href="#BREACH"><cite title="BREACH: Reviving the CRIME Attack">[BREACH]</cite></a>).
             </p>
-            <p id="rfc.section.10.6.p.3">Use of padding can result in less protection than might seem immediately obvious. In particular, randomized amounts of padding
-               only increase the number of frames that an attacker has to observe to recover the length. Padding to a constant size is preferable,
-               since that reveals minimal size information. For attacks based on compression, disabling compression might be preferable to
-               use of padding.
+            <p id="rfc.section.10.6.p.4">Use of padding can result in less protection than might seem immediately obvious. At best, padding only makes it more difficult
+               for an attacker to infer length information by increasing the number of frames an attacker has to observe. Incorrectly implemented
+               padding schemes can be easily defeated. In particular, randomized padding with a predictable distribution provides very little
+               protection; or padding payloads to a fixed size exposes information as payload sizes cross the fixed size boundary, which
+               could be possible if an attacker can control plaintext.
             </p>
-            <p id="rfc.section.10.6.p.4">Intermediaries SHOULD NOT remove padding; though an intermediary could remove padding and add differing amounts if the intent
+            <p id="rfc.section.10.6.p.5">Intermediaries SHOULD NOT remove padding; though an intermediary could remove padding and add differing amounts if the intent
                is to improve the protections padding affords.
             </p>
          </div>
