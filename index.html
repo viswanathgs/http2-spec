@@ -1406,7 +1406,7 @@ Upgrade: h2
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | [Pad High(8)] | [Pad Low (8)] |X|      [Priority (31)]      ...
  +---------------+---------------+-+-----------------------------+
- ...[Priority]                   | Header Block Fragment (*)   ...
+ ...      [Priority]             | Header Block Fragment (*)   ...
  +-------------------------------+-------------------------------+
  |                   Header Block Fragment (*)                 ...
  +---------------------------------------------------------------+
@@ -1644,21 +1644,34 @@ Upgrade: h2
             <div id="rfc.figure.8"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|                Promised-Stream-ID (31)                      |
- +-+-------------------------------------------------------------+
- |                 Header Block Fragment (*)                   ...
+ | [Pad High(8)] | [Pad Low (8)] |X|  Promised Stream ID (31)  ...
+ +---------------+---------------+-+-----------------------------+
+ ...    Promised Stream ID       | Header Block Fragment (*)   ...
+ +-------------------------------+-------------------------------+
+ |                   Header Block Fragment (*)                 ...
+ +---------------------------------------------------------------+
+ |                           Padding (*)                       ...
  +---------------------------------------------------------------+
 </pre><p class="figure">Figure 8: PUSH_PROMISE Payload Format</p>
-            <p id="rfc.section.6.6.p.4">The payload of a PUSH_PROMISE includes a "Promised-Stream-ID". This unsigned 31-bit integer identifies the stream the endpoint
-               intends to start sending frames for. The promised stream identifier MUST be a valid choice for the next stream sent by the
-               sender (see new stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>)).
-            </p>
-            <p id="rfc.section.6.6.p.5">Following the "Promised-Stream-ID" is a header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
-            </p>
-            <p id="rfc.section.6.6.p.6">PUSH_PROMISE frames MUST be associated with an existing, peer-initiated stream. If the stream identifier field specifies the
-               value 0x0, a recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
-            </p>
-            <p id="rfc.section.6.6.p.7">The PUSH_PROMISE frame defines the following flags: </p>
+            <p id="rfc.section.6.6.p.4">The HEADERS frame payload has the following fields: </p>
+            <dl>
+               <dt>Pad High:</dt>
+               <dd>Padding size high bits. This field is only present if the PAD_HIGH flag is set.</dd>
+               <dt>Pad Low:</dt>
+               <dd>Padding size low bits. This field is only present if the PAD_LOW flag is set.</dd>
+               <dt>X:</dt>
+               <dd>A single reserved bit.</dd>
+               <dt>Promised Stream ID:</dt>
+               <dd>This unsigned 31-bit integer identifies the stream the endpoint intends to start sending frames for. The promised stream identifier
+                  MUST be a valid choice for the next stream sent by the sender (see new stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>)).
+               </dd>
+               <dt>Header Block Fragment:</dt>
+               <dd>A header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) containing request header fields.
+               </dd>
+               <dt>Padding:</dt>
+               <dd>Padding octets.</dd>
+            </dl>
+            <p id="rfc.section.6.6.p.5">The PUSH_PROMISE frame defines the following flags: </p>
             <dl>
                <dt>END_PUSH_PROMISE (0x4):</dt>
                <dd>
@@ -1668,20 +1681,35 @@ Upgrade: h2
                      receiver MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
+               <dt>PAD_LOW (0x10):</dt>
+               <dd>
+                  <p>Bit 5 being set indicates that the Pad Low field is present.</p>
+               </dd>
+               <dt>PAD_HIGH (0x20):</dt>
+               <dd>
+                  <p>Bit 6 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
+                     Endpoints that receive a frame with PAD_HIGH set and PAD_LOW cleared MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
+               </dd>
             </dl>
-            <p id="rfc.section.6.6.p.8">Promised streams are not required to be used in order promised. The PUSH_PROMISE only reserves stream identifiers for later
+            <p id="rfc.section.6.6.p.6">PUSH_PROMISE frames MUST be associated with an existing, peer-initiated stream. If the stream identifier field specifies the
+               value 0x0, a recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            </p>
+            <p id="rfc.section.6.6.p.7">Promised streams are not required to be used in order promised. The PUSH_PROMISE only reserves stream identifiers for later
                use.
             </p>
-            <p id="rfc.section.6.6.p.9">Recipients of PUSH_PROMISE frames can choose to reject promised streams by returning a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> referencing the promised stream identifier back to the sender of the PUSH_PROMISE.
+            <p id="rfc.section.6.6.p.8">Recipients of PUSH_PROMISE frames can choose to reject promised streams by returning a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> referencing the promised stream identifier back to the sender of the PUSH_PROMISE.
             </p>
-            <p id="rfc.section.6.6.p.10">The PUSH_PROMISE frame modifies the connection state as defined in <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>.
+            <p id="rfc.section.6.6.p.9">The PUSH_PROMISE frame modifies the connection state as defined in <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>.
             </p>
-            <p id="rfc.section.6.6.p.11">A PUSH_PROMISE frame modifies the connection state in two ways. The inclusion of a header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) potentially modifies the compression state. PUSH_PROMISE also reserves a stream for later use, causing the promised stream
+            <p id="rfc.section.6.6.p.10">A PUSH_PROMISE frame modifies the connection state in two ways. The inclusion of a header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) potentially modifies the compression state. PUSH_PROMISE also reserves a stream for later use, causing the promised stream
                to enter the "reserved" state. A sender MUST NOT send a PUSH_PROMISE on a stream unless that stream is either "open" or "half
                closed (remote)"; the sender MUST ensure that the promised stream is a valid choice for a new stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>) (that is, the promised stream MUST be in the "idle" state).
             </p>
-            <p id="rfc.section.6.6.p.12">Since PUSH_PROMISE reserves a stream, ignoring a PUSH_PROMISE frame causes the stream state to become indeterminate. A receiver
+            <p id="rfc.section.6.6.p.11">Since PUSH_PROMISE reserves a stream, ignoring a PUSH_PROMISE frame causes the stream state to become indeterminate. A receiver
                MUST treat the receipt of a PUSH_PROMISE on a stream that is neither "open" nor "half-closed (local)" as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. Similarly, a receiver MUST treat the receipt of a PUSH_PROMISE that promises an illegal stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>) (that is, an identifier for a stream that is not currently in the "idle" state) as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            </p>
+            <p id="rfc.section.6.6.p.12">The PUSH_PROMISE frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
             </p>
          </div>
          <div id="PING">
