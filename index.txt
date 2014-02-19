@@ -740,20 +740,20 @@ Internet-Draft                   HTTP/2                    February 2014
    A complete header block consists of either:
 
    o  a single HEADERS [HEADERS] or PUSH_PROMISE [PUSH_PROMISE] frame,
-      with the END_HEADERS or END_PUSH_PROMISE flag set, or
+      with the END_HEADERS flag set, or
 
    o  a HEADERS [HEADERS] or PUSH_PROMISE [PUSH_PROMISE] frame with the
-      END_HEADERS or END_PUSH_PROMISE flag cleared and one or more
-      CONTINUATION [CONTINUATION] frames, where the last CONTINUATION
-      [CONTINUATION] frame has the END_HEADERS flag set.
+      END_HEADERS flag cleared and one or more CONTINUATION
+      [CONTINUATION] frames, where the last CONTINUATION [CONTINUATION]
+      frame has the END_HEADERS flag set.
 
    Header blocks MUST be transmitted as a contiguous sequence of frames,
    with no interleaved frames of any other type or from any other
    stream.  The last frame in a sequence of HEADERS [HEADERS] or
    CONTINUATION [CONTINUATION] frames MUST have the END_HEADERS flag
    set.  The last frame in a sequence of PUSH_PROMISE [PUSH_PROMISE] or
-   CONTINUATION [CONTINUATION] frames MUST have the END_PUSH_PROMISE or
-   END_HEADERS flag set (respectively).
+   CONTINUATION [CONTINUATION] frames MUST have the END_HEADERS flag
+   set.
 
    Header block fragments can only be sent as the payload of HEADERS
    [HEADERS], PUSH_PROMISE [PUSH_PROMISE] or CONTINUATION [CONTINUATION]
@@ -1890,7 +1890,7 @@ Internet-Draft                   HTTP/2                    February 2014
 
    The PUSH_PROMISE frame defines the following flags:
 
-   END_PUSH_PROMISE (0x4):  Bit 3 being set indicates that this frame
+   END_HEADERS (0x4):  Bit 3 being set indicates that this frame
       contains an entire header block (Section 4.3) and is not followed
       by any CONTINUATION [CONTINUATION] frames.
 
@@ -1906,7 +1906,7 @@ Belshe, et al.          Expires August 23, 2014                [Page 34]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-      A PUSH_PROMISE frame without the END_PUSH_PROMISE flag set MUST be
+      A PUSH_PROMISE frame without the END_HEADERS flag set MUST be
       followed by a CONTINUATION frame for the same stream.  A receiver
       MUST treat the receipt of any other type of frame or a frame on a
       different stream as a connection error (Section 5.4.1) of type
@@ -2360,8 +2360,7 @@ Internet-Draft                   HTTP/2                    February 2014
    header block fragments (Section 4.3).  Any number of CONTINUATION
    frames can be sent on an existing stream, as long as the preceding
    frame on the same stream is one of HEADERS [HEADERS], PUSH_PROMISE
-   [PUSH_PROMISE] or CONTINUATION without the END_HEADERS or
-   END_PUSH_PROMISE flag set.
+   [PUSH_PROMISE] or CONTINUATION without the END_HEADERS flag set.
 
    0                   1                   2                   3
    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -2401,7 +2400,8 @@ Internet-Draft                   HTTP/2                    February 2014
    PAD_LOW (0x10):  Bit 5 being set indicates that the Pad Low field is
       present.
 
-
+   PAD_HIGH (0x20):  Bit 6 being set indicates that the Pad High field
+      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
 
 
 
@@ -2410,8 +2410,6 @@ Belshe, et al.          Expires August 23, 2014                [Page 43]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-   PAD_HIGH (0x20):  Bit 6 being set indicates that the Pad High field
-      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
       also set.  Endpoints that receive a frame with PAD_HIGH set and
       PAD_LOW cleared MUST treat this as a connection error
       (Section 5.4.1) of type PROTOCOL_ERROR [PROTOCOL_ERROR].
@@ -2458,6 +2456,8 @@ Internet-Draft                   HTTP/2                    February 2014
 
    INTERNAL_ERROR (2):  The endpoint encountered an unexpected internal
       error.
+
+
 
 
 

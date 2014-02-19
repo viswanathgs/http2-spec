@@ -993,13 +993,13 @@ Upgrade: h2
             </p>
             <p id="rfc.section.4.3.p.6">A complete header block consists of either: </p>
             <ul>
-               <li>a single <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, with the END_HEADERS or END_PUSH_PROMISE flag set, or
+               <li>a single <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, with the END_HEADERS flag set, or
                </li>
-               <li>a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_HEADERS or END_PUSH_PROMISE flag cleared and one or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, where the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame has the END_HEADERS flag set.
+               <li>a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_HEADERS flag cleared and one or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, where the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame has the END_HEADERS flag set.
                </li>
             </ul>
             <p id="rfc.section.4.3.p.7">Header blocks MUST be transmitted as a contiguous sequence of frames, with no interleaved frames of any other type or from
-               any other stream. The last frame in a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. The last frame in a sequence of <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_PUSH_PROMISE or END_HEADERS flag set (respectively).
+               any other stream. The last frame in a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. The last frame in a sequence of <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set.
             </p>
             <p id="rfc.section.4.3.p.8">Header block fragments can only be sent as the payload of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, because these frames carry data that can modify the compression context maintained by a receiver. An endpoint receiving <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST reassemble header blocks and perform decompression even if the frames are to be discarded. A receiver MUST terminate
                the connection with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#COMPRESSION_ERROR" class="smpl">COMPRESSION_ERROR</a> if it does not decompress a header block.
@@ -1671,12 +1671,12 @@ Upgrade: h2
             </dl>
             <p id="rfc.section.6.6.p.5">The PUSH_PROMISE frame defines the following flags: </p>
             <dl>
-               <dt>END_PUSH_PROMISE (0x4):</dt>
+               <dt>END_HEADERS (0x4):</dt>
                <dd>
                   <p>Bit 3 being set indicates that this frame contains an entire header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) and is not followed by any <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames.
                   </p>
-                  <p>A PUSH_PROMISE frame without the END_PUSH_PROMISE flag set MUST be followed by a CONTINUATION frame for the same stream. A
-                     receiver MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>A PUSH_PROMISE frame without the END_HEADERS flag set MUST be followed by a CONTINUATION frame for the same stream. A receiver
+                     MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>PAD_LOW (0x10):</dt>
@@ -1911,7 +1911,7 @@ Upgrade: h2
          <div id="CONTINUATION">
             <h2 id="rfc.section.6.10"><a href="#rfc.section.6.10">6.10</a>&nbsp;<a href="#CONTINUATION">CONTINUATION</a></h2>
             <p id="rfc.section.6.10.p.1">The CONTINUATION frame (type=0x9) is used to continue a sequence of header block fragments (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). Any number of CONTINUATION frames can be sent on an existing stream, as long as the preceding frame on the same stream is
-               one of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or CONTINUATION without the END_HEADERS or END_PUSH_PROMISE flag set.
+               one of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or CONTINUATION without the END_HEADERS flag set.
             </p>
             <div id="rfc.figure.12"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
