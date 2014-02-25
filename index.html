@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires August 28, 2014";
+       content: "Expires August 29, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -418,7 +418,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-02-24">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-02-25">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -438,7 +438,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: August 28, 2014</td>
+               <td class="left">Expires: August 29, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -451,7 +451,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">February 24, 2014</td>
+               <td class="right">February 25, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -480,7 +480,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on August 28, 2014.</p>
+         <p>This Internet-Draft will expire on August 29, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -2086,67 +2086,66 @@ Upgrade: h2
                <p id="rfc.section.8.1.2.p.1">This section shows HTTP/1.1 requests and responses, with illustrations of equivalent HTTP/2 requests and responses.</p>
                <p id="rfc.section.8.1.2.p.2">An HTTP GET request includes request header fields and no body and is therefore transmitted as a single <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the serialized block of request header fields. The last <a href="#HEADERS" class="smpl">HEADERS</a> frame in the sequence has both the END_HEADERS and END_STREAM flags set:
                </p>
-               <div id="rfc.figure.u.6"></div><pre class="inline">  GET /resource HTTP/1.1         HEADERS
-  Host: example.org        ==&gt;     + END_STREAM
-  Accept: image/jpeg               + END_HEADERS
-                                     :method = GET
-                                     :scheme = https
-                                     :authority = example.org
-                                     :path = /resource
-                                     accept = image/jpeg
+               <div id="rfc.figure.u.6"></div><pre class="inline">  GET /resource HTTP/1.1           HEADERS
+  Host: example.org          ==&gt;     + END_STREAM
+  Accept: image/jpeg                 + END_HEADERS
+                                       :method = GET
+                                       :scheme = https
+                                       :path = /resource
+                                       host = example.org
+                                       accept = image/jpeg
 </pre><p id="rfc.section.8.1.2.p.4">Similarly, a response that includes only response header fields is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame (again, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the serialized block of response header fields. The last <a href="#HEADERS" class="smpl">HEADERS</a> frame in the sequence has both the END_HEADERS and END_STREAM flag set:
                </p>
-               <div id="rfc.figure.u.7"></div><pre class="inline">  HTTP/1.1 304 Not Modified     HEADERS
-  ETag: "xyzzy"            ===&gt;   + END_STREAM
-  Expires: Thu, 23 Jan ...        + END_HEADERS
-                                    :status = 304
-                                    etag: "xyzzy"
-                                    expires: Thu, 23 Jan ...
+               <div id="rfc.figure.u.7"></div><pre class="inline">  HTTP/1.1 304 Not Modified        HEADERS
+  ETag: "xyzzy"              ==&gt;     + END_STREAM
+  Expires: Thu, 23 Jan ...           + END_HEADERS
+                                       :status = 304
+                                       etag: "xyzzy"
+                                       expires: Thu, 23 Jan ...
 </pre><p id="rfc.section.8.1.2.p.6">An HTTP POST request that includes request header fields and payload data is transmitted as one <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the request header fields, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> (or <a href="#HEADERS" class="smpl">HEADERS</a>) frame having the END_HEADERS flag set and the final <a href="#DATA" class="smpl">DATA</a> frame having the END_STREAM flag set:
                </p>
-               <div id="rfc.figure.u.8"></div><pre class="inline">  POST /resource HTTP/1.1        HEADERS
-  Host: example.org         ==&gt;    - END_STREAM
-  Content-Type: image/jpeg         + END_HEADERS
-  Content-Length: 123                :method = POST
-                                     :scheme = https
-  {binary data}                      :authority = example.org
-                                     :path = /resource
-                                     content-type = image/jpeg
-                                     content-length = 123
+               <div id="rfc.figure.u.8"></div><pre class="inline">  POST /resource HTTP/1.1          HEADERS
+  Host: example.org          ==&gt;     - END_STREAM
+  Content-Type: image/jpeg           + END_HEADERS
+  Content-Length: 123                  :method = POST
+                                       :scheme = https
+  {binary data}                        :path = /resource
+                                       :authority = example.org
+                                       content-type = image/jpeg
+                                       content-length = 123
 
-                                 DATA
-                                   + END_STREAM
-                                     {binary data}
+                                   DATA
+                                     + END_STREAM
+                                       {binary data}
 </pre><p id="rfc.section.8.1.2.p.8">A response that includes header fields and payload data is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#DATA" class="smpl">DATA</a> frame in the sequence having the END_STREAM flag set:
                </p>
-               <div id="rfc.figure.u.9"></div><pre class="inline">  HTTP/1.1 200 OK                HEADERS
-  Content-Type: image/jpeg  ==&gt;    - END_STREAM
-  Content-Length: 123              + END_HEADERS
-                                     :status = 200
-  {binary data}                      content-type = image/jpeg
-                                     content-length = 123
+               <div id="rfc.figure.u.9"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
+  Content-Type: image/jpeg   ==&gt;     - END_STREAM
+  Content-Length: 123                + END_HEADERS
+                                       :status = 200
+  {binary data}                        content-type = image/jpeg
+                                       content-length = 123
 
-                                 DATA
-                                   + END_STREAM
-                                     {binary data}
+                                   DATA
+                                     + END_STREAM
+                                       {binary data}
 </pre><p id="rfc.section.8.1.2.p.10">Trailing header fields are sent as a header block after both the request or response header block and all the <a href="#DATA" class="smpl">DATA</a> frames have been sent. The sequence of <a href="#HEADERS" class="smpl">HEADERS</a>/<a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames that bears the trailers includes a terminal frame that has both END_HEADERS and END_STREAM flags set.
                </p>
-               <div id="rfc.figure.u.10"></div><pre class="inline">  HTTP/1.1 200 OK               HEADERS
-  Content-Type: image/jpeg ===&gt;   - END_STREAM
-  Transfer-Encoding: chunked      + END_HEADERS
-  TE: trailers                      :status        = 200
-  Trailer: Foo                      content-length = 123
-  Connection: TE                    content-type   = image/jpeg
-                                    trailer        = Foo
-  123
-  {binary data}                 DATA
-  0                               - END_STREAM
-  Foo: bar                          {binary data}
+               <div id="rfc.figure.u.10"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
+  Content-Type: image/jpeg   ==&gt;     - END_STREAM
+  Transfer-Encoding: chunked         + END_HEADERS
+  Trailer: Foo                         :status        = 200
+                                       content-length = 123
+  123                                  content-type   = image/jpeg
+  {binary data}
+  0                                DATA
+  Foo: bar                           - END_STREAM
+                                       {binary data}
 
-                                HEADERS
-                                  + END_STREAM
-                                  + END_HEADERS
-                                    foo: bar
+                                   HEADERS
+                                     + END_STREAM
+                                     + END_HEADERS
+                                       foo: bar
 </pre></div>
             <div id="HttpHeaders">
                <h3 id="rfc.section.8.1.3"><a href="#rfc.section.8.1.3">8.1.3</a>&nbsp;<a href="#HttpHeaders">HTTP Header Fields</a></h3>
