@@ -78,12 +78,9 @@ Copyright Notice
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-     1.1.  Document Organization . . . . . . . . . . . . . . . . . .   5
-     1.2.  Conventions and Terminology . . . . . . . . . . . . . . .   5
-   2.  HTTP/2 Protocol Overview  . . . . . . . . . . . . . . . . . .   6
-     2.1.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . .   6
-     2.2.  HTTP Multiplexing . . . . . . . . . . . . . . . . . . . .   6
-     2.3.  HTTP Semantics  . . . . . . . . . . . . . . . . . . . . .   7
+   2.  HTTP/2 Protocol Overview  . . . . . . . . . . . . . . . . . .   5
+     2.1.  Document Organization . . . . . . . . . . . . . . . . . .   5
+     2.2.  Conventions and Terminology . . . . . . . . . . . . . . .   6
    3.  Starting HTTP/2 . . . . . . . . . . . . . . . . . . . . . . .   7
      3.1.  HTTP/2 Version Identification . . . . . . . . . . . . . .   7
      3.2.  Starting HTTP/2 for "http" URIs . . . . . . . . . . . . .   8
@@ -106,6 +103,9 @@ Table of Contents
      5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  23
        5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  24
        5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  24
+       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  25
+   6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  25
+     6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  25
 
 
 
@@ -114,9 +114,6 @@ Belshe, et al.          Expires August 29, 2014                 [Page 2]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  25
-   6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  25
-     6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  25
      6.2.  HEADERS . . . . . . . . . . . . . . . . . . . . . . . . .  27
      6.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . . . .  29
      6.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . . . .  30
@@ -162,6 +159,9 @@ Internet-Draft                   HTTP/2                    February 2014
      12.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  65
    13. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  65
    14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  66
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  66
+     14.2.  Informative References . . . . . . . . . . . . . . . . .  67
+   Appendix A.  Change Log (to be removed by RFC Editor before
 
 
 
@@ -170,9 +170,6 @@ Belshe, et al.          Expires August 29, 2014                 [Page 3]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  66
-     14.2.  Informative References . . . . . . . . . . . . . . . . .  67
-   Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  68
      A.1.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  68
      A.2.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  68
@@ -217,7 +214,10 @@ Internet-Draft                   HTTP/2                    February 2014
    requests complete more quickly, further improving performance.
 
    The resulting protocol is designed to be more friendly to the
-   network, because fewer TCP connections can be used, in comparison to
+   network, because fewer TCP connections can be used in comparison to
+   HTTP/1.x.  This means less competition with other flows, and longer-
+   lived connections, which in turn leads to better utilization of
+   available network capacity.
 
 
 
@@ -226,19 +226,61 @@ Belshe, et al.          Expires August 29, 2014                 [Page 4]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-   HTTP/1.x.  This means less competition with other flows, and longer-
-   lived connections, which in turn leads to better utilization of
-   available network capacity.
-
    Finally, this encapsulation also enables more scalable processing of
    messages through use of binary message framing.
 
-1.1.  Document Organization
+2.  HTTP/2 Protocol Overview
+
+   HTTP/2 provides an optimized transport for HTTP semantics.  HTTP/2
+   supports all of the core features of HTTP/1.1, but aims to be more
+   efficient in several ways.
+
+   The basic protocol unit in HTTP/2 is a frame (Section 4.1).  Each
+   frame has a different type and purpose.  For example, HEADERS
+   [HEADERS] and DATA [DATA] frames form the basis of HTTP requests and
+   responses (Section 8.1); other frame types like SETTINGS [SETTINGS],
+   WINDOW_UPDATE [WINDOW_UPDATE], and PUSH_PROMISE [PUSH_PROMISE] are
+   used in support of other HTTP/2 features.
+
+   Multiplexing of requests is achieved by having each HTTP request-
+   response exchanged assigned to a single stream (Section 5).  Streams
+   are largely independent of each other, so a blocked or stalled
+   request does not prevent progress on other requests.
+
+   Flow control and prioritization ensure that it is possible to
+   properly use multiplexed streams.  Flow control (Section 5.2) helps
+   to ensure that only data that can be used by a receiver is
+   transmitted.  Prioritization (Section 5.3) ensures that limited
+   resources can be directed to the most important requests first.
+
+   HTTP/2 adds a new interaction mode, whereby a server can push
+   responses to a client (Section 8.2).  Server push allows a server to
+   speculatively send a client data that the server anticipates the
+   client will need, trading off some network usage against a potential
+   latency gain.  The server does this by synthesizing a request, which
+   it sends as a PUSH_PROMISE [PUSH_PROMISE] frame.  The server is then
+   able to send a response to the synthetic request on an separate
+   stream.
+
+   Frames that contain HTTP header fields are compressed (Section 4.3).
+   HTTP requests can be highly redundant, so compression can reduce the
+   size of requests and responses significantly.
+
+2.1.  Document Organization
 
    The HTTP/2 specification is split into four parts:
 
    o  Starting HTTP/2 (Section 3) covers how an HTTP/2 connection is
       initiated.
+
+
+
+
+
+Belshe, et al.          Expires August 29, 2014                 [Page 5]
+
+Internet-Draft                   HTTP/2                    February 2014
+
 
    o  The framing (Section 4) and streams (Section 5) layers describe
       the way HTTP/2 frames are structured and formed into multiplexed
@@ -256,7 +298,7 @@ Internet-Draft                   HTTP/2                    February 2014
    The framing and streams layers are tailored to the needs of the HTTP
    protocol and server push.
 
-1.2.  Conventions and Terminology
+2.2.  Conventions and Terminology
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -273,15 +315,6 @@ Internet-Draft                   HTTP/2                    February 2014
 
    connection:  A transport-level connection between two endpoints.
 
-
-
-
-
-Belshe, et al.          Expires August 29, 2014                 [Page 5]
-
-Internet-Draft                   HTTP/2                    February 2014
-
-
    connection error:  An error that affects the entire HTTP/2
       connection.
 
@@ -297,6 +330,14 @@ Internet-Draft                   HTTP/2                    February 2014
 
    receiver:  An endpoint that is receiving frames.
 
+
+
+
+Belshe, et al.          Expires August 29, 2014                 [Page 6]
+
+Internet-Draft                   HTTP/2                    February 2014
+
+
    sender:  An endpoint that is transmitting frames.
 
    server:  The endpoint which did not initiate the HTTP/2 connection.
@@ -306,51 +347,11 @@ Internet-Draft                   HTTP/2                    February 2014
 
    stream error:  An error on the individual HTTP/2 stream.
 
-2.  HTTP/2 Protocol Overview
-
-   HTTP/2 provides an optimized transport for HTTP semantics.
+3.  Starting HTTP/2
 
    An HTTP/2 connection is an application level protocol running on top
    of a TCP connection ([TCP]).  The client is the TCP connection
    initiator.
-
-   This document describes the HTTP/2 protocol using a logical structure
-   that is formed of three parts: framing, streams, and application
-   mapping.  This structure is provided primarily as an aid to
-   specification, not as a constraint upon implementations.
-
-2.1.  HTTP Frames
-
-   HTTP/2 provides an efficient serialization of HTTP semantics.  HTTP
-   requests and responses are encoded into length-prefixed frames (see
-   Section 4.1).
-
-   HTTP header fields are compressed into a series of frames that
-   contain header block fragments (see Section 4.3).
-
-2.2.  HTTP Multiplexing
-
-
-
-
-Belshe, et al.          Expires August 29, 2014                 [Page 6]
-
-Internet-Draft                   HTTP/2                    February 2014
-
-
-   HTTP/2 provides the ability to multiplex HTTP requests and responses
-   over a single connection.  Multiple requests or responses can be sent
-   concurrently on a connection using streams (Section 5).  In order to
-   maintain independent streams, flow control and prioritization are
-   necessary.
-
-2.3.  HTTP Semantics
-
-   HTTP/2 defines how HTTP requests and responses are mapped to streams
-   (see Section 8.1) and introduces a new interaction model, server push
-   (Section 8.2).
-
-3.  Starting HTTP/2
 
    HTTP/2 uses the same "http" and "https" URI schemes used by HTTP/1.1.
    HTTP/2 shares the same default port numbers: 80 for "http" URIs and
@@ -383,7 +384,6 @@ Internet-Draft                   HTTP/2                    February 2014
    Only implementations of the final, published RFC can identify
    themselves as "h2".  Until such an RFC exists, implementations MUST
    NOT identify themselves using "h2".
-
 
 
 
