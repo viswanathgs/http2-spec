@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires August 29, 2014";
+       content: "Expires August 30, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -417,7 +417,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-02-25">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-02-26">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -437,7 +437,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: August 29, 2014</td>
+               <td class="left">Expires: August 30, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -450,7 +450,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">February 25, 2014</td>
+               <td class="right">February 26, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -479,7 +479,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on August 29, 2014.</p>
+         <p>This Internet-Draft will expire on August 30, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -590,7 +590,7 @@ samp, tt, code, pre {
             </ul>
          </li>
          <li><a href="#rfc.section.10">10.</a>&nbsp;&nbsp;&nbsp;<a href="#security">Security Considerations</a><ul>
-               <li><a href="#rfc.section.10.1">10.1</a>&nbsp;&nbsp;&nbsp;<a href="#authority">Server Authority and Same-Origin</a></li>
+               <li><a href="#rfc.section.10.1">10.1</a>&nbsp;&nbsp;&nbsp;<a href="#authority">Server Authority</a></li>
                <li><a href="#rfc.section.10.2">10.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.2">Cross-Protocol Attacks</a></li>
                <li><a href="#rfc.section.10.3">10.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.3">Intermediary Encapsulation Attacks</a></li>
                <li><a href="#rfc.section.10.4">10.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.4">Cacheability of Pushed Responses</a></li>
@@ -2343,7 +2343,7 @@ Upgrade: h2
                <p id="rfc.section.8.2.2.p.4">A client can use the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> setting to limit the number of responses that can be concurrently pushed by a server. Advertising a <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> value of zero disables server push by preventing the server from creating the necessary streams. This does not prohibit a
                   server from sending PUSH_PROMISE frames; clients need to reset any promised streams that are not wanted.
                </p>
-               <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to push it using the same-origin policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>). For example, an HTTP/2 connection to <samp>example.com</samp> is generally <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Ed: weaselly use of "generally", needs better definition]</span> not permitted to push a response for <samp>www.example.org</samp>.
+               <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to provide the response, see <a href="#authority" title="Server Authority">Section&nbsp;10.1</a>. For example, an server that offers a certificate for only the <samp>example.com</samp> DNS-ID or Common Name is not permitted to push a response for <samp>https://www.example.org/doc</samp>.
                </p>
             </div>
          </div>
@@ -2388,14 +2388,16 @@ Upgrade: h2
                that no further communication with a server is necessary (for example, when a user navigates away from a particular web page),
                or until the server closes the connection.
             </p>
-            <p id="rfc.section.9.1.p.2">Clients SHOULD NOT open more than one HTTP/2 connection to a given origin (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>) concurrently. A client can create additional connections as replacements, either to replace connections that are near to
-               exhausting the available stream identifiers (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>), or to replace connections that have encountered errors (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
+            <p id="rfc.section.9.1.p.2">Clients SHOULD NOT open more than one HTTP/2 connection to a given destination, where a destination is the IP address and
+               TCP port that is identified for a given URI <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Here is where we need to be careful with Alt-Svc]</span>, or the IP and port of a configured proxy. A client can create additional connections as replacements, either to replace
+               connections that are near to exhausting the available stream identifier space (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>), or to replace connections that have encountered errors (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
             </p>
-            <p id="rfc.section.9.1.p.3">Clients MAY use a single connection for more than one origin when each origin's hostname resolves to the same IP address,
-               and they share the same port. For "https" scheme origins, the server's certificate MUST be valid for each origin's hostname.
-               The considerations in <a href="#RFC6125">RFC 6125</a> <cite title="Representation and Verification of Domain-Based Application Service Identity within Internet Public Key Infrastructure Using X.509 (PKIX) Certificates in the Context of Transport Layer Security (TLS)">[RFC6125]</cite> for verification of identity apply.
+            <p id="rfc.section.9.1.p.3">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Need more text on how client certificates relate here, see issue #363.]</span> 
             </p>
-            <p id="rfc.section.9.1.p.4">Servers are encouraged to maintain open connections for as long as possible, but are permitted to terminate idle connections
+            <p id="rfc.section.9.1.p.4">Clients MAY use a single server connection to send requests for URIs with multiple different authority components as long
+               as the server is authoritative (<a href="#authority" title="Server Authority">Section&nbsp;10.1</a>).
+            </p>
+            <p id="rfc.section.9.1.p.5">Servers are encouraged to maintain open connections for as long as possible, but are permitted to terminate idle connections
                if necessary. When either endpoint chooses to close the transport-level TCP connection, the terminating endpoint SHOULD first
                send a <a href="#GOAWAY" class="smpl">GOAWAY</a> (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;6.8</a>) frame so that both endpoints can reliably determine whether previously sent frames have been processed and gracefully complete
                or terminate any necessary remaining tasks.
@@ -2437,23 +2439,22 @@ Upgrade: h2
       <div id="security">
          <h1 id="rfc.section.10"><a href="#rfc.section.10">10.</a>&nbsp;<a href="#security">Security Considerations</a></h1>
          <div id="authority">
-            <h2 id="rfc.section.10.1"><a href="#rfc.section.10.1">10.1</a>&nbsp;<a href="#authority">Server Authority and Same-Origin</a></h2>
-            <p id="rfc.section.10.1.p.1">This specification uses the same-origin policy (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, <a href="http://tools.ietf.org/html/rfc6454#section-3">Section 3</a>) to determine whether an origin server is permitted to provide content.
+            <h2 id="rfc.section.10.1"><a href="#rfc.section.10.1">10.1</a>&nbsp;<a href="#authority">Server Authority</a></h2>
+            <p id="rfc.section.10.1.p.1">A client is only able to accept HTTP/2 responses from servers that are authoritative for those resources. This is particularly
+               important for server push (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>), where the client validates the <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> before accepting the response.
             </p>
-            <p id="rfc.section.10.1.p.2">A server that is contacted using TLS is authenticated based on the certificate that it offers in the TLS handshake (see <a href="#RFC2818"><cite title="HTTP Over TLS">[RFC2818]</cite></a>, <a href="http://tools.ietf.org/html/rfc2818#section-3">Section 3</a>). A server is considered authoritative for an "https" resource if it has been successfully authenticated for the uri-host
-               of the origin of the resource that it is providing.
+            <p id="rfc.section.10.1.p.2">HTTP/2 relies on the HTTP/1.1 definition of authority for determining whether a server is authoritative in providing a given
+               response, see <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#establishing.authority" title="Establishing Authority">Section 9.1</a>). This relies on local name resolution for the "http" URI scheme, and the offered server identity for the "https" scheme
+               (see <a href="#RFC2818"><cite title="HTTP Over TLS">[RFC2818]</cite></a>, <a href="http://tools.ietf.org/html/rfc2818#section-3">Section 3</a>).
             </p>
-            <p id="rfc.section.10.1.p.3">A server is considered authoritative for an "http" resource if the connection is established to a resolved IP address for
-               the uri-host of the origin of the resource.
-            </p>
-            <p id="rfc.section.10.1.p.4">A client MUST NOT use, in any way, resources provided by a server that is not authoritative for those resources.</p>
+            <p id="rfc.section.10.1.p.3">A client MUST NOT use, in any way, resources provided by a server that is not authoritative for those resources.</p>
          </div>
          <div>
             <h2 id="rfc.section.10.2"><a href="#rfc.section.10.2">10.2</a>&nbsp;Cross-Protocol Attacks
             </h2>
             <p id="rfc.section.10.2.p.1">When using TLS, we believe that HTTP/2 introduces no new cross-protocol attacks. TLS encrypts the contents of all transmission
                (except the handshake itself), making it difficult for attackers to control the data which could be used in a cross-protocol
-               attack. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Issue: This is no longer true]</span> 
+               attack. <span class="comment" id="rfc.comment.4">[<a href="#rfc.comment.4" class="smpl">rfc.comment.4</a>: Issue: This is no longer true]</span> 
             </p>
          </div>
          <div>
@@ -2485,7 +2486,7 @@ Upgrade: h2
                of resources that they do not have authority over. Failure to enforce this would allow a tenant to provide a representation
                that would be served out of cache, overriding the actual representation that the authoritative tenant provides.
             </p>
-            <p id="rfc.section.10.4.p.4">Pushed responses for which an origin server is not authoritative (see <a href="#authority" title="Server Authority and Same-Origin">Section&nbsp;10.1</a>) are never cached or used.
+            <p id="rfc.section.10.4.p.4">Pushed responses for which an origin server is not authoritative (see <a href="#authority" title="Server Authority">Section&nbsp;10.1</a>) are never cached or used.
             </p>
          </div>
          <div>
@@ -2727,17 +2728,6 @@ Upgrade: h2
          <tr>
             <td class="reference"><b id="RFC5234">[RFC5234]</b></td>
             <td class="top">Crocker, D. and P. Overell, “<a href="http://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>”, STD&nbsp;68, RFC&nbsp;5234, January&nbsp;2008.
-            </td>
-         </tr>
-         <tr>
-            <td class="reference"><b id="RFC6125">[RFC6125]</b></td>
-            <td class="top">Saint-Andre, P. and J. Hodges, “<a href="http://tools.ietf.org/html/rfc6125">Representation and Verification of Domain-Based Application Service Identity within Internet Public Key Infrastructure Using
-                  X.509 (PKIX) Certificates in the Context of Transport Layer Security (TLS)</a>”, RFC&nbsp;6125, March&nbsp;2011.
-            </td>
-         </tr>
-         <tr>
-            <td class="reference"><b id="RFC6454">[RFC6454]</b></td>
-            <td class="top">Barth, A., “<a href="http://tools.ietf.org/html/rfc6454">The Web Origin Concept</a>”, RFC&nbsp;6454, December&nbsp;2011.
             </td>
          </tr>
          <tr>
