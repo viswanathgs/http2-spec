@@ -150,12 +150,12 @@ Internet-Draft                   HTTP/2                    February 2014
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  61
      10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  61
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  62
-     10.6.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  63
+     10.6.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  62
      10.7.  Privacy Considerations . . . . . . . . . . . . . . . . .  63
    11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  63
      11.1.  Registration of HTTP/2 Identification String . . . . . .  64
      11.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  64
-     11.3.  HTTP2-Settings Header Field Registration . . . . . . . .  65
+     11.3.  HTTP2-Settings Header Field Registration . . . . . . . .  64
      11.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  65
    12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  65
    13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  66
@@ -180,7 +180,7 @@ Internet-Draft                   HTTP/2                    February 2014
      A.7.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  69
      A.8.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  70
      A.9.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  70
-     A.10. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  71
+     A.10. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  70
      A.11. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  71
      A.12. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  72
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  72
@@ -3445,15 +3445,16 @@ Internet-Draft                   HTTP/2                    February 2014
    Header compression also offers some opportunities to waste processing
    resources; see [COMPRESSION] for more details on potential abuses.
 
-   Limits in SETTINGS parameters cannot be reduced instantaneously,
-   which leaves an endpoint exposed to behavior from a peer that could
-   exceed the new limits.  In particular, immediately after establishing
-   a connection, limits set by a server are not known to clients and
-   could be exceeded without being an obvious protocol violation.
+   Limits in SETTINGS [SETTINGS] parameters cannot be reduced
+   instantaneously, which leaves an endpoint exposed to behavior from a
+   peer that could exceed the new limits.  In particular, immediately
+   after establishing a connection, limits set by a server are not known
+   to clients and could be exceeded without being an obvious protocol
+   violation.
 
-   In all these cases, there are legitimate reasons to use these
-   protocol mechanisms.  These features become a burden only when they
-   are used unnecessarily or to excess.
+   All these features - i.e., SETTINGS [SETTINGS] changes, small frames,
+   header compression - have legitimate usages.  These features become a
+   burden only when they are used unnecessarily or to excess.
 
    An endpoint that doesn't monitor this behavior exposes itself to a
    risk of denial of service attack.  Implementations SHOULD track the
@@ -3461,11 +3462,10 @@ Internet-Draft                   HTTP/2                    February 2014
    treat activity that is suspicious as a connection error
    (Section 5.4.1) of type ENHANCE_YOUR_CALM [ENHANCE_YOUR_CALM].
 
+10.6.  Use of Padding
 
-
-
-
-
+   Padding within HTTP/2 is not intended as a replacement for general
+   purpose padding, such as might be provided by TLS [TLS12].  Redundant
 
 
 
@@ -3474,10 +3474,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 62]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-10.6.  Use of Padding
-
-   Padding within HTTP/2 is not intended as a replacement for general
-   purpose padding, such as might be provided by TLS [TLS12].  Redundant
    padding could even be counterproductive.  Correct application can
    depend on having specific knowledge of the data that is being padded.
 
@@ -3522,6 +3518,10 @@ Internet-Draft                   HTTP/2                    February 2014
    Layer Protocol Negotiation (ALPN) Protocol IDs" registry established
    in [TLSALPN].
 
+   This document establishes a registry for error codes.  This new
+   registry is entered into a new "Hypertext Transfer Protocol (HTTP) 2
+   Parameters" section.
+
 
 
 
@@ -3529,10 +3529,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 63]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   This document establishes a registry for error codes.  This new
-   registry is entered into a new "Hypertext Transfer Protocol (HTTP) 2
-   Parameters" section.
 
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
@@ -3579,14 +3575,16 @@ Internet-Draft                   HTTP/2                    February 2014
 
    An initial set of error code registrations can be found in Section 7.
 
+11.3.  HTTP2-Settings Header Field Registration
+
+
+
 
 
 Belshe, et al.          Expires August 30, 2014                [Page 64]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-11.3.  HTTP2-Settings Header Field Registration
 
    This section registers the "HTTP2-Settings" header field in the
    Permanent Message Header Field Registry [BCP90].
@@ -3633,6 +3631,8 @@ Internet-Draft                   HTTP/2                    February 2014
 
    o  Gabriel Montenegro and Willy Tarreau (Upgrade mechanism).
 
+   o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
+      Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
 
 
 
@@ -3641,9 +3641,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 65]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
-      Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
 
    o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
       Bishop, Herve Ruellan (Substantial editorial contributions).
@@ -3690,6 +3687,9 @@ Internet-Draft                   HTTP/2                    February 2014
               draft-ietf-httpbis-p6-cache-26 (work in progress),
               February 2014.
 
+   [HTTP-p7]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
+              Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
+              httpbis-p7-auth-26 (work in progress), February 2014.
 
 
 
@@ -3697,10 +3697,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 66]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   [HTTP-p7]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
-              Transfer Protocol (HTTP/1.1): Authentication", draft-ietf-
-              httpbis-p7-auth-26 (work in progress), February 2014.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels ", BCP 14, RFC 2119, March 1997.
@@ -3744,8 +3740,12 @@ Internet-Draft                   HTTP/2                    February 2014
               nottingham-httpbis-alt-svc-01 (work in progress), December
               2013.
 
+   [BCP90]    Klyne, G., Nottingham, M., and J. Mogul, "Registration
+              Procedures for Message Header Fields", BCP 90, RFC 3864,
+              September 2004.
 
-
+   [BREACH]   Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving the
+              CRIME Attack ", July 2013, <http://breachattack.com/
 
 
 
@@ -3754,12 +3754,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 67]
 Internet-Draft                   HTTP/2                    February 2014
 
 
-   [BCP90]    Klyne, G., Nottingham, M., and J. Mogul, "Registration
-              Procedures for Message Header Fields", BCP 90, RFC 3864,
-              September 2004.
-
-   [BREACH]   Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving the
-              CRIME Attack ", July 2013, <http://breachattack.com/
               resources/
               BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf>.
 
@@ -3803,17 +3797,18 @@ A.2.  Since draft-ietf-httpbis-http2-09
 
    Removing the ability to disable flow control.
 
+   Changing the protocol identification token to "h2".
+
+   Changing the use of :authority to make it optional and to allow
+   userinfo in non-HTTP cases.
+
+
 
 
 Belshe, et al.          Expires August 30, 2014                [Page 68]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   Changing the protocol identification token to "h2".
-
-   Changing the use of :authority to make it optional and to allow
-   userinfo in non-HTTP cases.
 
    Allowing split on 0x0 for Cookie.
 
@@ -3859,17 +3854,17 @@ A.7.  Since draft-ietf-httpbis-http2-04
 
    Added CONTINUATION frame for HEADERS and PUSH_PROMISE.
 
+   PUSH_PROMISE is no longer implicitly prohibited if
+   SETTINGS_MAX_CONCURRENT_STREAMS is zero.
+
+   Push expanded to allow all safe methods without a request body.
+
 
 
 Belshe, et al.          Expires August 30, 2014                [Page 69]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   PUSH_PROMISE is no longer implicitly prohibited if
-   SETTINGS_MAX_CONCURRENT_STREAMS is zero.
-
-   Push expanded to allow all safe methods without a request body.
 
    Clarified the use of HTTP header fields in requests and responses.
    Prohibited HTTP/1.1 hop-by-hop header fields.
@@ -3914,6 +3909,11 @@ A.9.  Since draft-ietf-httpbis-http2-02
 
    Switched to TLS ALPN from NPN.
 
+   Editorial changes.
+
+A.10.  Since draft-ietf-httpbis-http2-01
+
+
 
 
 
@@ -3921,10 +3921,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 70]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   Editorial changes.
-
-A.10.  Since draft-ietf-httpbis-http2-01
 
    Added IANA considerations section for frame types, error codes and
    settings.
@@ -3970,6 +3966,10 @@ A.11.  Since draft-ietf-httpbis-http2-00
 
    Added section on starting HTTP/2.0, including upgrade mechanism.
 
+   Removed unused references.
+
+   Added flow control principles (Section 5.2.1) based on [7].
+
 
 
 
@@ -3977,10 +3977,6 @@ Belshe, et al.          Expires August 30, 2014                [Page 71]
 
 Internet-Draft                   HTTP/2                    February 2014
 
-
-   Removed unused references.
-
-   Added flow control principles (Section 5.2.1) based on [7].
 
 A.12.  Since draft-mbelshe-httpbis-spdy-00
 
@@ -4012,6 +4008,10 @@ Authors' Addresses
    US
 
    EMail: martin.thomson@gmail.com
+
+
+
+
 
 
 
