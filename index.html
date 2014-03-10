@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires September 8, 2014";
+       content: "Expires September 11, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -417,7 +417,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-03-07">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-03-10">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -437,7 +437,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: September 8, 2014</td>
+               <td class="left">Expires: September 11, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -450,7 +450,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">March 7, 2014</td>
+               <td class="right">March 10, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -479,7 +479,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on September 8, 2014.</p>
+         <p>This Internet-Draft will expire on September 11, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -527,7 +527,14 @@ samp, tt, code, pre {
                      <li><a href="#rfc.section.5.2.2">5.2.2</a>&nbsp;&nbsp;&nbsp;<a href="#DisableFlowControl">Appropriate Use of Flow Control</a></li>
                   </ul>
                </li>
-               <li><a href="#rfc.section.5.3">5.3</a>&nbsp;&nbsp;&nbsp;<a href="#StreamPriority">Stream priority</a></li>
+               <li><a href="#rfc.section.5.3">5.3</a>&nbsp;&nbsp;&nbsp;<a href="#StreamPriority">Stream priority</a><ul>
+                     <li><a href="#rfc.section.5.3.1">5.3.1</a>&nbsp;&nbsp;&nbsp;<a href="#pri-group">Priority Groups and Weighting</a></li>
+                     <li><a href="#rfc.section.5.3.2">5.3.2</a>&nbsp;&nbsp;&nbsp;<a href="#pri-depend">Stream Dependencies</a></li>
+                     <li><a href="#rfc.section.5.3.3">5.3.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.3.3">Reprioritization</a></li>
+                     <li><a href="#rfc.section.5.3.4">5.3.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.3.4">Prioritization State Management</a></li>
+                     <li><a href="#rfc.section.5.3.5">5.3.5</a>&nbsp;&nbsp;&nbsp;<a href="#pri-default">Default Priorities</a></li>
+                  </ul>
+               </li>
                <li><a href="#rfc.section.5.4">5.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.4">Error Handling</a><ul>
                      <li><a href="#rfc.section.5.4.1">5.4.1</a>&nbsp;&nbsp;&nbsp;<a href="#ConnectionErrorHandler">Connection Error Handling</a></li>
                      <li><a href="#rfc.section.5.4.2">5.4.2</a>&nbsp;&nbsp;&nbsp;<a href="#StreamErrorHandler">Stream Error Handling</a></li>
@@ -760,21 +767,32 @@ samp, tt, code, pre {
          </p>
          <div id="versioning">
             <h2 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1</a>&nbsp;<a href="#versioning">HTTP/2 Version Identification</a></h2>
-            <p id="rfc.section.3.1.p.1">The protocol defined in this document is identified using the string "h2". This identification is used in the HTTP/1.1 Upgrade
-               header field, in the <a href="#TLSALPN">TLS application layer protocol negotiation extension</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> field, and other places where protocol identification is required. When serialised into an ALPN protocol identifier (which
-               is a sequence of octets), the "h2" string is encoded using <a href="#UTF-8">UTF-8</a> <cite title="UTF-8, a transformation format of ISO 10646">[UTF-8]</cite>.
+            <p id="rfc.section.3.1.p.1">The protocol defined in this document has two identifiers. </p>
+            <ul>
+               <li>
+                  <p>The string "h2" identifies the protocol where HTTP/2 uses <a href="#TLS12">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. This identifier is used in the <a href="#TLSALPN">TLS application layer protocol negotiation extension</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> field and any place that HTTP/2 over TLS is identified.
+                  </p>
+                  <p>When serialised into an ALPN protocol identifier (which is a sequence of octets), the HTTP/2 protocol identifier string is
+                     encoded using <a href="#UTF-8">UTF-8</a> <cite title="UTF-8, a transformation format of ISO 10646">[UTF-8]</cite>.
+                  </p>
+               </li>
+               <li>
+                  <p>The string "h2c" identifies the protocol where HTTP/2 is run over cleartext TCP. This identifier is used in the HTTP/1.1 Upgrade
+                     header field and any place that HTTP/2 over TCP is identified.
+                  </p>
+               </li>
+            </ul>
+            <p id="rfc.section.3.1.p.2">Negotiating "h2" or "h2c" implies the use of the transport, security, framing and message semantics described in this document.</p>
+            <p id="rfc.section.3.1.p.3"><span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: RFC Editor's Note: please remove the remainder of this section prior to the publication of a final version of this document.]</span> 
             </p>
-            <p id="rfc.section.3.1.p.2">Negotiating "h2" implies the use of the transport, security, framing and message semantics described in this document.</p>
-            <p id="rfc.section.3.1.p.3"><span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: Editor's Note: please remove the remainder of this section prior to the publication of a final version of this document.]</span> 
-            </p>
-            <p id="rfc.section.3.1.p.4">Only implementations of the final, published RFC can identify themselves as "h2". Until such an RFC exists, implementations
-               MUST NOT identify themselves using "h2".
+            <p id="rfc.section.3.1.p.4">Only implementations of the final, published RFC can identify themselves as "h2" or "h2c". Until such an RFC exists, implementations
+               MUST NOT identify themselves using these strings.
             </p>
             <p id="rfc.section.3.1.p.5">Examples and text throughout the rest of this document use "h2" as a matter of editorial convenience only. Implementations
                of draft versions MUST NOT identify using this string.
             </p>
             <p id="rfc.section.3.1.p.6">Implementations of draft versions of the protocol MUST add the string "-" and the corresponding draft number to the identifier.
-               For example, draft-ietf-httpbis-http2-09 is identified using the string "h2-09".
+               For example, draft-ietf-httpbis-http2-11 over TLS is identified using the string "h2-11".
             </p>
             <p id="rfc.section.3.1.p.7">Non-compatible experiments that are based on these draft versions MUST append the string "-" and an experiment name to the
                identifier. For example, an experimental implementation of packet mood-based encoding based on draft-ietf-httpbis-http2-09
@@ -784,14 +802,14 @@ samp, tt, code, pre {
          <div id="discover-http">
             <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a href="#discover-http">Starting HTTP/2 for "http" URIs</a></h2>
             <p id="rfc.section.3.2.p.1">A client that makes a request to an "http" URI without prior knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
-               (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#header.upgrade" title="Upgrade">Section 6.7</a> of <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>). The client makes an HTTP/1.1 request that includes an Upgrade header field identifying HTTP/2 with the h2 token. The HTTP/1.1
-               request MUST include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a>) header field.
+               (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#header.upgrade" title="Upgrade">Section 6.7</a> of <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>). The client makes an HTTP/1.1 request that includes an Upgrade header field identifying HTTP/2 with the "h2c" token. The
+               HTTP/1.1 request MUST include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a>) header field.
             </p>
             <div id="rfc.figure.u.1"></div>
             <p>For example:</p><pre class="text2">GET /default.htm HTTP/1.1
 Host: server.example.com
 Connection: Upgrade, HTTP2-Settings
-Upgrade: h2
+Upgrade: h2c
 HTTP2-Settings: &lt;base64url encoding of HTTP/2 SETTINGS payload&gt;
 
 </pre><p id="rfc.section.3.2.p.3">Requests that contain an entity body MUST be sent in their entirety before the client can send HTTP/2 frames. This means that
@@ -817,8 +835,7 @@ Upgrade: h2
 [ HTTP/2 connection ...
 </pre><p id="rfc.section.3.2.p.9">The first HTTP/2 frame sent by the server is a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a>). Upon receiving the 101 response, the client sends a connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>), which includes a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame.
             </p>
-            <p id="rfc.section.3.2.p.10">The HTTP/1.1 request that is sent prior to upgrade is assigned stream identifier 1 and is assigned the highest possible priority.
-               Stream 1 is implicitly half closed from the client toward the server, since the request is completed as an HTTP/1.1 request.
+            <p id="rfc.section.3.2.p.10">The HTTP/1.1 request that is sent prior to upgrade is assigned stream identifier 1 and is assigned default priority values (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>). Stream 1 is implicitly half closed from the client toward the server, since the request is completed as an HTTP/1.1 request.
                After commencing the HTTP/2 connection, stream 1 is used for the response.
             </p>
             <div id="Http2SettingsHeader">
@@ -851,8 +868,8 @@ Upgrade: h2
                resolution of "http" URIs; servers supporting HTTP/2 are required to support <a href="#TLSALPN">protocol negotiation in TLS</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> for "https" URIs.
             </p>
             <p id="rfc.section.3.4.p.2">Prior support for HTTP/2 is not a strong signal that a given server will support HTTP/2 for future connections. It is possible
-               for server configurations to change or for configurations to differ between instances in clustered server. Interception proxies
-               (a.k.a. "transparent" proxies) are another source of variability.
+               for server configurations to change; for configurations to differ between instances in clustered server; or network conditions
+               to change.
             </p>
          </div>
          <div id="ConnectionHeader">
@@ -1237,23 +1254,105 @@ Upgrade: h2
          </div>
          <div id="StreamPriority">
             <h2 id="rfc.section.5.3"><a href="#rfc.section.5.3">5.3</a>&nbsp;<a href="#StreamPriority">Stream priority</a></h2>
-            <p id="rfc.section.5.3.p.1">The endpoint establishing a new stream can assign a priority for the stream. Priority is represented as an unsigned 31-bit
-               integer. 0 represents the highest priority and 2<sup>31</sup>-1 represents the lowest priority.
+            <p id="rfc.section.5.3.p.1">A client can assign a priority for a new stream by including prioritization information in the HEADERS frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;6.2</a>) that opens the stream. For an existing stream, the PRIORITY frame (<a href="#PRIORITY" title="PRIORITY">Section&nbsp;6.3</a>) can be used to change the priority.
             </p>
-            <p id="rfc.section.5.3.p.2">The purpose of this value is to allow an endpoint to express the relative priority of a stream. An endpoint can use this information
-               to preferentially allocate resources to a stream. Within HTTP/2, priority can be used to select streams for transmitting frames
-               when there is limited capacity for sending. For instance, an endpoint might enqueue frames for all concurrently active streams.
-               As transmission capacity becomes available, frames from higher priority streams might be sent before lower priority streams.
+            <p id="rfc.section.5.3.p.2">The purpose of prioritization is to allow an endpoint to express how it would prefer its peer allocate resources when managing
+               concurrent streams. Most importantly, priority can be used to select streams for transmitting frames when there is limited
+               capacity for sending.
             </p>
-            <p id="rfc.section.5.3.p.3">Explicitly setting the priority for a stream does not guarantee any particular processing or transmission order for the stream
-               relative to any other stream. Nor is there any mechanism provided by which the initiator of a stream can force or require
-               a receiving endpoint to process concurrent streams in a particular order.
+            <p id="rfc.section.5.3.p.3">Each stream is prioritized into a group. Each group is identified using an identifier that is selected by the client. Each
+               group is assigned a relative weight, a number that is used to determine the relative proportion of available resources that
+               are assigned to that group.
             </p>
-            <p id="rfc.section.5.3.p.4">Unless explicitly specified in the <a href="#HEADERS" class="smpl">HEADERS</a> frame (<a href="#HEADERS" title="HEADERS">Section&nbsp;6.2</a>) during stream creation, the default stream priority is 2<sup>30</sup>.
+            <p id="rfc.section.5.3.p.4">Within a priority group, streams can also be marked as being dependent on the completion of other streams.</p>
+            <p id="rfc.section.5.3.p.5">Explicitly setting the priority for a stream is input to a prioritization process. It does not guarantee any particular processing
+               or transmission order for the stream relative to any other stream. An endpoint cannot force a peer to process concurrent streams
+               in a particular order using priority. Expressing priority is therefore only ever a suggestion.
             </p>
-            <p id="rfc.section.5.3.p.5">Pushed streams (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>) have a lower priority than their associated stream. The promised stream inherits the priority value of the associated stream
-               plus one, up to a maximum of 2<sup>31</sup>-1.
+            <p id="rfc.section.5.3.p.6">Prioritization information can be specified explicitly for streams as they are created using the <a href="#HEADERS" class="smpl">HEADERS</a> frame, or changed using the <a href="#PRIORITY" class="smpl">PRIORITY</a> frame. Providing prioritization information is optional, so default values are used if no explicit indicator is provided (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>).
             </p>
+            <p id="rfc.section.5.3.p.7">Explicit prioritization information can be provided for a stream to either allocate the stream to a priority group (<a href="#pri-group" title="Priority Groups and Weighting">Section&nbsp;5.3.1</a>), or to create a dependency on another stream (<a href="#pri-depend" title="Stream Dependencies">Section&nbsp;5.3.2</a>).
+            </p>
+            <div id="pri-group">
+               <h3 id="rfc.section.5.3.1"><a href="#rfc.section.5.3.1">5.3.1</a>&nbsp;<a href="#pri-group">Priority Groups and Weighting</a></h3>
+               <p id="rfc.section.5.3.1.p.1">All streams are assigned a priority group. Each priority group is allocated a 31-bit identifier and an integer weight between
+                  1 to 256 (inclusive).
+               </p>
+               <p id="rfc.section.5.3.1.p.2">Specifying a priority group and weight for a stream causes the stream to be assigned to the identified priority group and
+                  for the weight for the group to be changed to the new value.
+               </p>
+               <p id="rfc.section.5.3.1.p.3">Resources are divided proportionally between priority groups based on their weight. For example, a priority group with weight
+                  4 ideally receives one third of the resources allocated to a stream with weight 12.
+               </p>
+            </div>
+            <div id="pri-depend">
+               <h3 id="rfc.section.5.3.2"><a href="#rfc.section.5.3.2">5.3.2</a>&nbsp;<a href="#pri-depend">Stream Dependencies</a></h3>
+               <p id="rfc.section.5.3.2.p.1">Each stream can be given an explicit dependency on another stream. Including a dependency is a request to always allocate
+                  resources to the identified stream in preference to the dependent stream.
+               </p>
+               <p id="rfc.section.5.3.2.p.2">Streams that are dependent on other streams become part of the priority group of the stream they depend on.</p>
+               <p id="rfc.section.5.3.2.p.3">When assigning a dependency on another stream, an exclusive flag allows for the insertion of a new level of dependencies.
+                  The exclusive flag causes the stream to become the sole dependency of the stream it depends on, causing other dependencies
+                  to become displaced. For example, if streams B and C are dependent on stream A, and if stream D is created with an exclusive
+                  dependency on stream A, this results in a dependency order of A followed by D followed by B and C.
+               </p>
+               <p id="rfc.section.5.3.2.p.4">Streams are strictly ordered based on dependency relationships within their priority group. A dependent stream SHOULD only
+                  be allocated resources if either: 
+               </p>
+               <ul>
+                  <li>the streams that it depends on are closed, or</li>
+                  <li>it is not possible to make progress on any other stream.</li>
+               </ul>
+               <p id="rfc.section.5.3.2.p.5">Streams with the same dependencies are allocated equal weighting. Thus, if streams B and C depend on stream A, and if no progress
+                  can be made on A, streams B and C are given an equal share of resources.
+               </p>
+               <p id="rfc.section.5.3.2.p.6">A stream MUST NOT depend on itself. An endpoint MAY either treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>, or assign default priority values (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>) to the stream.
+               </p>
+            </div>
+            <div>
+               <h3 id="rfc.section.5.3.3"><a href="#rfc.section.5.3.3">5.3.3</a>&nbsp;Reprioritization
+               </h3>
+               <p id="rfc.section.5.3.3.p.1">Stream priorities are changed using the <a href="#PRIORITY" class="smpl">PRIORITY</a> frame. Setting a priority group and weight causes a stream to become part of the identified group, and not dependent on any
+                  other stream. Setting a dependency causes to become dependent on the identified stream, which can cause the reprioritized
+                  stream to move to a new priority group.
+               </p>
+               <p id="rfc.section.5.3.3.p.2">All streams that are dependent on a reprioritized stream move with it.</p>
+            </div>
+            <div>
+               <h3 id="rfc.section.5.3.4"><a href="#rfc.section.5.3.4">5.3.4</a>&nbsp;Prioritization State Management
+               </h3>
+               <p id="rfc.section.5.3.4.p.1">It is possible for a stream to become closed while prioritization information that creates a dependency on that stream is
+                  in transit. If a stream identified in a dependency has been closed and any associated priority information destroyed then
+                  the dependent stream is instead assigned a default priority. This potentially creates suboptimal prioritization, since the
+                  stream can be given an effective priority that is higher than expressed by a peer.
+               </p>
+               <p id="rfc.section.5.3.4.p.2">To avoid this problem, endpoints SHOULD maintain prioritization state for closed streams for a period after streams close.
+                  This could create an large state burden for an endpoint, so this state MAY be limited. The amount of additional state an endpoint
+                  maintains could be dependent on load; under high load, prioritization state can be discarded to limit resource commitments.
+                  In extreme cases, an endpoint could even discard prioritization state for active or reserved streams.
+               </p>
+               <p id="rfc.section.5.3.4.p.3">An endpoint SHOULD retain stream prioritization state for at least one round trip, though maintaining state over longer periods
+                  reduces the chance that default values have to be assigned to streams. An endpoint MAY apply a fixed upper limit on the number
+                  of closed streams for which prioritization state is tracked to limit state exposure. If a fixed limit is applied, endpoints
+                  SHOULD maintain state for at least as many streams as allowed by their setting for <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a>.
+               </p>
+               <p id="rfc.section.5.3.4.p.4">Priority group information is part of the priority state of a stream. Priority groups that contain only closed streams can
+                  be assigned a weight of zero.
+               </p>
+               <p id="rfc.section.5.3.4.p.5">The number of priority groups cannot exceed the number of non-closed streams. This includes streams in the "reserved" state.
+                  Priority state size for peer-initiated streams is limited by the value of <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a>. Reserved streams do not count toward the concurrent stream limit of either peer, but only the endpoint that creates the
+                  reservation needs to maintain priority information. Thus, the total amount of priority state for non-closed streams can be
+                  limited by an endpoint.
+               </p>
+            </div>
+            <div id="pri-default">
+               <h3 id="rfc.section.5.3.5"><a href="#rfc.section.5.3.5">5.3.5</a>&nbsp;<a href="#pri-default">Default Priorities</a></h3>
+               <p id="rfc.section.5.3.5.p.1">Providing priority information is optional. Streams are assigned to a priority group with an identifier equal to the stream
+                  identifier and a weight of 16.
+               </p>
+               <p id="rfc.section.5.3.5.p.2">Pushed streams (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>) initially depend on their associated stream.
+               </p>
+            </div>
          </div>
          <div>
             <h2 id="rfc.section.5.4"><a href="#rfc.section.5.4">5.4</a>&nbsp;Error Handling
@@ -1317,9 +1416,9 @@ Upgrade: h2
             <div id="rfc.figure.3"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- | [Pad High(8)] | [Pad Low (8)] |          Data (*)             .
+ | Pad High? (8) |  Pad Low? (8) |
  +---------------+---------------+-------------------------------+
- .                            Data (*)                         ...
+ |                            Data (*)                         ...
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
  +---------------------------------------------------------------+
@@ -1385,10 +1484,14 @@ Upgrade: h2
             <div id="rfc.figure.4"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- | [Pad High(8)] | [Pad Low (8)] |X|      [Priority (31)]      ...
- +---------------+---------------+-+-----------------------------+
- ...      [Priority]             | Header Block Fragment (*)   ...
- +-------------------------------+-------------------------------+
+ | Pad High? (8) |  Pad Low? (8) |
+ +-+-------------+---------------+-------------------------------+
+ |R|              Priority Group Identifier? (31)                |
+ +-+-------------+-----------------------------------------------+
+ |  Weight? (8)  |
+ +-+-------------+-----------------------------------------------+
+ |E|                 Stream Dependency? (31)                     |
+ +-+-------------------------------------------------------------+
  |                   Header Block Fragment (*)                 ...
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
@@ -1400,10 +1503,24 @@ Upgrade: h2
                <dd>Padding size high bits. This field is only present if the PAD_HIGH flag is set.</dd>
                <dt>Pad Low:</dt>
                <dd>Padding size low bits. This field is only present if the PAD_LOW flag is set.</dd>
-               <dt>X:</dt>
-               <dd>A single reserved bit. This field is optional and is only present if the PRIORITY flag is set.</dd>
-               <dt>Priority:</dt>
-               <dd>Prioritization information for the stream, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY flag is set.
+               <dt>R:</dt>
+               <dd>A single reserved bit. This field is optional and is only present if the PRIORITY_GROUP flag is set.</dd>
+               <dt>Priority Group Identifier:</dt>
+               <dd>A 31-bit identifier for a priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
+               </dd>
+               <dt>Weight:</dt>
+               <dd>An 8-bit weight for the identified priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
+               </dd>
+               <dt>E:</dt>
+               <dd>A single bit flag indicates that the stream dependency is exclusive. If cleared (0), the stream dependency is added with equal
+                  priority to other streams that depend on the identified stream. If set (1), the dependency is exclusive and displaces other
+                  dependencies, causing any existing depedencies of the identified stream to be made dependent on this stream. This field is
+                  optional and is only present if the PRIORITY_DEPENDENCY flag is set.
+               </dd>
+               <dt>Stream Dependency:</dt>
+               <dd>A 31-bit stream identifier for the stream that this stream depends on. No resources are to be expected on the dependent stream
+                  until the stream it depends on is closed, unless all streams are in this state. This field is optional and is only present
+                  if the PRIORITY_DEPENDENCY flag is set.
                </dd>
                <dt>Header Block Fragment:</dt>
                <dd>A header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
@@ -1434,19 +1551,24 @@ Upgrade: h2
                      a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
-               <dt>PRIORITY (0x8):</dt>
+               <dt>PAD_LOW (0x8):</dt>
                <dd>
-                  <p>Bit 4 being set indicates that the frame contains a single reserved bit and a 31-bit priority; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. If this bit is not set, those four bytes do not appear.
+                  <p>Bit 4 being set indicates that the Pad Low field is present.</p>
+               </dd>
+               <dt>PAD_HIGH (0x10):</dt>
+               <dd>
+                  <p>Bit 5 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
+                     Endpoints that receive a frame with PAD_HIGH set and PAD_LOW cleared MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
-               <dt>PAD_LOW (0x10):</dt>
+               <dt>PRIORITY_GROUP (0x20):</dt>
                <dd>
-                  <p>Bit 5 being set indicates that the Pad Low field is present.</p>
+                  <p>Bit 6 being set indicates that the Priority Group Identifier and Weight fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
+                  </p>
                </dd>
-               <dt>PAD_HIGH (0x20):</dt>
+               <dt>PRIORITY_DEPENDENCY (0x40):</dt>
                <dd>
-                  <p>Bit 6 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
-                     Endpoints that receive a frame with PAD_HIGH set and PAD_LOW cleared MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>Bit 7 being set indicates that the Dependency Insertion Flag (I) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
                   </p>
                </dd>
             </dl>
@@ -1455,28 +1577,70 @@ Upgrade: h2
             <p id="rfc.section.6.2.p.6">HEADERS frames MUST be associated with a stream. If a HEADERS frame is received whose stream identifier field is 0x0, the
                recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.2.p.7">The HEADERS frame changes the connection state as described in <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>.
+            <p id="rfc.section.6.2.p.7">A HEADERS frame MUST NOT have both the PRIORITY_GROUP and PRIORITY_DEPENDENCY flags set. Receipt of a HEADERS frame with both
+               these flags set MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.2.p.8">The HEADERS frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
+            <p id="rfc.section.6.2.p.8">The HEADERS frame changes the connection state as described in <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>.
+            </p>
+            <p id="rfc.section.6.2.p.9">The HEADERS frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
             </p>
          </div>
          <div id="PRIORITY">
             <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;<a href="#PRIORITY">PRIORITY</a></h2>
-            <p id="rfc.section.6.3.p.1">The PRIORITY frame (type=0x2) specifies the sender-advised priority of a stream. It can be sent at any time for an existing
-               stream. This enables reprioritisation of existing streams.
+            <p id="rfc.section.6.3.p.1">The PRIORITY frame (type=0x2) specifies the sender-advised priority of a stream (<a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>). It can be sent at any time for an existing stream. This enables reprioritisation of existing streams.
             </p>
             <div id="rfc.figure.5"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|                        Priority (31)                        |
+ |R|             Priority Group Identifier? (31)                 |
+ +-+-------------+-----------------------------------------------+
+ |  Weight? (8)  |
+ +-+-------------+-----------------------------------------------+
+ |E|                 Stream Dependency? (31)                     |
  +-+-------------------------------------------------------------+
 </pre><p class="figure">Figure 5: PRIORITY Frame Payload</p>
-            <p id="rfc.section.6.3.p.3">The payload of a PRIORITY frame contains a single reserved bit and a 31-bit priority.</p>
-            <p id="rfc.section.6.3.p.4">The PRIORITY frame does not define any flags.</p>
-            <p id="rfc.section.6.3.p.5">The PRIORITY frame is associated with an existing stream. If a PRIORITY frame is received with a stream identifier of 0x0,
+            <p id="rfc.section.6.3.p.3">The payload of a PRIORITY frame contains the following fields: </p>
+            <dl>
+               <dt>R:</dt>
+               <dd>A single reserved bit. This field is optional and is only present if the PRIORITY_GROUP flag is set.</dd>
+               <dt>Priority Group Identifier:</dt>
+               <dd>A 31-bit identifier for a priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
+               </dd>
+               <dt>Weight:</dt>
+               <dd>An 8-bit weight for the identified priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
+               </dd>
+               <dt>E:</dt>
+               <dd>A single bit flag indicates that the stream dependency is exclusive. If cleared (0), the stream dependency is added with equal
+                  priority to other streams that depend on the identified stream. If set (1), the dependency is exclusive and displaces other
+                  dependencies, causing any existing depedencies of the identified stream to be made dependent on this stream. This field is
+                  optional and is only present if the PRIORITY_DEPENDENCY flag is set.
+               </dd>
+               <dt>Stream Dependency:</dt>
+               <dd>A 31-bit stream identifier for the stream that this stream depends on. No resources are to be expected on the dependent stream
+                  until the stream it depends on is closed, unless all streams are in this state. This field is optional and is only present
+                  if the PRIORITY_DEPENDENCY flag is set.
+               </dd>
+            </dl>
+            <p id="rfc.section.6.3.p.4">The PRIORITY frame defines the following flags: </p>
+            <dl>
+               <dt>PRIORITY_GROUP (0x20):</dt>
+               <dd>
+                  <p>Bit 6 being set indicates that the Priority Group Identifier and Weight fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
+                  </p>
+               </dd>
+               <dt>PRIORITY_DEPENDENCY (0x40):</dt>
+               <dd>
+                  <p>Bit 7 being set indicates that the Dependency Insertion Flag (I) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
+                  </p>
+               </dd>
+            </dl>
+            <p id="rfc.section.6.3.p.5">A PRIORITY frame MUST NOT have exactly one of the PRIORITY_GROUP and PRIORITY_DEPENDENCY flags set. Receipt of a PRIORITY
+               frame with either non or both these flags set MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            </p>
+            <p id="rfc.section.6.3.p.6">The PRIORITY frame is associated with an existing stream. If a PRIORITY frame is received with a stream identifier of 0x0,
                the recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.3.p.6">The PRIORITY frame can be sent on a stream in any of the "reserved (remote)", "open", "half-closed (local)", or "half closed
+            <p id="rfc.section.6.3.p.7">The PRIORITY frame can be sent on a stream in any of the "reserved (remote)", "open", "half-closed (local)", or "half closed
                (remote)" states, though it cannot be sent between consecutive frames that comprise a single header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). Note that this frame could arrive after processing or frame sending has completed, which would cause it to have no effect.
                For a stream that is in the "half closed (remote)" state, this frame can only affect processing of the stream and not frame
                transmission.
@@ -1548,10 +1712,10 @@ Upgrade: h2
                <div id="rfc.figure.7"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |Identifier (8) |                 Value (32)                  ...
+ | Identifier (8)|
  +---------------+-----------------------------------------------+
- ...Value        |
- +---------------+
+ |                        Value (32)                             |
+ +---------------------------------------------------------------+
 </pre><p class="figure">Figure 7: Setting Format</p>
             </div>
             <div id="SettingValues">
@@ -1621,10 +1785,10 @@ Upgrade: h2
             <div id="rfc.figure.8"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- | [Pad High(8)] | [Pad Low (8)] |X|  Promised Stream ID (31)  ...
- +---------------+---------------+-+-----------------------------+
- ...    Promised Stream ID       | Header Block Fragment (*)   ...
- +-------------------------------+-------------------------------+
+ | Pad High? (8) | Pad Low? (8)  |
+ +-+-------------+---------------+-------------------------------+
+ |R|                  Promised Stream ID (31)                    |
+ +-+-----------------------------+-------------------------------+
  |                   Header Block Fragment (*)                 ...
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
@@ -1636,7 +1800,7 @@ Upgrade: h2
                <dd>Padding size high bits. This field is only present if the PAD_HIGH flag is set.</dd>
                <dt>Pad Low:</dt>
                <dd>Padding size low bits. This field is only present if the PAD_LOW flag is set.</dd>
-               <dt>X:</dt>
+               <dt>R:</dt>
                <dd>A single reserved bit.</dd>
                <dt>Promised Stream ID:</dt>
                <dd>This unsigned 31-bit integer identifies the stream the endpoint intends to start sending frames for. The promised stream identifier
@@ -1658,13 +1822,13 @@ Upgrade: h2
                      MUST treat the receipt of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
-               <dt>PAD_LOW (0x10):</dt>
+               <dt>PAD_LOW (0x8):</dt>
                <dd>
-                  <p>Bit 5 being set indicates that the Pad Low field is present.</p>
+                  <p>Bit 4 being set indicates that the Pad Low field is present.</p>
                </dd>
-               <dt>PAD_HIGH (0x20):</dt>
+               <dt>PAD_HIGH (0x10):</dt>
                <dd>
-                  <p>Bit 6 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
+                  <p>Bit 5 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
                      Endpoints that receive a frame with PAD_HIGH set and PAD_LOW cleared MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
@@ -1746,7 +1910,7 @@ Upgrade: h2
             <div id="rfc.figure.10"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|                  Last-Stream-ID (31)                        |
+ |R|                  Last-Stream-ID (31)                        |
  +-+-------------------------------------------------------------+
  |                      Error Code (32)                          |
  +---------------------------------------------------------------+
@@ -1800,7 +1964,7 @@ Upgrade: h2
             <div id="rfc.figure.11"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |X|              Window Size Increment (31)                     |
+ |R|              Window Size Increment (31)                     |
  +-+-------------------------------------------------------------+
 </pre><p class="figure">Figure 11: WINDOW_UPDATE Payload Format</p>
             <p id="rfc.section.6.9.p.6">The payload of a WINDOW_UPDATE frame is one reserved bit, plus an unsigned 31-bit integer indicating the number of bytes that
@@ -1895,7 +2059,7 @@ Upgrade: h2
             <div id="rfc.figure.12"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- | [Pad High(8)] | [Pad Low (8)] |  Header Block Fragment (*)    .
+ | Pad High? (8) | Pad Low? (8)  |
  +---------------+---------------+-------------------------------+
  |                   Header Block Fragment (*)                 ...
  +---------------------------------------------------------------+
@@ -1924,13 +2088,13 @@ Upgrade: h2
                      of any other type of frame or a frame on a different stream as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
-               <dt>PAD_LOW (0x10):</dt>
+               <dt>PAD_LOW (0x8):</dt>
                <dd>
-                  <p>Bit 5 being set indicates that the Pad Low field is present.</p>
+                  <p>Bit 4 being set indicates that the Pad Low field is present.</p>
                </dd>
-               <dt>PAD_HIGH (0x20):</dt>
+               <dt>PAD_HIGH (0x10):</dt>
                <dd>
-                  <p>Bit 6 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
+                  <p>Bit 5 being set indicates that the Pad High field is present. This bit MUST NOT be set unless the PAD_LOW flag is also set.
                      Endpoints that receive a frame with PAD_HIGH set and PAD_LOW cleared MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
@@ -2520,8 +2684,8 @@ Upgrade: h2
                new limits. In particular, immediately after establishing a connection, limits set by a server are not known to clients and
                could be exceeded without being an obvious protocol violation.
             </p>
-            <p id="rfc.section.10.5.p.6">All these features - i.e., <a href="#SETTINGS" class="smpl">SETTINGS</a> changes, small frames, header compression - have legitimate usages. These features become a burden only when they are used
-               unnecessarily or to excess.
+            <p id="rfc.section.10.5.p.6">All these features - i.e., <a href="#SETTINGS" class="smpl">SETTINGS</a> changes, small frames, header compression - have legitimate uses. These features become a burden only when they are used unnecessarily
+               or to excess.
             </p>
             <p id="rfc.section.10.5.p.7">An endpoint that doesn't monitor this behavior exposes itself to a risk of denial of service attack. Implementations SHOULD
                track the use of these features and set limits on their use. An endpoint MAY treat activity that is suspicious as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#ENHANCE_YOUR_CALM" class="smpl">ENHANCE_YOUR_CALM</a>.
@@ -2572,14 +2736,24 @@ Upgrade: h2
          </p>
          <div id="iana-alpn">
             <h2 id="rfc.section.11.1"><a href="#rfc.section.11.1">11.1</a>&nbsp;<a href="#iana-alpn">Registration of HTTP/2 Identification String</a></h2>
-            <p id="rfc.section.11.1.p.1">This document creates a registration for the identification of HTTP/2 in the "Application Layer Protocol Negotiation (ALPN)
-               Protocol IDs" registry established in <a href="#TLSALPN"><cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite></a>. 
+            <p id="rfc.section.11.1.p.1">This document creates two registrations for the identification of HTTP/2 in the "Application Layer Protocol Negotiation (ALPN)
+               Protocol IDs" registry established in <a href="#TLSALPN"><cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite></a>.
             </p>
+            <p id="rfc.section.11.1.p.2">The "h2" string identifies HTTP/2 when used over TLS: </p>
             <dl>
                <dt>Protocol:</dt>
-               <dd>HTTP/2</dd>
+               <dd>HTTP/2 over TLS</dd>
                <dt>Identification Sequence:</dt>
                <dd>0x68 0x32 ("h2")</dd>
+               <dt>Specification:</dt>
+               <dd>This document (RFCXXXX)</dd>
+            </dl>
+            <p id="rfc.section.11.1.p.3">The "h2c" string identifies HTTP/2 when used over cleartext TCP: </p>
+            <dl>
+               <dt>Protocol:</dt>
+               <dd>HTTP/2 over TCP</dd>
+               <dt>Identification Sequence:</dt>
+               <dd>0x68 0x32 0x63 ("h2c")</dd>
                <dt>Specification:</dt>
                <dd>This document (RFCXXXX)</dd>
             </dl>
@@ -2823,6 +2997,8 @@ Upgrade: h2
          <div id="changes.since.draft-ietf-httpbis-http2-10">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-10">Since draft-ietf-httpbis-http2-10</a></h2>
             <p id="rfc.section.A.1.p.1">Changed "connection header" to "connection preface" to avoid confusion.</p>
+            <p id="rfc.section.A.1.p.2">Added dependency-based stream prioritization.</p>
+            <p id="rfc.section.A.1.p.3">Added "h2c" identifier to distinguish between cleartext and secured HTTP/2.</p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-09">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-09">Since draft-ietf-httpbis-http2-09</a></h2>
