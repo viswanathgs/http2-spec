@@ -155,13 +155,13 @@ Internet-Draft                   HTTP/2                       March 2014
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  65
      10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  65
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  66
-     10.6.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  66
-     10.7.  Privacy Considerations . . . . . . . . . . . . . . . . .  67
-   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  67
+     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  66
+     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  67
+     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  67
+   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  68
      11.1.  Registration of HTTP/2 Identification String . . . . . .  68
      11.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  68
      11.3.  HTTP2-Settings Header Field Registration . . . . . . . .  69
-     11.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  69
 
 
 
@@ -170,20 +170,21 @@ Belshe, et al.         Expires September 12, 2014               [Page 3]
 Internet-Draft                   HTTP/2                       March 2014
 
 
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  69
+     11.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  69
+   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  70
    13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  70
      13.1.  Normative References . . . . . . . . . . . . . . . . . .  70
      13.2.  Informative References . . . . . . . . . . . . . . . . .  72
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  72
-     A.1.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  72
+                publication) . . . . . . . . . . . . . . . . . . . .  73
+     A.1.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  73
      A.2.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  73
      A.3.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  73
-     A.4.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  73
-     A.5.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  73
+     A.4.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  74
+     A.5.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  74
      A.6.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  74
      A.7.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  74
-     A.8.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  74
+     A.8.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  75
      A.9.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  75
      A.10. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  75
      A.11. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  76
@@ -217,7 +218,6 @@ Internet-Draft                   HTTP/2                       March 2014
    connection and uses an efficient coding for HTTP header fields.  It
    also allows prioritization of requests, letting more important
    requests complete more quickly, further improving performance.
-
 
 
 
@@ -1600,7 +1600,7 @@ Internet-Draft                   HTTP/2                       March 2014
       Pad Low field with a value of zero.
 
    Use of padding is a security feature; as such, its use demands some
-   care, see Section 10.6.
+   care, see Section 10.7.
 
 6.2.  HEADERS
 
@@ -3683,12 +3683,12 @@ Internet-Draft                   HTTP/2                       March 2014
    treat activity that is suspicious as a connection error
    (Section 5.4.1) of type ENHANCE_YOUR_CALM [ENHANCE_YOUR_CALM].
 
-10.6.  Use of Padding
+10.6.  Use of Compression
 
-   Padding within HTTP/2 is not intended as a replacement for general
-   purpose padding, such as might be provided by TLS [TLS12].  Redundant
-   padding could even be counterproductive.  Correct application can
-   depend on having specific knowledge of the data that is being padded.
+   HTTP/2 enables greater use of compression for response bodies
+   (Section 9.3).  Compression can allow an attacker to recover
+   plaintext when plaintext under attacker control is compressed in the
+   same context with secret data.
 
 
 
@@ -3697,6 +3697,22 @@ Belshe, et al.         Expires September 12, 2014              [Page 66]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   There are demonstrable attacks on compression that exploit the
+   characteristics of the web platform ([BREACH]).  The attacker runs
+   trials of plaintext, observing the length of the resulting
+   ciphertext, which reveals whether a guess about the secret is
+   correct.
+
+   Implementations MUST NOT compress plaintext that includes content
+   from both confidential and potentially attacker-controlled sources.
+
+10.7.  Use of Padding
+
+   Padding within HTTP/2 is not intended as a replacement for general
+   purpose padding, such as might be provided by TLS [TLS12].  Redundant
+   padding could even be counterproductive.  Correct application can
+   depend on having specific knowledge of the data that is being padded.
 
    To mitigate attacks that rely on compression, disabling compression
    might be preferable to padding as a countermeasure.
@@ -3720,7 +3736,7 @@ Internet-Draft                   HTTP/2                       March 2014
    remove padding and add differing amounts if the intent is to improve
    the protections padding affords.
 
-10.7.  Privacy Considerations
+10.8.  Privacy Considerations
 
    Several characteristics of HTTP/2 provide an observer an opportunity
    to correlate actions of a single client or server over time.  This
@@ -3728,6 +3744,15 @@ Internet-Draft                   HTTP/2                       March 2014
    windows are managed, the way priorities are allocated to streams,
    timing of reactions to stimulus, and handling of any optional
    features.
+
+
+
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 67]
+
+Internet-Draft                   HTTP/2                       March 2014
+
 
    As far as this creates observable differences in behavior, they could
    be used as a basis for fingerprinting a specific client, as defined
@@ -3745,14 +3770,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 67]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    This document registers the "PRI" method for use in HTTP, to avoid
    collisions with the connection preface (Section 3.5).
@@ -3786,6 +3803,13 @@ Internet-Draft                   HTTP/2                       March 2014
    Error Code" registry operates under the "Expert Review" policy
    [RFC5226].
 
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 68]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Registrations for error codes are required to include a description
    of the error code.  An expert reviewer is advised to examine new
    registrations for possible duplication with existing error codes.
@@ -3800,15 +3824,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    Description:  A description of the conditions where the error code is
       applicable.
-
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 68]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Specification:  An optional reference for a specification that
       defines the error code.
@@ -3844,6 +3859,13 @@ Internet-Draft                   HTTP/2                       March 2014
 
    Idempotent  No
 
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 69]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Specification document(s)  Section 3.5 of this document
 
    Related information:  This method is never used by an actual client.
@@ -3854,17 +3876,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    This document includes substantial input from the following
    individuals:
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 69]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    o  Adam Langley, Wan-Teh Chang, Jim Morrison, Mark Nottingham, Alyssa
       Wilk, Costin Manolache, William Chan, Vitaliy Lvin, Joe Chan, Adam
@@ -3903,17 +3914,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    [HTTP-p2]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Semantics and Content",
-              draft-ietf-httpbis-p2-semantics-26 (work in progress),
-              February 2014.
-
-   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
-              Transfer Protocol (HTTP/1.1): Conditional Requests",
-              draft-ietf-httpbis-p4-conditional-26 (work in progress),
-              February 2014.
-
-
-
-
 
 
 
@@ -3921,6 +3921,14 @@ Belshe, et al.         Expires September 12, 2014              [Page 70]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+              draft-ietf-httpbis-p2-semantics-26 (work in progress),
+              February 2014.
+
+   [HTTP-p4]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
+              Transfer Protocol (HTTP/1.1): Conditional Requests",
+              draft-ietf-httpbis-p4-conditional-26 (work in progress),
+              February 2014.
 
    [HTTP-p5]  Fielding, R., Ed., Lafon, Y., Ed., and J. F. Reschke, Ed.,
               "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
@@ -3961,14 +3969,6 @@ Internet-Draft                   HTTP/2                       March 2014
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions ", RFC 6066, January 2011.
 
-   [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
-              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
-
-   [TLSALPN]  Friedl, S., Popov, A., Langley, A., and E. Stephan,
-              "Transport Layer Security (TLS) Application Layer Protocol
-              Negotiation Extension", draft-ietf-tls-applayerprotoneg-05
-              (work in progress), March 2014.
-
 
 
 
@@ -3977,6 +3977,14 @@ Belshe, et al.         Expires September 12, 2014              [Page 71]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
+              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
+
+   [TLSALPN]  Friedl, S., Popov, A., Langley, A., and E. Stephan,
+              "Transport Layer Security (TLS) Application Layer Protocol
+              Negotiation Extension", draft-ietf-tls-applayerprotoneg-05
+              (work in progress), March 2014.
 
    [UTF-8]    Yergeau, F., "UTF-8, a transformation format of ISO
               10646", STD 63, RFC 3629, November 2003.
@@ -4013,6 +4021,19 @@ Internet-Draft                   HTTP/2                       March 2014
               "Recommendations for Secure Use of TLS and DTLS ", draft-
               sheffer-tls-bcp-02 (work in progress), February 2014.
 
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 72]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-10
@@ -4024,15 +4045,6 @@ A.1.  Since draft-ietf-httpbis-http2-10
 
    Added "h2c" identifier to distinguish between cleartext and secured
    HTTP/2.
-
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 72]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 A.2.  Since draft-ietf-httpbis-http2-09
 
@@ -4065,6 +4077,19 @@ A.3.  Since draft-ietf-httpbis-http2-08
 
    Added header field ordering with the value-concatenation mechanism.
 
+
+
+
+
+
+
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 73]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
 A.4.  Since draft-ietf-httpbis-http2-07
 
    Marked draft for implementation.
@@ -4081,14 +4106,6 @@ A.5.  Since draft-ietf-httpbis-http2-06
    Adding setting for header compression table size.
 
    Adding settings acknowledgement.
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 73]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Removing unnecessary and potentially problematic flags from
    CONTINUATION.
@@ -4121,6 +4138,14 @@ A.7.  Since draft-ietf-httpbis-http2-04
    Clarified requirements around handling different frames after stream
    close, stream reset and GOAWAY [GOAWAY].
 
+
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 74]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Added more specific prohibitions for sending of different frame types
    in various stream states.
 
@@ -4138,13 +4163,6 @@ A.8.  Since draft-ietf-httpbis-http2-03
 
    Moved END_STREAM (renamed from FINAL) back to HEADERS [HEADERS]/DATA
    [DATA].
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 74]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Removed HEADERS+PRIORITY, added optional priority to HEADERS
    [HEADERS] frame.
@@ -4177,6 +4195,13 @@ A.10.  Since draft-ietf-httpbis-http2-01
 
    Removed zlib-based header compression mechanism.
 
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 75]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Updated references.
 
    Clarified stream identifier reuse.
@@ -4194,13 +4219,6 @@ A.10.  Since draft-ietf-httpbis-http2-01
 
    Added note on cacheability of pushed resources and multiple tenant
    servers.
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 75]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Changed protocol label form based on discussions.
 
@@ -4231,6 +4249,15 @@ A.12.  Since draft-mbelshe-httpbis-spdy-00
 
 Authors' Addresses
 
+
+
+
+
+Belshe, et al.         Expires September 12, 2014              [Page 76]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Mike Belshe
    Twist
 
@@ -4243,21 +4270,6 @@ Authors' Addresses
    EMail: fenix@google.com
 
 
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.         Expires September 12, 2014              [Page 76]
-
-Internet-Draft                   HTTP/2                       March 2014
-
-
    Martin Thomson (editor)
    Mozilla
    Suite 300
@@ -4266,18 +4278,6 @@ Internet-Draft                   HTTP/2                       March 2014
    US
 
    EMail: martin.thomson@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

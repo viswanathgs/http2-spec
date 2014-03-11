@@ -602,8 +602,9 @@ samp, tt, code, pre {
                <li><a href="#rfc.section.10.3">10.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.3">Intermediary Encapsulation Attacks</a></li>
                <li><a href="#rfc.section.10.4">10.4</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.4">Cacheability of Pushed Responses</a></li>
                <li><a href="#rfc.section.10.5">10.5</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.5">Denial of Service Considerations</a></li>
-               <li><a href="#rfc.section.10.6">10.6</a>&nbsp;&nbsp;&nbsp;<a href="#padding">Use of Padding</a></li>
-               <li><a href="#rfc.section.10.7">10.7</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.7">Privacy Considerations</a></li>
+               <li><a href="#rfc.section.10.6">10.6</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.6">Use of Compression</a></li>
+               <li><a href="#rfc.section.10.7">10.7</a>&nbsp;&nbsp;&nbsp;<a href="#padding">Use of Padding</a></li>
+               <li><a href="#rfc.section.10.8">10.8</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.10.8">Privacy Considerations</a></li>
             </ul>
          </li>
          <li><a href="#rfc.section.11">11.</a>&nbsp;&nbsp;&nbsp;<a href="#iana">IANA Considerations</a><ul>
@@ -1474,7 +1475,7 @@ Upgrade: h2
                <dt>Note:</dt>
                <dd>A frame can be increased in size by one octet by including a Pad Low field with a value of zero.</dd>
             </dl>
-            <p id="rfc.section.6.1.p.9">Use of padding is a security feature; as such, its use demands some care, see <a href="#padding" title="Use of Padding">Section&nbsp;10.6</a>.
+            <p id="rfc.section.6.1.p.9">Use of padding is a security feature; as such, its use demands some care, see <a href="#padding" title="Use of Padding">Section&nbsp;10.7</a>.
             </p>
          </div>
          <div id="HEADERS">
@@ -2692,33 +2693,46 @@ Upgrade: h2
                track the use of these features and set limits on their use. An endpoint MAY treat activity that is suspicious as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#ENHANCE_YOUR_CALM" class="smpl">ENHANCE_YOUR_CALM</a>.
             </p>
          </div>
+         <div>
+            <h2 id="rfc.section.10.6"><a href="#rfc.section.10.6">10.6</a>&nbsp;Use of Compression
+            </h2>
+            <p id="rfc.section.10.6.p.1">HTTP/2 enables greater use of compression for response bodies (<a href="#Compression" title="GZip Content-Encoding">Section&nbsp;9.3</a>). Compression can allow an attacker to recover plaintext when plaintext under attacker control is compressed in the same
+               context with secret data.
+            </p>
+            <p id="rfc.section.10.6.p.2">There are demonstrable attacks on compression that exploit the characteristics of the web platform (<a href="#BREACH"><cite title="BREACH: Reviving the CRIME Attack">[BREACH]</cite></a>). The attacker runs trials of plaintext, observing the length of the resulting ciphertext, which reveals whether a guess
+               about the secret is correct.
+            </p>
+            <p id="rfc.section.10.6.p.3">Implementations MUST NOT compress plaintext that includes content from both confidential and potentially attacker-controlled
+               sources.
+            </p>
+         </div>
          <div id="padding">
-            <h2 id="rfc.section.10.6"><a href="#rfc.section.10.6">10.6</a>&nbsp;<a href="#padding">Use of Padding</a></h2>
-            <p id="rfc.section.10.6.p.1">Padding within HTTP/2 is not intended as a replacement for general purpose padding, such as might be provided by <a href="#TLS12">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. Redundant padding could even be counterproductive. Correct application can depend on having specific knowledge of the data
+            <h2 id="rfc.section.10.7"><a href="#rfc.section.10.7">10.7</a>&nbsp;<a href="#padding">Use of Padding</a></h2>
+            <p id="rfc.section.10.7.p.1">Padding within HTTP/2 is not intended as a replacement for general purpose padding, such as might be provided by <a href="#TLS12">TLS</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite>. Redundant padding could even be counterproductive. Correct application can depend on having specific knowledge of the data
                that is being padded.
             </p>
-            <p id="rfc.section.10.6.p.2">To mitigate attacks that rely on compression, disabling compression might be preferable to padding as a countermeasure.</p>
-            <p id="rfc.section.10.6.p.3">Padding can be used to obscure the exact size of frame content, and is provided to mitigate specific attacks within HTTP.
+            <p id="rfc.section.10.7.p.2">To mitigate attacks that rely on compression, disabling compression might be preferable to padding as a countermeasure.</p>
+            <p id="rfc.section.10.7.p.3">Padding can be used to obscure the exact size of frame content, and is provided to mitigate specific attacks within HTTP.
                For example, attacks where compressed content includes both attacker-controlled plaintext and secret data (see for example, <a href="#BREACH"><cite title="BREACH: Reviving the CRIME Attack">[BREACH]</cite></a>).
             </p>
-            <p id="rfc.section.10.6.p.4">Use of padding can result in less protection than might seem immediately obvious. At best, padding only makes it more difficult
+            <p id="rfc.section.10.7.p.4">Use of padding can result in less protection than might seem immediately obvious. At best, padding only makes it more difficult
                for an attacker to infer length information by increasing the number of frames an attacker has to observe. Incorrectly implemented
                padding schemes can be easily defeated. In particular, randomized padding with a predictable distribution provides very little
                protection; or padding payloads to a fixed size exposes information as payload sizes cross the fixed size boundary, which
                could be possible if an attacker can control plaintext.
             </p>
-            <p id="rfc.section.10.6.p.5">Intermediaries SHOULD NOT remove padding, though an intermediary MAY remove padding and add differing amounts if the intent
+            <p id="rfc.section.10.7.p.5">Intermediaries SHOULD NOT remove padding, though an intermediary MAY remove padding and add differing amounts if the intent
                is to improve the protections padding affords.
             </p>
          </div>
          <div>
-            <h2 id="rfc.section.10.7"><a href="#rfc.section.10.7">10.7</a>&nbsp;Privacy Considerations
+            <h2 id="rfc.section.10.8"><a href="#rfc.section.10.8">10.8</a>&nbsp;Privacy Considerations
             </h2>
-            <p id="rfc.section.10.7.p.1">Several characteristics of HTTP/2 provide an observer an opportunity to correlate actions of a single client or server over
+            <p id="rfc.section.10.8.p.1">Several characteristics of HTTP/2 provide an observer an opportunity to correlate actions of a single client or server over
                time. This includes the value of settings, the manner in which flow control windows are managed, the way priorities are allocated
                to streams, timing of reactions to stimulus, and handling of any optional features.
             </p>
-            <p id="rfc.section.10.7.p.2">As far as this creates observable differences in behavior, they could be used as a basis for fingerprinting a specific client,
+            <p id="rfc.section.10.8.p.2">As far as this creates observable differences in behavior, they could be used as a basis for fingerprinting a specific client,
                as defined in &lt;<a href="http://www.w3.org/TR/html5/introduction.html#fingerprint">http://www.w3.org/TR/html5/introduction.html#fingerprint</a>&gt;.
             </p>
          </div>
