@@ -436,7 +436,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires September 15, 2014";
+       content: "Expires September 22, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -474,7 +474,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-03-14">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-03-21">
       <meta name="dct.abstract" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
       <meta name="description" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
    </head>
@@ -494,12 +494,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: September 15, 2014</td>
+               <td class="left">Expires: September 22, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">March 14, 2014</td>
+               <td class="right">March 21, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -523,7 +523,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on September 15, 2014.</p>
+         <p>This Internet-Draft will expire on September 22, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -645,15 +645,14 @@ samp, tt, code, pre {
             
             <ul>
                <li><a href="#rfc.figure.1">Figure 1: Index Address Space</a></li>
-               <li><a href="#rfc.figure.2">Figure 2: String Literal with Huffman Encoding</a></li>
-               <li><a href="#rfc.figure.3">Figure 3: String Literal without Huffman Encoding</a></li>
-               <li><a href="#rfc.figure.4">Figure 4: Indexed Header Field</a></li>
-               <li><a href="#rfc.figure.5">Figure 5: Literal Header Field without Indexing - Indexed Name</a></li>
-               <li><a href="#rfc.figure.6">Figure 6: Literal Header Field without Indexing - New Name</a></li>
-               <li><a href="#rfc.figure.7">Figure 7: Literal Header Field with Incremental Indexing -                         Indexed Name</a></li>
-               <li><a href="#rfc.figure.8">Figure 8: Literal Header Field with Incremental Indexing -                         New Name</a></li>
-               <li><a href="#rfc.figure.9">Figure 9: Reference Set Emptying</a></li>
-               <li><a href="#rfc.figure.10">Figure 10: Maximum Header Table Size Change</a></li>
+               <li><a href="#rfc.figure.2">Figure 2: String Literal Representation</a></li>
+               <li><a href="#rfc.figure.3">Figure 3: Indexed Header Field</a></li>
+               <li><a href="#rfc.figure.4">Figure 4: Literal Header Field without Indexing - Indexed Name</a></li>
+               <li><a href="#rfc.figure.5">Figure 5: Literal Header Field without Indexing - New Name</a></li>
+               <li><a href="#rfc.figure.6">Figure 6: Literal Header Field with Incremental Indexing -                         Indexed Name</a></li>
+               <li><a href="#rfc.figure.7">Figure 7: Literal Header Field with Incremental Indexing -                         New Name</a></li>
+               <li><a href="#rfc.figure.8">Figure 8: Reference Set Emptying</a></li>
+               <li><a href="#rfc.figure.9">Figure 9: Maximum Header Table Size Change</a></li>
             </ul>
          </li>
       </ul>
@@ -809,8 +808,8 @@ Insertion Point       Drop Point
                         <li>Indices between 1 and len(header table), inclusive, refer to elements in the header table, with index 1 referring to the beginning
                            of the table.
                         </li>
-                        <li>Indices between len(header table)+1 and len(header table)+len(static table), inclusive, refer to elements in the static table,
-                           where the index len(header table)+1 refers to the first entry in the static table.
+                        <li>Indices between len(header table) + 1 and len(header table) + len(static table), inclusive, refer to elements in the static
+                           table, where the index len(header table) + 1 refers to the first entry in the static table.
                         </li>
                         <li>Index 0 signals a modification of the encoding context: either the reference set is emptied, or the maximum size of the header
                            table is updated (see <a href="#encoding.context.update" title="Encoding Context Update">Section&nbsp;4.4</a>).
@@ -1047,55 +1046,40 @@ else
             </div>
             <div id="string.literal.representation">
                <h3 id="rfc.section.4.1.2"><a href="#rfc.section.4.1.2">4.1.2</a>&nbsp;<a href="#string.literal.representation">String Literal Representation</a></h3>
-               <p id="rfc.section.4.1.2.p.1">Header field names and header field values are encoded as sequences of octets. A header field name or a header field value
-                  is encoded in three parts: 
-               </p>
-               <ol>
-                  <li>One bit, H, indicating whether or not the octets are Huffman encoded.</li>
-                  <li>The number of octets required to hold the result of the next step, represented as an integer with a 7-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>), immediately following the first bit.
-                  </li>
-                  <li>The encoded data of the string: 
-                     <ul>
-                        <li>If H is '1', then the encoded string data is the bitwise concatenation of the canonical <a href="#CANON"><cite title="Generating a canonical prefix encoding">[CANON]</cite></a> Huffman code <a href="#HUFF"><cite title="A Method for the Construction of Minimum Redundancy Codes">[HUFF]</cite></a> corresponding to each octet of the data, followed by between 0-7 bits of padding.
-                        </li>
-                        <li>If H is '0', then the encoded string is the octets of the field value without modification.</li>
-                     </ul> 
-                  </li>
-               </ol>
-               <p id="rfc.section.4.1.2.p.2">Padding is necessary when doing Huffman encoding to ensure that the remaining bits between the actual end of the data and
-                  the next octet boundary are not misinterpreted as part of the input data.
-               </p>
-               <p id="rfc.section.4.1.2.p.3">When padding for Huffman encoding, the bits from the EOS (end-of-string) entry in the Huffman table are used, starting with
-                  the MSB (most significant bit). This entry is guaranteed to be at least 8 bits long.
-               </p>
-               <p id="rfc.section.4.1.2.p.4">String literals which use Huffman encoding are encoded with the Huffman Codes <a href="#huffman.codes" title="Huffman Codes">Appendix&nbsp;C</a> (see examples in Request Examples with Huffman <a href="#request.examples.with.huffman" title="Request Examples with Huffman">Appendix&nbsp;D.3</a> and in Response Examples with Huffman <a href="#response.examples.with.huffman" title="Response Examples with Huffman">Appendix&nbsp;D.5</a>).
-               </p>
-               <p id="rfc.section.4.1.2.p.5">The EOS symbol is represented with value 256, and is used solely to signal the end of the Huffman-encoded key data or the
-                  end of the Huffman-encoded value data. Given that only between 0-7 bits of the EOS symbol is included in any Huffman-encoded
-                  string, and given that the EOS symbol is at least 8 bits long, it is expected that it should never be successfully decoded.
+               <p id="rfc.section.4.1.2.p.1">Header field names and header field values can be represented as literal string. A literal string is encoded as a sequence
+                  of octets, either by directly encoding the literal string's octets, or by using a canonical <a href="#CANON"><cite title="Generating a canonical prefix encoding">[CANON]</cite></a> Huffman encoding <a href="#HUFF"><cite title="A Method for the Construction of Minimum Redundancy Codes">[HUFF]</cite></a>.
                </p>
                <div id="rfc.figure.2"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 |  Value Length Prefix (7)  |
-+---+---+---+---+---+---+---+---+
-|   Value Length (0-N octets)   |
-+---+---+---+---+---+---+---+---+
-...
-+---+---+---+---+---+---+---+---+
-| Huffman Encoded Data  |Padding|
-+---+---+---+---+---+---+---+---+
-</pre><p class="figure">Figure 2: String Literal with Huffman Encoding</p>
-               <div id="rfc.figure.3"></div><pre class="inline">  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 |  Value Length Prefix (7)  |
-+---+---+---+---+---+---+---+---+
-|   Value Length (0-N octets)   |
-+---+---+---+---+---+---+---+---+
-...
-+---+---+---+---+---+---+---+---+
-|  Field Bytes without Encoding |
-+---+---+---+---+---+---+---+---+
-</pre><p class="figure">Figure 3: String Literal without Huffman Encoding</p>
+| H |    String Length (7+)     |
++---+---------------------------+
+|  String Data (Length octets)  |
++-------------------------------+
+</pre><p class="figure">Figure 2: String Literal Representation</p>
+               <p id="rfc.section.4.1.2.p.3">A literal string representation contains the following fields:</p>
+               <p id="rfc.section.4.1.2.p.4"></p>
+               <dl>
+                  <dt>H:</dt>
+                  <dd>A one bit flag, H, indicating whether or not the octets of the string are Huffman encoded.</dd>
+                  <dt>String Length:</dt>
+                  <dd>The number of octets used to encode the string literal, encoded as an integer with 7-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
+                  </dd>
+                  <dt>String Data:</dt>
+                  <dd>The encoded data of the string literal. If H is '0', then the encoded data is the raw octets of the string literal. If H is
+                     '1', then the encoded data is the Huffman encoding of the string literal.
+                  </dd>
+               </dl>
+               <p id="rfc.section.4.1.2.p.5">String literals which use Huffman encoding are encoded with the Huffman codes defined in <a href="#huffman.codes" title="Huffman Codes">Appendix&nbsp;C</a> (see examples inRequest Examples with Huffman <a href="#request.examples.with.huffman" title="Request Examples with Huffman">Appendix&nbsp;D.3</a> and in Response Examples with Huffman <a href="#response.examples.with.huffman" title="Response Examples with Huffman">Appendix&nbsp;D.5</a>). The encoded data is the bitwise concatenation of the Huffman codes corresponding to each octet of the string literal.
+               </p>
+               <p id="rfc.section.4.1.2.p.6">As the Huffman encoded data doesn't always end at an octet boundary, some padding is inserted after it up to the next octet
+                  boundary. To prevent this padding to be misinterpreted as part of the string literal, the most significant bits of the EOS
+                  (end-of-string) entry in the Huffman table are used.
+               </p>
+               <p id="rfc.section.4.1.2.p.7">Upon decoding, an incomplete Huffman code at the end of the encoded data is to be considered as padding and discarded. A padding
+                  strictly longer than 7 bits MUST be treated as a decoding error. A padding not corresponding to the most significant bits
+                  of the EOS entry MUST be treated as a decoding error. A Huffman encoded string literal containing the EOS entry MUST be treated
+                  as a decoding error.
+               </p>
             </div>
          </div>
          <div id="indexed.header.representation">
@@ -1103,11 +1087,11 @@ else
             <p id="rfc.section.4.2.p.1">An indexed header field representation either identifies an entry in the header table or static table. The processing of an
                indexed header field representation is described in <a href="#header.representation.processing" title="Header Field Representation Processing">Section&nbsp;3.2.1</a>.
             </p>
-            <div id="rfc.figure.4"></div><pre class="inline">  0   1   2   3   4   5   6   7
+            <div id="rfc.figure.3"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |        Index (7+)         |
 +---+---------------------------+
-</pre><p class="figure">Figure 4: Indexed Header Field</p>
+</pre><p class="figure">Figure 3: Indexed Header Field</p>
             <p id="rfc.section.4.2.p.3">This representation starts with the '1' 1-bit pattern, followed by the index of the matching pair, represented as an integer
                with a 7-bit prefix.
             </p>
@@ -1123,19 +1107,19 @@ else
             <div id="literal.header.without.indexing">
                <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;<a href="#literal.header.without.indexing">Literal Header Field without Indexing</a></h3>
                <p id="rfc.section.4.3.1.p.1">A literal header field without indexing causes the emission of a header field without altering the header table.</p>
-               <div id="rfc.figure.5"></div><pre class="inline">  0   1   2   3   4   5   6   7
+               <div id="rfc.figure.4"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 1 |      Index (6+)       |
-+---+---+---+-------------------+
++---+---+-----------------------+
 | H |     Value Length (7+)     |
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 5: Literal Header Field without Indexing - Indexed Name</p>
-               <div id="rfc.figure.6"></div><pre class="inline">  0   1   2   3   4   5   6   7
+</pre><p class="figure">Figure 4: Literal Header Field without Indexing - Indexed Name</p>
+               <div id="rfc.figure.5"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 1 |           0           |
-+---+---+---+-------------------+
++---+---+-----------------------+
 | H |     Name Length (7+)      |
 +---+---------------------------+
 |  Name String (Length octets)  |
@@ -1144,7 +1128,7 @@ else
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 6: Literal Header Field without Indexing - New Name</p>
+</pre><p class="figure">Figure 5: Literal Header Field without Indexing - New Name</p>
                <p id="rfc.section.4.3.1.p.4">This representation starts with the '01' 2-bit pattern.</p>
                <p id="rfc.section.4.3.1.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
                   the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
@@ -1159,19 +1143,19 @@ else
             <div id="literal.header.with.incremental.indexing">
                <h3 id="rfc.section.4.3.2"><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;<a href="#literal.header.with.incremental.indexing">Literal Header Field with Incremental Indexing</a></h3>
                <p id="rfc.section.4.3.2.p.1">A literal header field with incremental indexing adds a new entry to the header table.</p>
-               <div id="rfc.figure.7"></div><pre class="inline">  0   1   2   3   4   5   6   7
+               <div id="rfc.figure.6"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 0 |      Index (6+)       |
-+---+---+---+-------------------+
++---+---+-----------------------+
 | H |     Value Length (7+)     |
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 7: Literal Header Field with Incremental Indexing -                         Indexed Name</p>
-               <div id="rfc.figure.8"></div><pre class="inline">  0   1   2   3   4   5   6   7
+</pre><p class="figure">Figure 6: Literal Header Field with Incremental Indexing -                         Indexed Name</p>
+               <div id="rfc.figure.7"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 0 |           0           |
-+---+---+---+-------------------+
++---+---+-----------------------+
 | H |     Name Length (7+)      |
 +---+---------------------------+
 |  Name String (Length octets)  |
@@ -1180,7 +1164,7 @@ else
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 8: Literal Header Field with Incremental Indexing -                         New Name</p>
+</pre><p class="figure">Figure 7: Literal Header Field with Incremental Indexing -                         New Name</p>
                <p id="rfc.section.4.3.2.p.4">This representation starts with the '00' 2-bit pattern.</p>
                <p id="rfc.section.4.3.2.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
                   the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
@@ -1198,17 +1182,17 @@ else
             <p id="rfc.section.4.4.p.1">An indexed value of 0 is reserved for signalling changes in the encoding context. The type of the change is encoded on the
                following octet(s). Any change in the encoding context is applied immediately.
             </p>
-            <div id="rfc.figure.9"></div><pre class="inline">  0   1   2   3   4   5   6   7
+            <div id="rfc.figure.8"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |             0             |
 +---+---------------------------+
-</pre><p class="figure">Figure 9: Reference Set Emptying</p>
+</pre><p class="figure">Figure 8: Reference Set Emptying</p>
             <p id="rfc.section.4.4.p.3">An octet with its high bit set to '1' signals that the reference set is emptied. The remaining bits are set to '0'.</p>
-            <div id="rfc.figure.10"></div><pre class="inline">  0   1   2   3   4   5   6   7
+            <div id="rfc.figure.9"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 |   New maximum size (7+)   |
 +---+---------------------------+
-</pre><p class="figure">Figure 10: Maximum Header Table Size Change</p>
+</pre><p class="figure">Figure 9: Maximum Header Table Size Change</p>
             <p id="rfc.section.4.4.p.5">An octet with its high bit set to '0' signals the new maximum size of the header table. This new maximum size MUST be lower
                than or equal to the value of the setting SETTINGS_HEADER_TABLE_SIZE (see <a href="#HTTP2"><cite title="Hypertext Transfer Protocol version 2">[HTTP2]</cite></a>).
             </p>
@@ -1399,7 +1383,7 @@ else
       <div id="static.table">
          <h1 id="rfc.section.B"><a href="#rfc.section.B">B.</a>&nbsp;<a href="#static.table">Static Table</a></h1>
          <p id="rfc.section.B.p.1">The static table consists of an unchangeable ordered list of (name, value) pairs. The first entry in the table is always represented
-            by the index len(header table)+1, and the last entry in the table is represented by the index len(header table)+len(static
+            by the index len(header table) + 1, and the last entry in the table is represented by the index len(header table) + len(static
             table).
          </p>
          <p id="rfc.section.B.p.2"><span class="comment" id="rfc.comment.1">[<a href="#rfc.comment.1" class="smpl">rfc.comment.1</a>: The ordering of these tables is currently arbitrary. The tables in this section should be updated and ordered such that the
@@ -1729,13 +1713,30 @@ else
       </div>
       <div id="huffman.codes">
          <h1 id="rfc.section.C"><a href="#rfc.section.C">C.</a>&nbsp;<a href="#huffman.codes">Huffman Codes</a></h1>
-         <p id="rfc.section.C.p.1">The following Huffman codes are used when encoding string literals.</p>
-         <p id="rfc.section.C.p.2"><span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: This table will be regenerated.]</span> 
+         <p id="rfc.section.C.p.1">The following codes are used when encoding string literals with an Huffman coding (see <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
          </p>
-         <div id="rfc.figure.u.6"></div><pre>             aligned                                  aligned
-              to                            len        to     len
-              MSB                            in        LSB     in
-       sym    as bits                       bits      as hex  bits
+         <p id="rfc.section.C.p.2">Each row in the table specifies one Huffman code: </p>
+         <dl>
+            <dt>sym:</dt>
+            <dd>The symbol to be represented. It is the decimal value of an octet, possibly prepended with its ASCII representation. A specific
+               symbol, "EOS", is used to indicate the end of a string literal.
+            </dd>
+            <dt>code as bits:</dt>
+            <dd>The Huffman code for the symbol represented as a base-2 integer.</dd>
+            <dt>code as hex:</dt>
+            <dd>The Huffman code for the symbol, represented as a hexadecimal integer, aligned on the least significant bit.</dd>
+            <dt>len:</dt>
+            <dd>The number of bits for the Huffman code of the symbol.</dd>
+         </dl>
+         <p id="rfc.section.C.p.3">As an example, the Huffman code for the symbol 48 (corresponding to the ASCII character "0") consists in the 5 bits "0", "0",
+            "1", "0", "1". This corresponds to the value 5 encoded on 5 bits.
+         </p>
+         <p id="rfc.section.C.p.4"><span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: This table will be regenerated. The example should be updated in accordance to this.]</span> 
+         </p>
+         <div id="rfc.figure.u.6"></div><pre>                                                       code       
+                     code as bits           len       as hex  len 
+       sym          aligned to MSB           in       aligned  in 
+                                            bits      to LSB  bits
       (  0) |11111111|11111111|11110111|010 [27]      7ffffba [27]
       (  1) |11111111|11111111|11110111|011 [27]      7ffffbb [27]
       (  2) |11111111|11111111|11110111|100 [27]      7ffffbc [27]
