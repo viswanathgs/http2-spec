@@ -564,7 +564,7 @@ samp, tt, code, pre {
                   </ul>
                </li>
                <li><a href="#rfc.section.6.10">6.10</a>&nbsp;&nbsp;&nbsp;<a href="#CONTINUATION">CONTINUATION</a></li>
-               <li><a href="#rfc.section.6.11">6.11</a>&nbsp;&nbsp;&nbsp;<a href="#alt-frame">For HTTP/2: ALTSVC Frame</a></li>
+               <li><a href="#rfc.section.6.11">6.11</a>&nbsp;&nbsp;&nbsp;<a href="#ALTSVC">ALTSVC</a></li>
             </ul>
          </li>
          <li><a href="#rfc.section.7">7.</a>&nbsp;&nbsp;&nbsp;<a href="#ErrorCodes">Error Codes</a></li>
@@ -698,7 +698,7 @@ samp, tt, code, pre {
          </p>
          <p id="rfc.section.2.p.6">Frames that contain HTTP header fields are compressed (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). HTTP requests can be highly redundant, so compression can reduce the size of requests and responses significantly.
          </p>
-         <p id="rfc.section.2.p.7">HTTP/2 also supports HTTP Alternative Services (see <a href="#AltSvc"><cite title="HTTP Alternative Services">[AltSvc]</cite></a>) using the ALTSVC frame type (<a href="#alt-frame" title="For HTTP/2: ALTSVC Frame">Section&nbsp;6.11</a>), to allow servers more control over traffic to them.
+         <p id="rfc.section.2.p.7">HTTP/2 also supports HTTP Alternative Services (see <a href="#ALT-SVC"><cite title="HTTP Alternative Services">[ALT-SVC]</cite></a>) using the ALTSVC frame type (<a href="#ALTSVC" title="ALTSVC">Section&nbsp;6.11</a>), to allow servers more control over traffic to them.
          </p>
          <div>
             <h2 id="rfc.section.2.1"><a href="#rfc.section.2.1">2.1</a>&nbsp;Document Organization
@@ -867,11 +867,12 @@ Upgrade: h2
          </div>
          <div id="known-http">
             <h2 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4</a>&nbsp;<a href="#known-http">Starting HTTP/2 with Prior Knowledge</a></h2>
-            <p id="rfc.section.3.4.p.1">A client can learn that a particular server supports HTTP/2 by other means. For example, <a href="#AltSvc"><cite title="HTTP Alternative Services">[AltSvc]</cite></a> describes a mechanism for advertising this capability in an HTTP header field. A client MAY immediately send HTTP/2 frames
-               to a server that is known to support HTTP/2, after the connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>). A server can identify such a connection by the use of the "PRI" method in the connection preface. This only affects the
+            <p id="rfc.section.3.4.p.1">A client can learn that a particular server supports HTTP/2 by other means. For example, <a href="#ALT-SVC"><cite title="HTTP Alternative Services">[ALT-SVC]</cite></a> describes a mechanism for advertising this capability in an HTTP header field; the ALTSVC frame (<a href="#ALTSVC" title="ALTSVC">Section&nbsp;6.11</a>) describes a similar mechanism in HTTP/2.
+            </p>
+            <p id="rfc.section.3.4.p.2">A client MAY immediately send HTTP/2 frames to a server that is known to support HTTP/2, after the connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>). A server can identify such a connection by the use of the "PRI" method in the connection preface. This only affects the
                resolution of "http" URIs; servers supporting HTTP/2 are required to support <a href="#TLSALPN">protocol negotiation in TLS</a> <cite title="Transport Layer Security (TLS) Application Layer Protocol Negotiation Extension">[TLSALPN]</cite> for "https" URIs.
             </p>
-            <p id="rfc.section.3.4.p.2">Prior support for HTTP/2 is not a strong signal that a given server will support HTTP/2 for future connections. It is possible
+            <p id="rfc.section.3.4.p.3">Prior support for HTTP/2 is not a strong signal that a given server will support HTTP/2 for future connections. It is possible
                for server configurations to change; for configurations to differ between instances in clustered server; or network conditions
                to change.
             </p>
@@ -1959,7 +1960,7 @@ Upgrade: h2
             <p id="rfc.section.6.9.p.1">The WINDOW_UPDATE frame (type=0x8) is used to implement flow control; see <a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a> for an overview.
             </p>
             <p id="rfc.section.6.9.p.2">Flow control operates at two levels: on each individual stream and on the entire connection.</p>
-            <p id="rfc.section.6.9.p.3">Both types of flow control are hop by hop; that is, only between the two endpoints. Intermediaries do not forward WINDOW_UPDATE
+            <p id="rfc.section.6.9.p.3">Both types of flow control are hop-by-hop; that is, only between the two endpoints. Intermediaries do not forward WINDOW_UPDATE
                frames between dependent connections. However, throttling of data transfer by any receiver can indirectly cause the propagation
                of flow control information toward the original sender.
             </p>
@@ -2118,11 +2119,11 @@ Upgrade: h2
             <p id="rfc.section.6.10.p.9">The CONTINUATION frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
             </p>
          </div>
-         <div id="alt-frame">
-            <h2 id="rfc.section.6.11"><a href="#rfc.section.6.11">6.11</a>&nbsp;<a href="#alt-frame">For HTTP/2: ALTSVC Frame</a></h2>
-            <p id="rfc.section.6.11.p.1">The ALTSVC frame (type=0xa) advertises the availability of an alternative service to the client. It can be sent at any time
+         <div id="ALTSVC">
+            <h2 id="rfc.section.6.11"><a href="#rfc.section.6.11">6.11</a>&nbsp;<a href="#ALTSVC">ALTSVC</a></h2>
+            <p id="rfc.section.6.11.p.1">The ALTSVC frame (type=0xA) advertises the availability of an alternative service to the client. It can be sent at any time
                for an existing client-initiated stream or stream 0, and is intended to allow servers to load balance or otherwise segment
-               traffic; see <a href="#AltSvc"><cite title="HTTP Alternative Services">[AltSvc]</cite></a> for details (in particular, Section 2.4, which outlines client handling of alternative services).
+               traffic; see <a href="#ALT-SVC"><cite title="HTTP Alternative Services">[ALT-SVC]</cite></a> for details (in particular, Section 2.4, which outlines client handling of alternative services).
             </p>
             <p id="rfc.section.6.11.p.2">An ALTSVC frame on a client-initiated stream indicates that the conveyed alternative service is associated with the origin
                of that stream.
@@ -2131,41 +2132,50 @@ Upgrade: h2
                Origin field of the frame. An association with an origin that the client does not consider authoritative for the current connection
                MUST be ignored.
             </p>
-            <p id="rfc.section.6.11.p.4">The ALTSVC frame is intended for receipt by clients; a server that receives an ALTSVC frame MUST treat it as a connection
+            <div id="rfc.figure.u.6"></div><pre>  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                          Max-Age (32)                         |
+ +-------------------------------+----------------+--------------+
+ |            Port (16)          |  Reserved (8)  | PID_LEN (8)  |
+ +-------------------------------+----------------+--------------+
+ |                        Protocol-ID (*)                        |
+ +---------------+-----------------------------------------------+
+ | HOST_LEN (8)  |                   Host (*)                  ...
+ +---------------+-----------------------------------------------+
+ |                          Origin? (*)                        ...
+ +---------------------------------------------------------------+
+    </pre><p id="rfc.section.6.11.p.5">The ALTSVC frame contains the following fields: </p>
+            <dl>
+               <dt>Max-Age:</dt>
+               <dd>An unsigned, 32-bit integer indicating the freshness lifetime of the alternative service association, as per <a href="#ALT-SVC"><cite title="HTTP Alternative Services">[ALT-SVC]</cite></a>, Section 2.2.
+               </dd>
+               <dt>Port:</dt>
+               <dd>An unsigned, 16-bit integer indicating the port that the alternative service is available upon.</dd>
+               <dt>Reserved:</dt>
+               <dd>For future use. Senders MUST set these bits to '0', and recipients MUST ignore them.</dd>
+               <dt>PID_LEN:</dt>
+               <dd>An unsigned, 8-bit integer indicating the length, in octets, of the PROTOCOL-ID field.</dd>
+               <dt>Protocol-ID:</dt>
+               <dd>A sequence of bytes (length determined by PID_LEN) containing the ALPN protocol identifier of the alternative service.</dd>
+               <dt>HOST_LEN:</dt>
+               <dd>An unsigned, 8-bit integer indicating the length, in octets, of the Host field.</dd>
+               <dt>Host:</dt>
+               <dd>A sequence of characters (length determined by HOST_LEN) containing an ASCII string indicating the host that the alternative
+                  service is available upon. An <a href="#IDNA">internationalized domain name</a> <cite title="Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework">[IDNA]</cite> MUST be expressed using A-labels.
+               </dd>
+               <dt>Origin:</dt>
+               <dd>An optional sequence of characters (length determined by subtracting the length of all preceding fields from the frame length)
+                  containing ASCII serialisation of an origin (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, Section 6.2) that the alternate service is applicable to.
+               </dd>
+            </dl>
+            <p id="rfc.section.6.11.p.6">The ALTSVC frame does not define any flags.</p>
+            <p id="rfc.section.6.11.p.7">The ALTSVC frame is intended for receipt by clients; a server that receives an ALTSVC frame MUST treat it as a connection
                error of type PROTOCOL_ERROR.
             </p>
-            <div id="rfc.figure.u.6"></div><pre>    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                          Max-Age (32)                         |
-    +---------------------------------------------------------------+
-    |            Port (16)          |  Reserved (8)  | PID_LEN (8)  |
-    +---------------------------------------------------------------+
-    |                        Protocol-ID (*)                        |
-    +---------------------------------------------------------------+
-    | HOST_LEN (8)  |                   Host (*)                  ...
-    +---------------------------------------------------------------+
-    |                          Origin? (*)                        ...
-    +---------------------------------------------------------------+
-    </pre><p id="rfc.section.6.11.p.6">The ALTSVC frame contains the following fields:</p>
-            <p id="rfc.section.6.11.p.7"></p>
-            <ul>
-               <li>Max-Age: An unsigned, 32-bit integer indicating the freshness lifetime of the alternative service association, as per <a href="#AltSvc"><cite title="HTTP Alternative Services">[AltSvc]</cite></a>, Section 2.2.
-               </li>
-               <li>Port: An unsigned, 16-bit integer indicating the port that the alternative service is available upon.</li>
-               <li>Reserved: for future use. Senders MUST set these bits to '0', and recipients MUST ignore them.</li>
-               <li>PID_LEN: An unsigned, 8-bit integer indicating the length, in bytes, of the PROTOCOL-ID field.</li>
-               <li>Protocol-ID: A sequence of bytes (length determined by PID_LEN) containing the ALPN protocol identifier of the alternative
-                  service.
-               </li>
-               <li>HOST_LEN: An unsigned, 8-bit integer indicating the length, in 8-bit characters, of the Host field.</li>
-               <li>Host: A sequence of characters (length determined by HOST_LEN) containing an ASCII string indicating the host that the alternative
-                  service is available upon.
-               </li>
-               <li>Origin: An optional sequence of characters (length determined by ORGN_LEN) containing ASCII serialisation of an origin (<a href="#RFC6454"><cite title="The Web Origin Concept">[RFC6454]</cite></a>, Section 6.2) that the alternate service is applicable to.
-               </li>
-            </ul>
-            <p id="rfc.section.6.11.p.8">The ALTSVC frame does not define any flags.</p>
+            <p id="rfc.section.6.11.p.8">The ALTSVC frame is processed hop-by-hop. An intermediary MUST NOT forward ALTSVC frames, though it can use the information
+               contained in ALTSVC frames in forming new ALTSVC frames to send to its own clients.
+            </p>
          </div>
       </div>
       <div id="ErrorCodes">
@@ -2605,10 +2615,10 @@ Upgrade: h2
                or until the server closes the connection.
             </p>
             <p id="rfc.section.9.1.p.2">Clients SHOULD NOT open more than one HTTP/2 connection to a given destination, where a destination is the IP address and
-               TCP port that is identified for a given URI <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Here is where we need to be careful with <a href="#AltSvc"><cite title="HTTP Alternative Services">[AltSvc]</cite></a>]</span>, or the IP and port of a configured proxy. A client can create additional connections as replacements, either to replace
-               connections that are near to exhausting the available stream identifier space (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>), or to replace connections that have encountered errors (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
+               port that is derived from a URI, a selected <a href="#ALT-SVC">alternative service</a> <cite title="HTTP Alternative Services">[ALT-SVC]</cite>, or a configured proxy. A client can create additional connections as replacements, either to replace connections that are
+               near to exhausting the available stream identifier space (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>), or to replace connections that have encountered errors (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
             </p>
-            <p id="rfc.section.9.1.p.3">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Need more text on how client certificates relate here, see issue #363.]</span> 
+            <p id="rfc.section.9.1.p.3">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration. <span class="comment" id="rfc.comment.2">[<a href="#rfc.comment.2" class="smpl">rfc.comment.2</a>: Need more text on how client certificates relate here, see issue #363.]</span> 
             </p>
             <p id="rfc.section.9.1.p.4">Clients MAY use a single server connection to send requests for URIs with multiple different authority components as long
                as the server is authoritative (<a href="#authority" title="Server Authority">Section&nbsp;10.1</a>).
@@ -2728,7 +2738,7 @@ Upgrade: h2
                the same fashion.
             </p>
             <p id="rfc.section.10.5.p.2">The <a href="#SETTINGS" class="smpl">SETTINGS</a> frame can be abused to cause a peer to expend additional processing time. This might be done by pointlessly changing SETTINGS
-               parameters, setting multiple undefined parameters, or changing the same setting multiple times in the same frame. Similarly, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames can be abused to cause an unnecessary waste of resources.
+               parameters, setting multiple undefined parameters, or changing the same setting multiple times in the same frame. <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> frames can be abused to cause an unnecessary waste of resources. A server might erroneously issue <a href="#ALTSVC" class="smpl">ALTSVC</a> frames for origins on which it cannot be authoritative to generate excess work for clients.
             </p>
             <p id="rfc.section.10.5.p.3">Large numbers of small or empty frames can be abused to cause a peer to expend time processing frame headers. Note however
                that some uses are entirely legitimate, such as the sending of an empty <a href="#DATA" class="smpl">DATA</a> frame to end a stream.
@@ -2917,8 +2927,8 @@ Upgrade: h2
       </h2>
       <table>
          <tr>
-            <td class="reference"><b id="AltSvc">[AltSvc]</b></td>
-            <td class="top">Nottingham, M. and P. McManus, “<a href="http://tools.ietf.org/html/draft-nottingham-httpbis-alt-svc-03">HTTP Alternative Services</a>”, Internet-Draft&nbsp;draft-nottingham-httpbis-alt-svc-03 (work in progress), February&nbsp;2014.
+            <td class="reference"><b id="ALT-SVC">[ALT-SVC]</b></td>
+            <td class="top">Nottingham, M. and P. McManus, “<a href="http://tools.ietf.org/html/draft-nottingham-httpbis-alt-svc-05">HTTP Alternative Services</a>”, Internet-Draft&nbsp;draft-nottingham-httpbis-alt-svc-05 (work in progress), March&nbsp;2014.
             </td>
          </tr>
          <tr>
@@ -3033,6 +3043,11 @@ Upgrade: h2
          <tr>
             <td class="reference"><b id="BREACH">[BREACH]</b></td>
             <td class="top">Gluck, Y., Harris, N., and A. Prado, “<a href="http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf">BREACH: Reviving the CRIME Attack</a>”, July&nbsp;2013, &lt;<a href="http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf">http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf</a>&gt;.
+            </td>
+         </tr>
+         <tr>
+            <td class="reference"><b id="IDNA">[IDNA]</b></td>
+            <td class="top">Klensin, J., “<a href="http://tools.ietf.org/html/rfc5890">Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</a>”, RFC&nbsp;5890, August&nbsp;2010.
             </td>
          </tr>
          <tr>
