@@ -5,10 +5,10 @@
 HTTPbis Working Group                                      M. Nottingham
 Internet-Draft                                                    Akamai
 Intended status: Standards Track                              P. McManus
-Expires: September 28, 2014                                      Mozilla
+Expires: September 29, 2014                                      Mozilla
                                                            J. F. Reschke
                                                               greenbytes
-                                                          March 27, 2014
+                                                          March 28, 2014
 
 
                        HTTP Alternative Services
@@ -46,14 +46,14 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 28, 2014.
+   This Internet-Draft will expire on September 29, 2014.
 
 Copyright Notice
 
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 1]
+Nottingham, et al.     Expires September 29, 2014               [Page 1]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -73,11 +73,11 @@ Internet-Draft            Alternative Services                March 2014
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Notational Conventions  . . . . . . . . . . . . . . . . .   3
-   2.  Alternative Services Concepts . . . . . . . . . . . . . . . .   4
+   2.  Alternative Services Concepts . . . . . . . . . . . . . . . .   3
      2.1.  Host Authentication . . . . . . . . . . . . . . . . . . .   5
-     2.2.  Alternative Service Caching . . . . . . . . . . . . . . .   6
+     2.2.  Alternative Service Caching . . . . . . . . . . . . . . .   5
      2.3.  Requiring Server Name Indication  . . . . . . . . . . . .   6
      2.4.  Using Alternative Services  . . . . . . . . . . . . . . .   6
    3.  The Alt-Svc HTTP Header Field . . . . . . . . . . . . . . . .   7
@@ -99,22 +99,20 @@ Table of Contents
    Appendix A.  Change Log (to be removed by RFC Editor before
                 publication) . . . . . . . . . . . . . . . . . . . .  13
      A.1.  Since draft-nottingham-httpbis-alt-svc-05 . . . . . . . .  14
+     A.2.  Since draft-ietf-httpbis-alt-svc-00 . . . . . . . . . . .  14
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  14
 
+1.  Introduction
 
 
 
 
 
 
-
-
-Nottingham, et al.     Expires September 28, 2014               [Page 2]
+Nottingham, et al.     Expires September 29, 2014               [Page 2]
 
 Internet-Draft            Alternative Services                March 2014
 
-
-1.  Introduction
 
    HTTP [HTTP-p1] conflates the identification of resources with their
    location.  In other words, "http://" (and "https://") URLs are used
@@ -161,16 +159,16 @@ Internet-Draft            Alternative Services                March 2014
    "delta-second" rules from [HTTP-p1], and uses the "#rule" extension
    defined in Section 7 of that document.
 
+2.  Alternative Services Concepts
 
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 3]
+
+Nottingham, et al.     Expires September 29, 2014               [Page 3]
 
 Internet-Draft            Alternative Services                March 2014
 
-
-2.  Alternative Services Concepts
 
    This specification defines a new concept in HTTP, the "alternative
    service".  When an origin (see [RFC6454]) has resources that are
@@ -218,16 +216,15 @@ Internet-Draft            Alternative Services                March 2014
    host, port and protocol that they are using to fetch resources, but
    these changes MUST NOT be propagated to the application that is using
    HTTP; from that standpoint, the URI being accessed and all
+   information derived from it (scheme, host, port) are the same as
+   before.
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 4]
+Nottingham, et al.     Expires September 29, 2014               [Page 4]
 
 Internet-Draft            Alternative Services                March 2014
 
-
-   information derived from it (scheme, host, port) are the same as
-   before.
 
    Importantly, this includes its security context; in particular, when
    TLS [RFC5246] is in use, the alternative server will need to present
@@ -274,15 +271,16 @@ Internet-Draft            Alternative Services                March 2014
    information provided in TLS by the client will be that of the origin,
    not the alternative.
 
+2.2.  Alternative Service Caching
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 5]
+
+
+Nottingham, et al.     Expires September 29, 2014               [Page 5]
 
 Internet-Draft            Alternative Services                March 2014
 
-
-2.2.  Alternative Service Caching
 
    Mechanisms for discovering alternative services can associate a
    freshness lifetime with them; for example, the Alt-Svc header field
@@ -330,16 +328,16 @@ Internet-Draft            Alternative Services                March 2014
    header field (Section 4) on every request using that alternate
    service.
 
+   The client is not required to block requests; the origin's connection
+   can be used until the alternative connection is established.
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 6]
+Nottingham, et al.     Expires September 29, 2014               [Page 6]
 
 Internet-Draft            Alternative Services                March 2014
 
 
-   The client is not required to block requests; the origin's connection
-   can be used until the alternative connection is established.
    However, if the security properties of the existing connection are
    weak (e.g.  cleartext HTTP/1.1) then it might make sense to block
    until the new connection is fully available in order to avoid
@@ -386,16 +384,16 @@ Internet-Draft            Alternative Services                March 2014
 
    Intermediaries MUST NOT change or append Alt-Svc values.
 
+   Finally, note that while it may be technically possible to put
+   content other than printable ASCII in a HTTP header field, some
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 7]
+Nottingham, et al.     Expires September 29, 2014               [Page 7]
 
 Internet-Draft            Alternative Services                March 2014
 
 
-   Finally, note that while it may be technically possible to put
-   content other than printable ASCII in a HTTP header field, some
    implementations only support ASCII (or a superset of it) in header
    field values.  Therefore, this field SHOULD NOT be used to convey
    protocol identifiers that are not printable ASCII, or those that
@@ -445,7 +443,9 @@ Internet-Draft            Alternative Services                March 2014
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 8]
+
+
+Nottingham, et al.     Expires September 29, 2014               [Page 8]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -501,7 +501,7 @@ Internet-Draft            Alternative Services                March 2014
 
 
 
-Nottingham, et al.     Expires September 28, 2014               [Page 9]
+Nottingham, et al.     Expires September 29, 2014               [Page 9]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -557,7 +557,7 @@ Internet-Draft            Alternative Services                March 2014
 
 
 
-Nottingham, et al.     Expires September 28, 2014              [Page 10]
+Nottingham, et al.     Expires September 29, 2014              [Page 10]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -613,7 +613,7 @@ Internet-Draft            Alternative Services                March 2014
 
 
 
-Nottingham, et al.     Expires September 28, 2014              [Page 11]
+Nottingham, et al.     Expires September 29, 2014              [Page 11]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -669,7 +669,7 @@ Internet-Draft            Alternative Services                March 2014
 
 
 
-Nottingham, et al.     Expires September 28, 2014              [Page 12]
+Nottingham, et al.     Expires September 29, 2014              [Page 12]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -725,7 +725,7 @@ Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 
 
-Nottingham, et al.     Expires September 28, 2014              [Page 13]
+Nottingham, et al.     Expires September 29, 2014              [Page 13]
 
 Internet-Draft            Alternative Services                March 2014
 
@@ -735,6 +735,10 @@ A.1.  Since draft-nottingham-httpbis-alt-svc-05
    This is the first version after adoption of draft-nottingham-httpbis-
    alt-svc-05 as Working Group work item.  It only contains editorial
    changes.
+
+A.2.  Since draft-ietf-httpbis-alt-svc-00
+
+   None yet.
 
 Authors' Addresses
 
@@ -776,8 +780,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-Nottingham, et al.     Expires September 28, 2014              [Page 14]
+Nottingham, et al.     Expires September 29, 2014              [Page 14]
