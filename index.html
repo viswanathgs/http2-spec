@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires September 29, 2014";
+       content: "Expires October 1, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -417,7 +417,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-03-28">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-03-30">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -437,7 +437,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: September 29, 2014</td>
+               <td class="left">Expires: October 1, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -450,7 +450,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">March 28, 2014</td>
+               <td class="right">March 30, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -479,7 +479,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on September 29, 2014.</p>
+         <p>This Internet-Draft will expire on October 1, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -644,16 +644,18 @@ samp, tt, code, pre {
             <ul>
                <li><a href="#rfc.figure.1">Figure 1: Frame Header</a></li>
                <li><a href="#rfc.figure.2">Figure 2: Stream States</a></li>
-               <li><a href="#rfc.figure.3">Figure 3: DATA Frame Payload</a></li>
-               <li><a href="#rfc.figure.4">Figure 4: HEADERS Frame Payload</a></li>
-               <li><a href="#rfc.figure.5">Figure 5: PRIORITY Frame Payload</a></li>
-               <li><a href="#rfc.figure.6">Figure 6: RST_STREAM Frame Payload</a></li>
-               <li><a href="#rfc.figure.7">Figure 7: Setting Format</a></li>
-               <li><a href="#rfc.figure.8">Figure 8: PUSH_PROMISE Payload Format</a></li>
-               <li><a href="#rfc.figure.9">Figure 9: PING Payload Format</a></li>
-               <li><a href="#rfc.figure.10">Figure 10: GOAWAY Payload Format</a></li>
-               <li><a href="#rfc.figure.11">Figure 11: WINDOW_UPDATE Payload Format</a></li>
-               <li><a href="#rfc.figure.12">Figure 12: CONTINUATION Frame Payload</a></li>
+               <li><a href="#rfc.figure.3">Figure 3: Example of Default Dependency Creation</a></li>
+               <li><a href="#rfc.figure.4">Figure 4: Example of Exclusive Dependency Creation</a></li>
+               <li><a href="#rfc.figure.5">Figure 5: DATA Frame Payload</a></li>
+               <li><a href="#rfc.figure.6">Figure 6: HEADERS Frame Payload</a></li>
+               <li><a href="#rfc.figure.7">Figure 7: PRIORITY Frame Payload</a></li>
+               <li><a href="#rfc.figure.8">Figure 8: RST_STREAM Frame Payload</a></li>
+               <li><a href="#rfc.figure.9">Figure 9: Setting Format</a></li>
+               <li><a href="#rfc.figure.10">Figure 10: PUSH_PROMISE Payload Format</a></li>
+               <li><a href="#rfc.figure.11">Figure 11: PING Payload Format</a></li>
+               <li><a href="#rfc.figure.12">Figure 12: GOAWAY Payload Format</a></li>
+               <li><a href="#rfc.figure.13">Figure 13: WINDOW_UPDATE Payload Format</a></li>
+               <li><a href="#rfc.figure.14">Figure 14: CONTINUATION Frame Payload</a></li>
             </ul>
          </li>
       </ul>
@@ -1293,59 +1295,85 @@ Upgrade: h2
             </div>
             <div id="pri-depend">
                <h3 id="rfc.section.5.3.2"><a href="#rfc.section.5.3.2">5.3.2</a>&nbsp;<a href="#pri-depend">Stream Dependencies</a></h3>
-               <p id="rfc.section.5.3.2.p.1">Each stream can be given an explicit dependency on another stream. Including a dependency is a request to always allocate
-                  resources to the identified stream in preference to the dependent stream.
+               <p id="rfc.section.5.3.2.p.1">Each stream can be given an explicit dependency on another stream. Including a dependency expresses a preference to allocate
+                  resources to the identified stream rather than to the dependent stream.
                </p>
-               <p id="rfc.section.5.3.2.p.2">Streams that are dependent on other streams become part of the priority group of the stream they depend on.</p>
-               <p id="rfc.section.5.3.2.p.3">When assigning a dependency on another stream, an exclusive flag allows for the insertion of a new level of dependencies.
-                  The exclusive flag causes the stream to become the sole dependency of the stream it depends on, causing other dependencies
-                  to become displaced. For example, if streams B and C are dependent on stream A, and if stream D is created with an exclusive
-                  dependency on stream A, this results in a dependency order of A followed by D followed by B and C.
+               <p id="rfc.section.5.3.2.p.2">A stream that is dependent on another stream becomes part of the priority group of the stream it depends on. It belongs to
+                  the same dependency tree as the stream it depends on.
                </p>
-               <p id="rfc.section.5.3.2.p.4">Streams are strictly ordered based on dependency relationships within their priority group. A dependent stream SHOULD only
-                  be allocated resources if either: 
+               <p id="rfc.section.5.3.2.p.3">A stream that is assigned directly to a priority group is not dependent on any other stream. It is the root of a dependency
+                  tree inside its priority group.
                </p>
-               <ul>
-                  <li>the streams that it depends on are closed, or</li>
-                  <li>it is not possible to make progress on any other stream.</li>
-               </ul>
-               <p id="rfc.section.5.3.2.p.5">Streams with the same dependencies are allocated equal weighting. Thus, if streams B and C depend on stream A, and if no progress
-                  can be made on A, streams B and C are given an equal share of resources.
+               <p id="rfc.section.5.3.2.p.4">When assigning a dependency on another stream, by default, the stream is added as a new dependency of the stream it depends
+                  on. For example, if streams B and C are dependent on stream A, and if stream D is created with a dependency on stream A, this
+                  results in a dependency order of A followed by B, C, and D.
                </p>
-               <p id="rfc.section.5.3.2.p.6">A stream MUST NOT depend on itself. An endpoint MAY either treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>, or assign default priority values (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>) to the stream.
+               <div id="rfc.figure.3"></div><pre class="inline">  A                 A
+ / \      ==&gt;      /|\
+B   C             B D C
+</pre><p class="figure">Figure 3: Example of Default Dependency Creation</p>
+               <p id="rfc.section.5.3.2.p.6">An exclusive flag allows for the insertion of a new level of dependencies. The exclusive flag causes the stream to become
+                  the sole dependency of the stream it depends on, causing other dependencies to become dependencies of the stream. In the previous
+                  example, if stream D is created with an exclusive dependency on stream A, this results in a dependency order of A followed
+                  by D followed by B and C.
+               </p>
+               <div id="rfc.figure.4"></div><pre class="inline">                    A
+  A                 |
+ / \      ==&gt;       D
+B   C              / \
+                  B   C
+</pre><p class="figure">Figure 4: Example of Exclusive Dependency Creation</p>
+               <p id="rfc.section.5.3.2.p.8">Streams are ordered into several dependency trees within their priority group. Each dependency tree within a priority group
+                  SHOULD be allocated the same amount of resources.
+               </p>
+               <p id="rfc.section.5.3.2.p.9">Inside a dependency tree, a dependent stream SHOULD only be allocated resources if the streams that it depends on are either
+                  closed, or it is not possible to make progress on them.
+               </p>
+               <p id="rfc.section.5.3.2.p.10">Streams with the same dependencies SHOULD be allocated the same amount of resources. Thus, if streams B and C depend on stream
+                  A, and if no progress can be made on A, streams B and C are given an equal share of resources.
+               </p>
+               <p id="rfc.section.5.3.2.p.11">A stream MUST NOT depend on itself. An endpoint MAY either treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>, or assign default priority values (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>) to the stream.
                </p>
             </div>
             <div>
                <h3 id="rfc.section.5.3.3"><a href="#rfc.section.5.3.3">5.3.3</a>&nbsp;Reprioritization
                </h3>
                <p id="rfc.section.5.3.3.p.1">Stream priorities are changed using the <a href="#PRIORITY" class="smpl">PRIORITY</a> frame. Setting a priority group and weight causes a stream to become part of the identified group, and not dependent on any
-                  other stream. Setting a dependency causes to become dependent on the identified stream, which can cause the reprioritized
+                  other stream. Setting a dependency causes a stream to become dependent on the identified stream, which can cause the reprioritized
                   stream to move to a new priority group.
                </p>
-               <p id="rfc.section.5.3.3.p.2">All streams that are dependent on a reprioritized stream move with it.</p>
+               <p id="rfc.section.5.3.3.p.2">All streams that are dependent on a reprioritized stream move with it. Setting a dependency with the exclusive flag for a
+                  reprioritized stream moves all the dependencies of the stream it depends on to become dependencies of the reprioritized stream.
+               </p>
             </div>
             <div>
                <h3 id="rfc.section.5.3.4"><a href="#rfc.section.5.3.4">5.3.4</a>&nbsp;Prioritization State Management
                </h3>
-               <p id="rfc.section.5.3.4.p.1">It is possible for a stream to become closed while prioritization information that creates a dependency on that stream is
+               <p id="rfc.section.5.3.4.p.1">When a stream is closed, its dependencies can be moved to become dependent on the stream the closed stream depends on, if
+                  any, or to become new dependency tree roots otherwise.
+               </p>
+               <p id="rfc.section.5.3.4.p.2">It is possible for a stream to become closed while prioritization information that creates a dependency on that stream is
                   in transit. If a stream identified in a dependency has been closed and any associated priority information destroyed then
                   the dependent stream is instead assigned a default priority. This potentially creates suboptimal prioritization, since the
                   stream can be given an effective priority that is higher than expressed by a peer.
                </p>
-               <p id="rfc.section.5.3.4.p.2">To avoid this problem, endpoints SHOULD maintain prioritization state for closed streams for a period after streams close.
+               <p id="rfc.section.5.3.4.p.3">To avoid this problem, endpoints SHOULD maintain prioritization state for closed streams for a period after streams close.
                   This could create an large state burden for an endpoint, so this state MAY be limited. The amount of additional state an endpoint
                   maintains could be dependent on load; under high load, prioritization state can be discarded to limit resource commitments.
                   In extreme cases, an endpoint could even discard prioritization state for active or reserved streams.
                </p>
-               <p id="rfc.section.5.3.4.p.3">An endpoint SHOULD retain stream prioritization state for at least one round trip, though maintaining state over longer periods
+               <p id="rfc.section.5.3.4.p.4">An endpoint SHOULD retain stream prioritization state for at least one round trip, though maintaining state over longer periods
                   reduces the chance that default values have to be assigned to streams. An endpoint MAY apply a fixed upper limit on the number
                   of closed streams for which prioritization state is tracked to limit state exposure. If a fixed limit is applied, endpoints
                   SHOULD maintain state for at least as many streams as allowed by their setting for <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a>.
                </p>
-               <p id="rfc.section.5.3.4.p.4">Priority group information is part of the priority state of a stream. Priority groups that contain only closed streams can
+               <p id="rfc.section.5.3.4.p.5">An endpoint receiving a <a href="#PRIORITY" class="smpl">PRIORITY</a> frame that changes the priority of a closed stream SHOULD alter the weight of the priority group, or the dependencies of the
+                  streams that depend on it, if it has retained enough state to do so.
+               </p>
+               <p id="rfc.section.5.3.4.p.6">Priority group information is part of the priority state of a stream. Priority groups that contain only closed streams can
                   be assigned a weight of zero.
                </p>
-               <p id="rfc.section.5.3.4.p.5">The number of priority groups cannot exceed the number of non-closed streams. This includes streams in the "reserved" state.
+               <p id="rfc.section.5.3.4.p.7">The number of priority groups cannot exceed the number of non-closed streams. This includes streams in the "reserved" state.
                   Priority state size for peer-initiated streams is limited by the value of <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a>. Reserved streams do not count toward the concurrent stream limit of either peer, but only the endpoint that creates the
                   reservation needs to maintain priority information. Thus, the total amount of priority state for non-closed streams can be
                   limited by an endpoint.
@@ -1419,7 +1447,7 @@ Upgrade: h2
                are used, for instance, to carry HTTP request or response payloads.
             </p>
             <p id="rfc.section.6.1.p.2">DATA frames MAY also contain arbitrary padding. Padding can be added to DATA frames to hide the size of messages.</p>
-            <div id="rfc.figure.3"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.5"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | Pad High? (8) |  Pad Low? (8) |
@@ -1428,7 +1456,7 @@ Upgrade: h2
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 3: DATA Frame Payload</p>
+</pre><p class="figure">Figure 5: DATA Frame Payload</p>
             <p id="rfc.section.6.1.p.4">The DATA frame contains the following fields: </p>
             <dl>
                <dt>Pad High:</dt>
@@ -1487,7 +1515,7 @@ Upgrade: h2
             <h2 id="rfc.section.6.2"><a href="#rfc.section.6.2">6.2</a>&nbsp;<a href="#HEADERS">HEADERS</a></h2>
             <p id="rfc.section.6.2.p.1">The HEADERS frame (type=0x1) carries name-value pairs. It is used to open a stream (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). HEADERS frames can be sent on a stream in the "open" or "half closed (remote)" states.
             </p>
-            <div id="rfc.figure.4"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.6"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | Pad High? (8) |  Pad Low? (8) |
@@ -1502,7 +1530,7 @@ Upgrade: h2
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 4: HEADERS Frame Payload</p>
+</pre><p class="figure">Figure 6: HEADERS Frame Payload</p>
             <p id="rfc.section.6.2.p.3">The HEADERS frame payload has the following fields: </p>
             <dl>
                <dt>Pad High:</dt>
@@ -1518,15 +1546,10 @@ Upgrade: h2
                <dd>An 8-bit weight for the identified priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
                </dd>
                <dt>E:</dt>
-               <dd>A single bit flag indicates that the stream dependency is exclusive. If cleared (0), the stream dependency is added with equal
-                  priority to other streams that depend on the identified stream. If set (1), the dependency is exclusive and displaces other
-                  dependencies, causing any existing depedencies of the identified stream to be made dependent on this stream. This field is
-                  optional and is only present if the PRIORITY_DEPENDENCY flag is set.
+               <dd>A single bit flag indicates that the stream dependency is exclusive, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_DEPENDENCY flag is set.
                </dd>
                <dt>Stream Dependency:</dt>
-               <dd>A 31-bit stream identifier for the stream that this stream depends on. No resources are to be expected on the dependent stream
-                  until the stream it depends on is closed, unless all streams are in this state. This field is optional and is only present
-                  if the PRIORITY_DEPENDENCY flag is set.
+               <dd>A 31-bit stream identifier for the stream that this stream depends on, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_DEPENDENCY flag is set.
                </dd>
                <dt>Header Block Fragment:</dt>
                <dd>A header block fragment (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>).
@@ -1574,7 +1597,7 @@ Upgrade: h2
                </dd>
                <dt>PRIORITY_DEPENDENCY (0x40):</dt>
                <dd>
-                  <p>Bit 7 being set indicates that the Dependency Insertion Flag (I) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
+                  <p>Bit 7 being set indicates that the Exclusive Flag (E) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
                   </p>
                </dd>
             </dl>
@@ -1584,7 +1607,7 @@ Upgrade: h2
                recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
             <p id="rfc.section.6.2.p.7">A HEADERS frame MUST NOT have both the PRIORITY_GROUP and PRIORITY_DEPENDENCY flags set. Receipt of a HEADERS frame with both
-               these flags set MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               these flags set MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
             <p id="rfc.section.6.2.p.8">The HEADERS frame changes the connection state as described in <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>.
             </p>
@@ -1595,7 +1618,7 @@ Upgrade: h2
             <h2 id="rfc.section.6.3"><a href="#rfc.section.6.3">6.3</a>&nbsp;<a href="#PRIORITY">PRIORITY</a></h2>
             <p id="rfc.section.6.3.p.1">The PRIORITY frame (type=0x2) specifies the sender-advised priority of a stream (<a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>). It can be sent at any time for an existing stream. This enables reprioritisation of existing streams.
             </p>
-            <div id="rfc.figure.5"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.7"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |R|             Priority Group Identifier? (31)                 |
@@ -1604,7 +1627,7 @@ Upgrade: h2
  +-+-------------+-----------------------------------------------+
  |E|                 Stream Dependency? (31)                     |
  +-+-------------------------------------------------------------+
-</pre><p class="figure">Figure 5: PRIORITY Frame Payload</p>
+</pre><p class="figure">Figure 7: PRIORITY Frame Payload</p>
             <p id="rfc.section.6.3.p.3">The payload of a PRIORITY frame contains the following fields: </p>
             <dl>
                <dt>R:</dt>
@@ -1616,15 +1639,10 @@ Upgrade: h2
                <dd>An 8-bit weight for the identified priority group, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_GROUP flag is set.
                </dd>
                <dt>E:</dt>
-               <dd>A single bit flag indicates that the stream dependency is exclusive. If cleared (0), the stream dependency is added with equal
-                  priority to other streams that depend on the identified stream. If set (1), the dependency is exclusive and displaces other
-                  dependencies, causing any existing depedencies of the identified stream to be made dependent on this stream. This field is
-                  optional and is only present if the PRIORITY_DEPENDENCY flag is set.
+               <dd>A single bit flag indicates that the stream dependency is exclusive, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_DEPENDENCY flag is set.
                </dd>
                <dt>Stream Dependency:</dt>
-               <dd>A 31-bit stream identifier for the stream that this stream depends on. No resources are to be expected on the dependent stream
-                  until the stream it depends on is closed, unless all streams are in this state. This field is optional and is only present
-                  if the PRIORITY_DEPENDENCY flag is set.
+               <dd>A 31-bit stream identifier for the stream that this stream depends on, see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>. This field is optional and is only present if the PRIORITY_DEPENDENCY flag is set.
                </dd>
             </dl>
             <p id="rfc.section.6.3.p.4">The PRIORITY frame defines the following flags: </p>
@@ -1636,12 +1654,12 @@ Upgrade: h2
                </dd>
                <dt>PRIORITY_DEPENDENCY (0x40):</dt>
                <dd>
-                  <p>Bit 7 being set indicates that the Dependency Insertion Flag (I) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
+                  <p>Bit 7 being set indicates that the Exclusive Flag (E) and Stream Dependency fields are present; see <a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>.
                   </p>
                </dd>
             </dl>
-            <p id="rfc.section.6.3.p.5">A PRIORITY frame MUST NOT have exactly one of the PRIORITY_GROUP and PRIORITY_DEPENDENCY flags set. Receipt of a PRIORITY
-               frame with either non or both these flags set MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            <p id="rfc.section.6.3.p.5">A PRIORITY frame MUST have exactly one of the PRIORITY_GROUP and PRIORITY_DEPENDENCY flags set. Receipt of a PRIORITY frame
+               with either none or both these flags set MUST be treated as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
             <p id="rfc.section.6.3.p.6">The PRIORITY frame is associated with an existing stream. If a PRIORITY frame is received with a stream identifier of 0x0,
                the recipient MUST respond with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
@@ -1658,12 +1676,12 @@ Upgrade: h2
                that they wish to cancel the stream or that an error condition has occurred. When sent by the receiver of a stream, it indicates
                that either the receiver is rejecting the stream, requesting that the stream be cancelled or that an error condition has occurred.
             </p>
-            <div id="rfc.figure.6"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.8"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |                        Error Code (32)                        |
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 6: RST_STREAM Frame Payload</p>
+</pre><p class="figure">Figure 8: RST_STREAM Frame Payload</p>
             <p id="rfc.section.6.4.p.3">The RST_STREAM frame contains a single unsigned, 32-bit integer identifying the error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>). The error code indicates why the stream is being terminated.
             </p>
             <p id="rfc.section.6.4.p.4">The RST_STREAM frame does not define any flags.</p>
@@ -1715,14 +1733,14 @@ Upgrade: h2
                <p id="rfc.section.6.5.1.p.1">The payload of a SETTINGS frame consists of zero or more parameters, each consisting of an unsigned 8-bit identifier and an
                   unsigned 32-bit value.
                </p>
-               <div id="rfc.figure.7"></div><pre class="inline"> 0                   1                   2                   3
+               <div id="rfc.figure.9"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | Identifier (8)|
  +---------------+-----------------------------------------------+
  |                        Value (32)                             |
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 7: Setting Format</p>
+</pre><p class="figure">Figure 9: Setting Format</p>
             </div>
             <div id="SettingValues">
                <h3 id="rfc.section.6.5.2"><a href="#rfc.section.6.5.2">6.5.2</a>&nbsp;<a href="#SettingValues">Defined SETTINGS Parameters</a></h3>
@@ -1788,7 +1806,7 @@ Upgrade: h2
             </p>
             <p id="rfc.section.6.6.p.2">PUSH_PROMISE MUST NOT be sent if the <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting of the peer endpoint is set to 0.
             </p>
-            <div id="rfc.figure.8"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.10"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | Pad High? (8) | Pad Low? (8)  |
@@ -1799,7 +1817,7 @@ Upgrade: h2
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 8: PUSH_PROMISE Payload Format</p>
+</pre><p class="figure">Figure 10: PUSH_PROMISE Payload Format</p>
             <p id="rfc.section.6.6.p.4">The PUSH_PROMISE frame payload has the following fields: </p>
             <dl>
                <dt>Pad High:</dt>
@@ -1865,14 +1883,14 @@ Upgrade: h2
             <p id="rfc.section.6.7.p.1">The PING frame (type=0x6) is a mechanism for measuring a minimal round-trip time from the sender, as well as determining whether
                an idle connection is still functional. PING frames can be sent from any endpoint.
             </p>
-            <div id="rfc.figure.9"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.11"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |                                                               |
  |                      Opaque Data (64)                         |
  |                                                               |
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 9: PING Payload Format</p>
+</pre><p class="figure">Figure 11: PING Payload Format</p>
             <p id="rfc.section.6.7.p.3">In addition to the frame header, PING frames MUST contain 8 octets of data in the payload. A sender can include any value
                it chooses and use those bytes in any fashion.
             </p>
@@ -1914,7 +1932,7 @@ Upgrade: h2
             <p id="rfc.section.6.8.p.4">After sending a GOAWAY frame, the sender can discard frames for new streams. However, any frames that alter connection state
                cannot be completely ignored. For instance, <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be minimally processed to ensure a consistent compression state (see <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>); similarly DATA frames MUST be counted toward the connection flow control window.
             </p>
-            <div id="rfc.figure.10"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.12"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |R|                  Last-Stream-ID (31)                        |
@@ -1923,7 +1941,7 @@ Upgrade: h2
  +---------------------------------------------------------------+
  |                  Additional Debug Data (*)                    |
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 10: GOAWAY Payload Format</p>
+</pre><p class="figure">Figure 12: GOAWAY Payload Format</p>
             <p id="rfc.section.6.8.p.6">The GOAWAY frame does not define any flags.</p>
             <p id="rfc.section.6.8.p.7">The GOAWAY frame applies to the connection, not a specific stream. An endpoint MUST treat a <a href="#GOAWAY" class="smpl">GOAWAY</a> frame with a stream identifier other than 0x0 as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
@@ -1968,12 +1986,12 @@ Upgrade: h2
                document, this includes only <a href="#DATA" class="smpl">DATA</a> frame. Frames that are exempt from flow control MUST be accepted and processed, unless the receiver is unable to assign resources
                to handling the frame. A receiver MAY respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) or connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> if it is unable accept a frame.
             </p>
-            <div id="rfc.figure.11"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.13"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |R|              Window Size Increment (31)                     |
  +-+-------------------------------------------------------------+
-</pre><p class="figure">Figure 11: WINDOW_UPDATE Payload Format</p>
+</pre><p class="figure">Figure 13: WINDOW_UPDATE Payload Format</p>
             <p id="rfc.section.6.9.p.6">The payload of a WINDOW_UPDATE frame is one reserved bit, plus an unsigned 31-bit integer indicating the number of bytes that
                the sender can transmit in addition to the existing flow control window. The legal range for the increment to the flow control
                window is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes.
@@ -2063,7 +2081,7 @@ Upgrade: h2
             <p id="rfc.section.6.10.p.1">The CONTINUATION frame (type=0x9) is used to continue a sequence of header block fragments (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>). Any number of CONTINUATION frames can be sent on an existing stream, as long as the preceding frame on the same stream is
                one of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or CONTINUATION without the END_HEADERS flag set.
             </p>
-            <div id="rfc.figure.12"></div><pre class="inline"> 0                   1                   2                   3
+            <div id="rfc.figure.14"></div><pre class="inline"> 0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  | Pad High? (8) | Pad Low? (8)  |
@@ -2072,7 +2090,7 @@ Upgrade: h2
  +---------------------------------------------------------------+
  |                           Padding (*)                       ...
  +---------------------------------------------------------------+
-</pre><p class="figure">Figure 12: CONTINUATION Frame Payload</p>
+</pre><p class="figure">Figure 14: CONTINUATION Frame Payload</p>
             <p id="rfc.section.6.10.p.3">The CONTINUATION frame payload has the following fields: </p>
             <dl>
                <dt>Pad High:</dt>
