@@ -436,7 +436,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires September 28, 2014";
+       content: "Expires October 2, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -474,7 +474,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-03-27">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-03-31">
       <meta name="dct.abstract" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
       <meta name="description" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
    </head>
@@ -494,12 +494,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: September 28, 2014</td>
+               <td class="left">Expires: October 2, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">March 27, 2014</td>
+               <td class="right">March 31, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -523,7 +523,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on September 28, 2014.</p>
+         <p>This Internet-Draft will expire on October 2, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -578,14 +578,20 @@ samp, tt, code, pre {
                </li>
                <li><a href="#rfc.section.4.2">4.2</a>&nbsp;&nbsp;&nbsp;<a href="#indexed.header.representation">Indexed Header Field Representation</a></li>
                <li><a href="#rfc.section.4.3">4.3</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.representation">Literal Header Field Representation</a><ul>
-                     <li><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.without.indexing">Literal Header Field without Indexing</a></li>
-                     <li><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.with.incremental.indexing">Literal Header Field with Incremental Indexing</a></li>
+                     <li><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.with.incremental.indexing">Literal Header Field with Incremental Indexing</a></li>
+                     <li><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.without.indexing">Literal Header Field without Indexing</a></li>
+                     <li><a href="#rfc.section.4.3.3">4.3.3</a>&nbsp;&nbsp;&nbsp;<a href="#literal.header.never.indexed">Literal Header Field never Indexed</a></li>
                   </ul>
                </li>
                <li><a href="#rfc.section.4.4">4.4</a>&nbsp;&nbsp;&nbsp;<a href="#encoding.context.update">Encoding Context Update</a></li>
             </ul>
          </li>
-         <li><a href="#rfc.section.5">5.</a>&nbsp;&nbsp;&nbsp;<a href="#Security">Security Considerations</a></li>
+         <li><a href="#rfc.section.5">5.</a>&nbsp;&nbsp;&nbsp;<a href="#Security">Security Considerations</a><ul>
+               <li><a href="#rfc.section.5.1">5.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.1">Compression-based Attacks</a></li>
+               <li><a href="#rfc.section.5.2">5.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.2">Memory Consumption</a></li>
+               <li><a href="#rfc.section.5.3">5.3</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.5.3">Implementation Limits</a></li>
+            </ul>
+         </li>
          <li><a href="#rfc.section.6">6.</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.6">Acknowledgements</a></li>
          <li><a href="#rfc.section.7">7.</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.references">References</a><ul>
                <li><a href="#rfc.section.7.1">7.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.references.1">Normative References</a></li>
@@ -647,12 +653,15 @@ samp, tt, code, pre {
                <li><a href="#rfc.figure.1">Figure 1: Index Address Space</a></li>
                <li><a href="#rfc.figure.2">Figure 2: String Literal Representation</a></li>
                <li><a href="#rfc.figure.3">Figure 3: Indexed Header Field</a></li>
-               <li><a href="#rfc.figure.4">Figure 4: Literal Header Field without Indexing - Indexed Name</a></li>
-               <li><a href="#rfc.figure.5">Figure 5: Literal Header Field without Indexing - New Name</a></li>
-               <li><a href="#rfc.figure.6">Figure 6: Literal Header Field with Incremental Indexing -                         Indexed Name</a></li>
-               <li><a href="#rfc.figure.7">Figure 7: Literal Header Field with Incremental Indexing -                         New Name</a></li>
-               <li><a href="#rfc.figure.8">Figure 8: Reference Set Emptying</a></li>
-               <li><a href="#rfc.figure.9">Figure 9: Maximum Header Table Size Change</a></li>
+               <li><a href="#rfc.figure.4">Figure 4: Literal Header Field with Incremental Indexing -                         Indexed Name</a></li>
+               <li><a href="#rfc.figure.5">Figure 5: Literal Header Field with Incremental Indexing -                         New Name</a></li>
+               <li><a href="#rfc.figure.6">Figure 6: Literal Header Field without Indexing - Indexed Name</a></li>
+               <li><a href="#rfc.figure.7">Figure 7: Literal Header Field without Indexing - New Name</a></li>
+               <li><a href="#rfc.figure.8">Figure 8: Literal Header Field never Indexed - Indexed Name</a></li>
+               <li><a href="#rfc.figure.9">Figure 9: Literal Header Field never Indexed - New Name</a></li>
+               <li><a href="#rfc.figure.10">Figure 10: Context Update</a></li>
+               <li><a href="#rfc.figure.11">Figure 11: Reference Set Emptying</a></li>
+               <li><a href="#rfc.figure.12">Figure 12: Maximum Header Table Size Change</a></li>
             </ul>
          </li>
       </ul>
@@ -786,9 +795,9 @@ samp, tt, code, pre {
                   </dd>
                   <dd>Two different literal representations are provided: 
                      <ul>
-                        <li>A literal representation that does not add the header field to the header table (see <a href="#literal.header.without.indexing" title="Literal Header Field without Indexing">Section&nbsp;4.3.1</a>).
+                        <li>A literal representation that does not add the header field to the header table (see <a href="#literal.header.without.indexing" title="Literal Header Field without Indexing">Section&nbsp;4.3.2</a>).
                         </li>
-                        <li>A literal representation that adds the header field as a new entry at the beginning of the header table (see <a href="#literal.header.with.incremental.indexing" title="Literal Header Field with Incremental Indexing">Section&nbsp;4.3.2</a>).
+                        <li>A literal representation that adds the header field as a new entry at the beginning of the header table (see <a href="#literal.header.with.incremental.indexing" title="Literal Header Field with Incremental Indexing">Section&nbsp;4.3.1</a>).
                         </li>
                      </ul> 
                   </dd>
@@ -1095,8 +1104,7 @@ else
             <p id="rfc.section.4.2.p.3">This representation starts with the '1' 1-bit pattern, followed by the index of the matching pair, represented as an integer
                with a 7-bit prefix.
             </p>
-            <p id="rfc.section.4.2.p.4">The index value of 0 is reserved for signalling changes in the encoding context (see <a href="#encoding.context.update" title="Encoding Context Update">Section&nbsp;4.4</a>).
-            </p>
+            <p id="rfc.section.4.2.p.4">The index value of 0 is not used. It MUST be treated as a decoding error if found in an indexed header field representation.</p>
          </div>
          <div id="literal.header.representation">
             <h2 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3</a>&nbsp;<a href="#literal.header.representation">Literal Header Field Representation</a></h2>
@@ -1104,9 +1112,9 @@ else
                or by reference to an existing header table or static table entry.
             </p>
             <p id="rfc.section.4.3.p.2">Literal representations all result in the emission of a header field when decoded.</p>
-            <div id="literal.header.without.indexing">
-               <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;<a href="#literal.header.without.indexing">Literal Header Field without Indexing</a></h3>
-               <p id="rfc.section.4.3.1.p.1">A literal header field without indexing causes the emission of a header field without altering the header table.</p>
+            <div id="literal.header.with.incremental.indexing">
+               <h3 id="rfc.section.4.3.1"><a href="#rfc.section.4.3.1">4.3.1</a>&nbsp;<a href="#literal.header.with.incremental.indexing">Literal Header Field with Incremental Indexing</a></h3>
+               <p id="rfc.section.4.3.1.p.1">A literal header field with incremental indexing adds a new entry to the header table.</p>
                <div id="rfc.figure.4"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 1 |      Index (6+)       |
@@ -1115,7 +1123,7 @@ else
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 4: Literal Header Field without Indexing - Indexed Name</p>
+</pre><p class="figure">Figure 4: Literal Header Field with Incremental Indexing -                         Indexed Name</p>
                <div id="rfc.figure.5"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 1 |           0           |
@@ -1128,7 +1136,7 @@ else
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 5: Literal Header Field without Indexing - New Name</p>
+</pre><p class="figure">Figure 5: Literal Header Field with Incremental Indexing -                         New Name</p>
                <p id="rfc.section.4.3.1.p.4">This representation starts with the '01' 2-bit pattern.</p>
                <p id="rfc.section.4.3.1.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
                   the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
@@ -1140,21 +1148,21 @@ else
                <p id="rfc.section.4.3.1.p.7">The header field name representation is followed by the header field value represented as a literal string as described in <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>.
                </p>
             </div>
-            <div id="literal.header.with.incremental.indexing">
-               <h3 id="rfc.section.4.3.2"><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;<a href="#literal.header.with.incremental.indexing">Literal Header Field with Incremental Indexing</a></h3>
-               <p id="rfc.section.4.3.2.p.1">A literal header field with incremental indexing adds a new entry to the header table.</p>
+            <div id="literal.header.without.indexing">
+               <h3 id="rfc.section.4.3.2"><a href="#rfc.section.4.3.2">4.3.2</a>&nbsp;<a href="#literal.header.without.indexing">Literal Header Field without Indexing</a></h3>
+               <p id="rfc.section.4.3.2.p.1">A literal header field without indexing causes the emission of a header field without altering the header table.</p>
                <div id="rfc.figure.6"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |      Index (6+)       |
+| 0 | 0 | 0 | 0 |  Index (4+)   |
 +---+---+-----------------------+
 | H |     Value Length (7+)     |
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 6: Literal Header Field with Incremental Indexing -                         Indexed Name</p>
+</pre><p class="figure">Figure 6: Literal Header Field without Indexing - Indexed Name</p>
                <div id="rfc.figure.7"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |           0           |
+| 0 | 0 | 0 | 0 |       0       |
 +---+---+-----------------------+
 | H |     Name Length (7+)      |
 +---+---------------------------+
@@ -1164,72 +1172,136 @@ else
 +---+---------------------------+
 | Value String (Length octets)  |
 +-------------------------------+
-</pre><p class="figure">Figure 7: Literal Header Field with Incremental Indexing -                         New Name</p>
-               <p id="rfc.section.4.3.2.p.4">This representation starts with the '00' 2-bit pattern.</p>
+</pre><p class="figure">Figure 7: Literal Header Field without Indexing - New Name</p>
+               <p id="rfc.section.4.3.2.p.4">The literal header field without indexing representation starts with the '0000' 4-bit pattern.</p>
                <p id="rfc.section.4.3.2.p.5">If the header field name matches the header field name of a (name, value) pair stored in the Header Table or Static Table,
                   the header field name can be represented using the index of that entry. In this case, the index of the entry, index (which
                   is strictly greater than 0), is represented as an integer with a 6-bit prefix (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
                </p>
-               <p id="rfc.section.4.3.2.p.6">Otherwise, the header field name is represented as a literal. The value 0 is represented on 6 bits followed by the header
+               <p id="rfc.section.4.3.2.p.6">Otherwise, the header field name is represented as a literal. The value 0 is represented on 4 bits followed by the header
                   field name (see <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
                </p>
                <p id="rfc.section.4.3.2.p.7">The header field name representation is followed by the header field value represented as a literal string as described in <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>.
                </p>
             </div>
+            <div id="literal.header.never.indexed">
+               <h3 id="rfc.section.4.3.3"><a href="#rfc.section.4.3.3">4.3.3</a>&nbsp;<a href="#literal.header.never.indexed">Literal Header Field never Indexed</a></h3>
+               <p id="rfc.section.4.3.3.p.1">A literal header field never indexed causes the emission of a header field without altering the header table.</p>
+               <div id="rfc.figure.8"></div><pre class="inline">  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 0 | 1 |  Index (4+)   |
++---+---+-----------------------+
+| H |     Value Length (7+)     |
++---+---------------------------+
+| Value String (Length octets)  |
++-------------------------------+
+</pre><p class="figure">Figure 8: Literal Header Field never Indexed - Indexed Name</p>
+               <div id="rfc.figure.9"></div><pre class="inline">  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 0 | 1 |       0       |
++---+---+-----------------------+
+| H |     Name Length (7+)      |
++---+---------------------------+
+|  Name String (Length octets)  |
++---+---------------------------+
+| H |     Value Length (7+)     |
++---+---------------------------+
+| Value String (Length octets)  |
++-------------------------------+
+</pre><p class="figure">Figure 9: Literal Header Field never Indexed - New Name</p>
+               <p id="rfc.section.4.3.3.p.4">The literal header field never indexed representation starts with the '0001' 4-bit pattern.</p>
+               <p id="rfc.section.4.3.3.p.5">When a header field is represented as a literal header field never indexed, it MUST always be encoded with this same representation.
+                  In particular, an intermediary receiving a header field represented as a literal header field never indexed MUST use the same
+                  representation to forward this header field.
+               </p>
+               <p id="rfc.section.4.3.3.p.6">The encoding of the representation is the same as for the literal header field without indexing representation (see <a href="#literal.header.without.indexing" title="Literal Header Field without Indexing">Section&nbsp;4.3.2</a>).
+               </p>
+            </div>
          </div>
          <div id="encoding.context.update">
             <h2 id="rfc.section.4.4"><a href="#rfc.section.4.4">4.4</a>&nbsp;<a href="#encoding.context.update">Encoding Context Update</a></h2>
-            <p id="rfc.section.4.4.p.1">An indexed value of 0 is reserved for signalling changes in the encoding context. The type of the change is encoded on the
-               following octet(s). Any change in the encoding context is applied immediately.
-            </p>
-            <div id="rfc.figure.8"></div><pre class="inline">  0   1   2   3   4   5   6   7
+            <p id="rfc.section.4.4.p.1">An encoding context update causes the immediate application of a change to the encoding context.</p>
+            <div id="rfc.figure.10"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 |             0             |
+| 0 | 0 | 1 | F |      ...      |
 +---+---------------------------+
-</pre><p class="figure">Figure 8: Reference Set Emptying</p>
-            <p id="rfc.section.4.4.p.3">An octet with its high bit set to '1' signals that the reference set is emptied. The remaining bits are set to '0'.</p>
-            <div id="rfc.figure.9"></div><pre class="inline">  0   1   2   3   4   5   6   7
+</pre><p class="figure">Figure 10: Context Update</p>
+            <p id="rfc.section.4.4.p.3">An encoding context update starts with the '001' 3-bit pattern.</p>
+            <p id="rfc.section.4.4.p.4">It is followed by a flag specifying the type of the change, and by any data necessary to describe the change itself.</p>
+            <div id="rfc.figure.11"></div><pre class="inline">  0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 |   New maximum size (7+)   |
+| 0 | 0 | 1 | 1 |       0       |
 +---+---------------------------+
-</pre><p class="figure">Figure 9: Maximum Header Table Size Change</p>
-            <p id="rfc.section.4.4.p.5">An octet with its high bit set to '0' signals the new maximum size of the header table. This new maximum size MUST be lower
-               than or equal to the value of the setting SETTINGS_HEADER_TABLE_SIZE (see <a href="#HTTP2"><cite title="Hypertext Transfer Protocol version 2">[HTTP2]</cite></a>).
+</pre><p class="figure">Figure 11: Reference Set Emptying</p>
+            <p id="rfc.section.4.4.p.6">The flag bit being set to '1' signals that the reference set is emptied. The remaining bits are set to '0'.</p>
+            <div id="rfc.figure.12"></div><pre class="inline">  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 1 | 0 | Max size (4+) |
++---+---------------------------+
+</pre><p class="figure">Figure 12: Maximum Header Table Size Change</p>
+            <p id="rfc.section.4.4.p.8">The flag bit being set to '0' signals that a change to the maximum size of the header table. This new maximum size MUST be
+               lower than or equal to the value of the setting SETTINGS_HEADER_TABLE_SIZE (see <a href="#HTTP2"><cite title="Hypertext Transfer Protocol version 2">[HTTP2]</cite></a>).
             </p>
-            <p id="rfc.section.4.4.p.6">The new maximum size is encoded as an integer with a 7-bit prefix.</p>
-            <p id="rfc.section.4.4.p.7">Change in the maximum size of the header table can trigger entry evictions (see <a href="#entry.eviction" title="Entry Eviction When Header Table Size Changes">Section&nbsp;3.3.2</a>).
+            <p id="rfc.section.4.4.p.9">The new maximum size is encoded as an integer with a 4-bit prefix.</p>
+            <p id="rfc.section.4.4.p.10">Change in the maximum size of the header table can trigger entry evictions (see <a href="#entry.eviction" title="Entry Eviction When Header Table Size Changes">Section&nbsp;3.3.2</a>).
             </p>
          </div>
       </div>
       <div id="Security">
          <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a>&nbsp;<a href="#Security">Security Considerations</a></h1>
-         <p id="rfc.section.5.p.1">This compressor exists to solve security issues present in stream compressors such as DEFLATE whereby the compression context
-            can be efficiently probed to reveal secrets. A conformant implementation of this specification should be fairly safe against
-            that kind of attack, as the reaping of any information from the compression context requires more work than guessing and verifying
-            the plain text data directly with the server. As with any secret, however, the longer the length of the secret, the more difficult
-            the secret is to guess. It is inadvisable to have short cookies that are relied upon to remain secret for any duration of
-            time.
-         </p>
-         <p id="rfc.section.5.p.2">A proper security-conscious implementation will also need to prevent timing attacks by ensuring that the amount of time it
-            takes to do string comparisons is always a function of the total length of the strings, and not a function of the number of
-            matched characters.
-         </p>
-         <p id="rfc.section.5.p.3">A decoder needs to ensure that larger values or encodings of integers do not permit exploitation. Decoders MUST limit the
-            size of integers, both in value and encoded length, that it accepts (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>).
-         </p>
-         <p id="rfc.section.5.p.4">Another common security problem is when the remote endpoint successfully causes the local endpoint to exhaust its memory.
-            This compressor attempts to deal with the most obvious ways that this could occur by limiting both the peak and the steady-state
-            amount of memory consumed in the compressor state, by providing ways for the application to consume/flush the emitted header
-            fields in small chunks, and by considering overhead in the state size calculation. Implementors must still be careful in the
-            creation of APIs to an implementation of this compressor by ensuring that header field keys and values are either emitted
-            as a stream, or that the compression implementation have a limit on the maximum size of a key or value. Failure to implement
-            these kinds of safeguards may still result in a scenario where the local endpoint exhausts its memory.
-         </p>
-         <p id="rfc.section.5.p.5">A particular care should be used for the maximum size of the header table. While an endpoint can fully control the maximum
-            size of its header table for the decoding size, by using SETTINGS_HEADER_TABLE_SIZE, the maximum size of the encoding size
-            is controlled by the remote peer. The endpoint should check the SETTINGS_HEADER_TABLE_SIZE defined by the remote peer, and
-            decrease the maximum size for the encoding size if needed.
-         </p>
+         <div>
+            <h2 id="rfc.section.5.1"><a href="#rfc.section.5.1">5.1</a>&nbsp;Compression-based Attacks
+            </h2>
+            <p id="rfc.section.5.1.p.1">Compression can create a weak point allowing an attacker to recover secret data. For example, the CRIME attack (see <a href="#CRIME"><cite title="The CRIME Attack">[CRIME]</cite></a>) took advantage of the DEFLATE mechanism (see <a href="#DEFLATE"><cite title="DEFLATE Compressed Data Format Specification version 1.3">[DEFLATE]</cite></a>) of SPDY (see <a href="#SPDY"><cite title="SPDY Protocol">[SPDY]</cite></a>) to efficiently probe the compression context. The full-text compression mechanism of DEFLATE allowed the attacker to learn
+               some information from each failed attempt at guessing the secret.
+            </p>
+            <p id="rfc.section.5.1.p.2">For this reason, HPACK provides only limited compression mechanisms in the form of an indexing table and of a static Huffman
+               encoding.
+            </p>
+            <p id="rfc.section.5.1.p.3">The indexing table can still provide information to an attacker that would be able to probe the compression context. However,
+               this information is limited to the knowledge of whether the attacker's guess is correct or not.
+            </p>
+            <p id="rfc.section.5.1.p.4">Still, an attacker could take advantage of this limited information for breaking low-entropy secrets using a brute-force attack.
+               A server usually has some protections against such brute-force attack. Here, the attack would target the client, where it
+               would be harder to detect. The attack would be even more dangerous if the attacker is able to prevent the traffic generated
+               by its brute-force attack from reaching the server.
+            </p>
+            <p id="rfc.section.5.1.p.5">To offer some protection against such type of attacks, HPACK enables an endpoint to indicate that a header field must never
+               be compressed, across any hop up to the other endpoint (see <a href="#literal.header.never.indexed" title="Literal Header Field never Indexed">Section&nbsp;4.3.3</a>). An endpoint MUST use this feature to prevent the compression of any header field whose value contains a secret which could
+               be put at risk by a brute-force attack.
+            </p>
+            <p id="rfc.section.5.1.p.6">There is currently no known threat taking advantage of the use of a fixed Huffman encoding. A study has shown that using a
+               fixed Huffman encoding table created an information leakage, however this same study concluded that an attacker could not
+               take advantage of this information leakage to recover any meaningful amount of information (see <a href="#PETAL"><cite title="PETAL: Preset Encoding Table Information Leakage">[PETAL]</cite></a>).
+            </p>
+         </div>
+         <div>
+            <h2 id="rfc.section.5.2"><a href="#rfc.section.5.2">5.2</a>&nbsp;Memory Consumption
+            </h2>
+            <p id="rfc.section.5.2.p.1">An attacker can try to cause an endpoint to exhaust its memory. HPACK is designed to limit both the peak and state amounts
+               of memory allocated by an endpoint.
+            </p>
+            <p id="rfc.section.5.2.p.2">The amount of memory used by the compressor state is limited by the value of the setting SETTINGS_HEADER_TABLE_SIZE. This
+               limitation takes into account both the size of the data stored in the header table, and the overhead required by the table
+               structure itself.
+            </p>
+            <p id="rfc.section.5.2.p.3">For the decoding side, an endpoint can limit the amount of state memory used by setting an appropriate value for SETTINGS_HEADER_TABLE_SIZE.
+               For the encoding side, the endpoint can limit the amount of state memory it uses by defining a header table maximum size lower
+               than the value of SETTINGS_HEADER_TABLE_SIZE defined by its peer (see <a href="#encoding.context.update" title="Encoding Context Update">Section&nbsp;4.4</a>).
+            </p>
+            <p id="rfc.section.5.2.p.4">The amount of temporary memory consumed is linked to the set of header fields emitted or received. However, this amount of
+               temporary memory can be limited by processing these header fields in a streaming manner.
+            </p>
+         </div>
+         <div>
+            <h2 id="rfc.section.5.3"><a href="#rfc.section.5.3">5.3</a>&nbsp;Implementation Limits
+            </h2>
+            <p id="rfc.section.5.3.p.1">An implementation of HPACK needs to ensure that large values for integers, long encoding for integers, or long string literal
+               do not create security weaknesses.
+            </p>
+            <p id="rfc.section.5.3.p.2">An implementation has to set a limit for the values it accepts for integers, as well as for the encoded length (see <a href="#integer.representation" title="Integer representation">Section&nbsp;4.1.1</a>). In the same way, it has to set a limit to the length it accepts for string literals (see <a href="#string.literal.representation" title="String Literal Representation">Section&nbsp;4.1.2</a>).
+            </p>
+         </div>
       </div>
       <div>
          <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a>&nbsp;Acknowledgements
@@ -1288,6 +1360,11 @@ else
             </td>
          </tr>
          <tr>
+            <td class="reference"><b id="PETAL">[PETAL]</b></td>
+            <td class="top">Tan, J. and J. Nahata, “<a href="http://www.pdl.cmu.edu/PDL-FTP/associated/CMU-PDL-13-106.pdf">PETAL: Preset Encoding Table Information Leakage</a>”, April&nbsp;2013, &lt;<a href="http://www.pdl.cmu.edu/PDL-FTP/associated/CMU-PDL-13-106.pdf">http://www.pdl.cmu.edu/PDL-FTP/associated/CMU-PDL-13-106.pdf</a>&gt;.
+            </td>
+         </tr>
+         <tr>
             <td class="reference"><b id="SPDY">[SPDY]</b></td>
             <td class="top">Belshe, M. and R. Peon, “<a href="http://tools.ietf.org/html/draft-mbelshe-httpbis-spdy-00">SPDY Protocol</a>”, Internet-Draft&nbsp;draft-mbelshe-httpbis-spdy-00 (work in progress), February&nbsp;2012.
             </td>
@@ -1304,7 +1381,7 @@ else
          <div id="changes.since.draft-ietf-httpbis-header-compression-06">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-header-compression-06">Since draft-ietf-httpbis-header-compression-06</a></h2>
             <ul>
-               <li></li>
+               <li>Updated format to include literal headers that must never be compressed.</li>
             </ul>
          </div>
          <div id="changes.since.draft-ietf-httpbis-header-compression-05">
