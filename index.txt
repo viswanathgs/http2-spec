@@ -147,19 +147,19 @@ Internet-Draft                   HTTP/2                       March 2014
        8.2.2.  Push Responses  . . . . . . . . . . . . . . . . . . .  62
      8.3.  The CONNECT Method  . . . . . . . . . . . . . . . . . . .  63
    9.  Additional HTTP Requirements/Considerations . . . . . . . . .  64
-     9.1.  Connection Management . . . . . . . . . . . . . . . . . .  64
+     9.1.  Connection Management . . . . . . . . . . . . . . . . . .  65
      9.2.  Use of TLS Features . . . . . . . . . . . . . . . . . . .  65
      9.3.  GZip Content-Encoding . . . . . . . . . . . . . . . . . .  66
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  66
      10.1.  Server Authority . . . . . . . . . . . . . . . . . . . .  66
      10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  67
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  67
-     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  67
+     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  68
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  68
      10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  69
-     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  69
+     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  70
      10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  70
-   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  70
+   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  71
      11.1.  Registration of HTTP/2 Identification String . . . . . .  71
      11.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  71
 
@@ -172,23 +172,23 @@ Internet-Draft                   HTTP/2                       March 2014
 
      11.3.  HTTP2-Settings Header Field Registration . . . . . . . .  72
      11.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  72
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  72
+   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  73
    13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  73
      13.1.  Normative References . . . . . . . . . . . . . . . . . .  73
      13.2.  Informative References . . . . . . . . . . . . . . . . .  75
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  75
-     A.1.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  75
-     A.2.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  75
+                publication) . . . . . . . . . . . . . . . . . . . .  76
+     A.1.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  76
+     A.2.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  76
      A.3.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  76
-     A.4.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  76
-     A.5.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  76
+     A.4.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  77
+     A.5.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  77
      A.6.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  77
      A.7.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  77
-     A.8.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  77
+     A.8.  Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  78
      A.9.  Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  78
      A.10. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  78
-     A.11. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  78
+     A.11. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  79
      A.12. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  79
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  79
 
@@ -3149,6 +3149,12 @@ Internet-Draft                   HTTP/2                       March 2014
    o  The ":scheme" header field includes the scheme portion of the
       target URI ([RFC3986], Section 3.1).
 
+      This header field is primarily intended to allow a server to
+      distinguish between "http:" or "https:" URIs in requests.  HTTP/2
+      doesn't prevent clients from making requests for other URI
+      schemes, but the semantics of requests for non-HTTP schemes is not
+      defined in this document.
+
    o  The ":authority" header field includes the authority portion of
       the target URI ([RFC3986], Section 3.2).  The authority MUST NOT
       include the deprecated "userinfo" subcomponent for "http:" or
@@ -3180,12 +3186,6 @@ Internet-Draft                   HTTP/2                       March 2014
    Header field names that start with a colon are only valid in the HTTP
    /2 context.  These are not HTTP header fields.  Implementations MUST
    NOT generate header fields that start with a colon, but they MUST
-   ignore any header field that starts with a colon.  In particular,
-   header fields with names starting with a colon MUST NOT be exposed as
-   HTTP header fields.
-
-   HTTP/2 does not define a way to carry the version identifier that is
-   included in the HTTP/1.1 request line.
 
 
 
@@ -3193,6 +3193,13 @@ Belshe, et al.          Expires October 02, 2014               [Page 57]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   ignore any header field that starts with a colon.  In particular,
+   header fields with names starting with a colon MUST NOT be exposed as
+   HTTP header fields.
+
+   HTTP/2 does not define a way to carry the version identifier that is
+   included in the HTTP/1.1 request line.
 
 8.1.3.2.  Response Header Fields
 
@@ -3236,13 +3243,6 @@ Internet-Draft                   HTTP/2                       March 2014
    field.  Before compression, they would need to be converted to a form
    similar to this (with 0x0 represented as "\0"):
 
-              cache-control: max-age=60, private\0must-revalidate
-              content-type: text/html
-
-
-   Note here that the ordering between Content-Type and Cache-Control is
-   not preserved, but the relative ordering of the Cache-Control
-
 
 
 Belshe, et al.          Expires October 02, 2014               [Page 58]
@@ -3250,6 +3250,12 @@ Belshe, et al.          Expires October 02, 2014               [Page 58]
 Internet-Draft                   HTTP/2                       March 2014
 
 
+              cache-control: max-age=60, private\0must-revalidate
+              content-type: text/html
+
+
+   Note here that the ordering between Content-Type and Cache-Control is
+   not preserved, but the relative ordering of the Cache-Control
    directives -- as well as the fact that the first two were comma-
    separated, while the last was on a different line -- is.
 
@@ -3291,12 +3297,6 @@ Internet-Draft                   HTTP/2                       March 2014
    prohibited header fields, the absence of mandatory header fields, or
    the inclusion of uppercase header field names.
 
-   A request or response that includes an entity body can include a
-   "content-length" header field.  A request or response is also
-   malformed if the value of a "content-length" header field does not
-   equal the sum of the DATA [DATA] frame payload lengths that form the
-   body.
-
 
 
 
@@ -3305,6 +3305,12 @@ Belshe, et al.          Expires October 02, 2014               [Page 59]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   A request or response that includes an entity body can include a
+   "content-length" header field.  A request or response is also
+   malformed if the value of a "content-length" header field does not
+   equal the sum of the DATA [DATA] frame payload lengths that form the
+   body.
 
    Intermediaries that process HTTP requests or responses (i.e., all
    intermediaries other than those acting as tunnels) MUST NOT forward a
@@ -3348,12 +3354,6 @@ Internet-Draft                   HTTP/2                       March 2014
    a GOAWAY [GOAWAY] frame MUST include a stream identifier that is
    greater than or equal to the given stream identifier.
 
-   In addition to these mechanisms, the PING [PING] frame provides a way
-   for a client to easily test a connection.  Connections that remain
-   idle can become broken as some middleboxes (for instance, network
-   address translators, or load balancers) silently discard connection
-   bindings.  The PING [PING] frame allows a client to safely test
-   whether a connection is still active without sending a request.
 
 
 
@@ -3361,6 +3361,13 @@ Belshe, et al.          Expires October 02, 2014               [Page 60]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   In addition to these mechanisms, the PING [PING] frame provides a way
+   for a client to easily test a connection.  Connections that remain
+   idle can become broken as some middleboxes (for instance, network
+   address translators, or load balancers) silently discard connection
+   bindings.  The PING [PING] frame allows a client to safely test
+   whether a connection is still active without sending a request.
 
 8.2.  Server Push
 
@@ -3404,19 +3411,19 @@ Internet-Draft                   HTTP/2                       March 2014
    attributes to the request.  It is not possible to push a response to
    a request that includes a request body.
 
-   Pushed responses are always associated with an explicit request from
-   the client.  The PUSH_PROMISE [PUSH_PROMISE] frames sent by the
-   server are sent on that explicit request's stream.  The PUSH_PROMISE
-   [PUSH_PROMISE] frame also includes a promised stream identifier,
-   chosen from the stream identifiers available to the server (see
-   Section 5.1.1).
-
 
 
 Belshe, et al.          Expires October 02, 2014               [Page 61]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   Pushed responses are always associated with an explicit request from
+   the client.  The PUSH_PROMISE [PUSH_PROMISE] frames sent by the
+   server are sent on that explicit request's stream.  The PUSH_PROMISE
+   [PUSH_PROMISE] frame also includes a promised stream identifier,
+   chosen from the stream identifiers available to the server (see
+   Section 5.1.1).
 
    The header fields in PUSH_PROMISE [PUSH_PROMISE] and any subsequent
    CONTINUATION [CONTINUATION] frames MUST be a valid and complete set
@@ -3459,13 +3466,6 @@ Internet-Draft                   HTTP/2                       March 2014
    on a server-initiated stream that uses the promised stream
    identifier.  The server uses this stream to transmit an HTTP
    response, using the same sequence of frames as defined in
-   Section 8.1.  This stream becomes "half closed" to the client
-   (Section 5.1) after the initial HEADERS [HEADERS] frame is sent.
-
-   Once a client receives a PUSH_PROMISE [PUSH_PROMISE] frame and
-   chooses to accept the pushed response, the client SHOULD NOT issue
-   any requests for the promised response until after the promised
-   stream has closed.
 
 
 
@@ -3473,6 +3473,14 @@ Belshe, et al.          Expires October 02, 2014               [Page 62]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   Section 8.1.  This stream becomes "half closed" to the client
+   (Section 5.1) after the initial HEADERS [HEADERS] frame is sent.
+
+   Once a client receives a PUSH_PROMISE [PUSH_PROMISE] frame and
+   chooses to accept the pushed response, the client SHOULD NOT issue
+   any requests for the promised response until after the promised
+   stream has closed.
 
    If the client determines, for any reason, that it does not wish to
    receive the pushed response from the server, or if the server takes
@@ -3514,14 +3522,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    o  The ":scheme" and ":path" header fields MUST be omitted.
 
-   o  The ":authority" header field contains the host and port to
-      connect to (equivalent to the authority-form of the request-target
-      of CONNECT requests, see [HTTP-p1], Section 5.3).
-
-
-
-
-
 
 
 
@@ -3529,6 +3529,10 @@ Belshe, et al.          Expires October 02, 2014               [Page 63]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+   o  The ":authority" header field contains the host and port to
+      connect to (equivalent to the authority-form of the request-target
+      of CONNECT requests, see [HTTP-p1], Section 5.3).
 
    A proxy that supports CONNECT establishes a TCP connection [TCP] to
    the server identified in the ":authority" header field.  Once this
@@ -3569,13 +3573,9 @@ Internet-Draft                   HTTP/2                       March 2014
    interoperability, reduce exposure to known security vulnerabilities,
    or reduce the potential for implementation variation.
 
-9.1.  Connection Management
 
-   HTTP/2 connections are persistent.  For best performance, it is
-   expected clients will not close connections until it is determined
-   that no further communication with a server is necessary (for
-   example, when a user navigates away from a particular web page), or
-   until the server closes the connection.
+
+
 
 
 
@@ -3585,6 +3585,14 @@ Belshe, et al.          Expires October 02, 2014               [Page 64]
 
 Internet-Draft                   HTTP/2                       March 2014
 
+
+9.1.  Connection Management
+
+   HTTP/2 connections are persistent.  For best performance, it is
+   expected clients will not close connections until it is determined
+   that no further communication with a server is necessary (for
+   example, when a user navigates away from a particular web page), or
+   until the server closes the connection.
 
    Clients SHOULD NOT open more than one HTTP/2 connection to a given
    destination, where a destination is the IP address and port that is
@@ -3626,6 +3634,14 @@ Internet-Draft                   HTTP/2                       March 2014
    lead to the exposure of information that would not otherwise be
    revealed [RFC3749].  Generic compression is unnecessary since HTTP/2
    provides compression features that are more aware of context and
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 65]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    therefore likely to be more appropriate for use for performance,
    security or other reasons.
 
@@ -3634,13 +3650,6 @@ Internet-Draft                   HTTP/2                       March 2014
    variant (ECDHE) with a minimum size of 2048 bits (DHE) or security
    level of 128 bits (ECDHE).  Clients MUST accept DHE sizes of up to
    4096 bits.
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 65]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Implementations are encouraged not to negotiate TLS cipher suites
    with known vulnerabilities, such as [RC4].
@@ -3667,7 +3676,8 @@ Internet-Draft                   HTTP/2                       March 2014
 
    This effectively changes the implicit value of the Accept-Encoding
    header field ([HTTP-p2], Section 5.3.4) from "identity" to "identity,
-   gzip".  Intermediaries that perform translation from HTTP/2 to HTTP/
+   gzip", however gzip encoding cannot be suppressed by including
+   ";q=0".  Intermediaries that perform translation from HTTP/2 to HTTP/
    1.1 MUST decompress payloads unless the request includes an Accept-
    Encoding value that includes "gzip".
 
@@ -3680,6 +3690,14 @@ Internet-Draft                   HTTP/2                       March 2014
    important for server push (Section 8.2), where the client validates
    the PUSH_PROMISE [PUSH_PROMISE] before accepting the response.
 
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 66]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    HTTP/2 relies on the HTTP/1.1 definition of authority for determining
    whether a server is authoritative in providing a given response, see
    [HTTP-p1], Section 9.1).  This relies on local name resolution for
@@ -3688,15 +3706,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    A client MUST NOT use, in any way, resources provided by a server
    that is not authoritative for those resources.
-
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 66]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 10.2.  Cross-Protocol Attacks
 
@@ -3734,6 +3743,17 @@ Internet-Draft                   HTTP/2                       March 2014
    create HTTP/1.1 messages with illegal header fields, extra header
    fields, or even new messages that are entirely falsified.
 
+
+
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 67]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Header field names or values that contain characters not permitted by
    HTTP/1.1, including carriage return (U+000D) or line feed (U+000A)
    MUST NOT be translated verbatim by an intermediary, as stipulated in
@@ -3745,14 +3765,6 @@ Internet-Draft                   HTTP/2                       March 2014
    header field values.
 
 10.4.  Cacheability of Pushed Responses
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 67]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Pushed responses do not have an explicit request from the client; the
    request is provided by the server in the PUSH_PROMISE [PUSH_PROMISE]
@@ -3783,6 +3795,21 @@ Internet-Draft                   HTTP/2                       March 2014
    memory commitments for these features are strictly bounded.
    Processing capacity cannot be guarded in the same fashion.
 
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 68]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    The SETTINGS [SETTINGS] frame can be abused to cause a peer to expend
    additional processing time.  This might be done by pointlessly
    changing SETTINGS parameters, setting multiple undefined parameters,
@@ -3802,14 +3829,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    Limits in SETTINGS [SETTINGS] parameters cannot be reduced
    instantaneously, which leaves an endpoint exposed to behavior from a
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 68]
-
-Internet-Draft                   HTTP/2                       March 2014
-
-
    peer that could exceed the new limits.  In particular, immediately
    after establishing a connection, limits set by a server are not known
    to clients and could be exceeded without being an obvious protocol
@@ -3838,6 +3857,15 @@ Internet-Draft                   HTTP/2                       March 2014
    of the resulting ciphertext in each, which reveals a shorter length
    when a guess about the secret is correct.
 
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 69]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Implementations communicating on a secure channel MUST NOT compress
    content that includes both confidential and attacker-controlled data
    unless separate compression dictionaries are used for each source of
@@ -3856,15 +3884,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    To mitigate attacks that rely on compression, disabling compression
    might be preferable to padding as a countermeasure.
-
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 69]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Padding can be used to obscure the exact size of frame content, and
    is provided to mitigate specific attacks within HTTP.  For example,
@@ -3894,6 +3913,15 @@ Internet-Draft                   HTTP/2                       March 2014
    timing of reactions to stimulus, and handling of any optional
    features.
 
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 70]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    As far as this creates observable differences in behavior, they could
    be used as a basis for fingerprinting a specific client, as defined
    in [5].
@@ -3913,14 +3941,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    This document registers the "PRI" method for use in HTTP, to avoid
    collisions with the connection preface (Section 3.5).
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 70]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 11.1.  Registration of HTTP/2 Identification String
 
@@ -3951,6 +3971,13 @@ Internet-Draft                   HTTP/2                       March 2014
    Error Code" registry operates under the "Expert Review" policy
    [RFC5226].
 
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 71]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Registrations for error codes are required to include a description
    of the error code.  An expert reviewer is advised to examine new
    registrations for possible duplication with existing error codes.
@@ -3970,13 +3997,6 @@ Internet-Draft                   HTTP/2                       March 2014
       defines the error code.
 
    An initial set of error code registrations can be found in Section 7.
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 71]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 11.3.  HTTP2-Settings Header Field Registration
 
@@ -4007,6 +4027,13 @@ Internet-Draft                   HTTP/2                       March 2014
 
    Idempotent  No
 
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 72]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Specification document(s)  Section 3.5 of this document
 
    Related information:  This method is never used by an actual client.
@@ -4024,15 +4051,6 @@ Internet-Draft                   HTTP/2                       March 2014
       Paul Amer, Fan Yang, Jonathan Leighton (SPDY contributors).
 
    o  Gabriel Montenegro and Willy Tarreau (Upgrade mechanism).
-
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 72]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
       Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
@@ -4061,6 +4079,17 @@ Internet-Draft                   HTTP/2                       March 2014
    [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
               April 2011.
 
+
+
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 73]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    [HTTP-p1]  Fielding, R., Ed. and J. F. Reschke, Ed., "Hypertext
               Transfer Protocol (HTTP/1.1): Message Syntax and Routing",
               draft-ietf-httpbis-p1-messaging-26 (work in progress),
@@ -4080,15 +4109,6 @@ Internet-Draft                   HTTP/2                       March 2014
               "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
               draft-ietf-httpbis-p5-range-26 (work in progress),
               February 2014.
-
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 73]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
@@ -4118,6 +4138,14 @@ Internet-Draft                   HTTP/2                       March 2014
    [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 74]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
@@ -4137,14 +4165,6 @@ Internet-Draft                   HTTP/2                       March 2014
 
    [UTF-8]    Yergeau, F., "UTF-8, a transformation format of ISO
               10646", STD 63, RFC 3629, November 2003.
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 74]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 13.2.  Informative References
 
@@ -4174,6 +4194,14 @@ Internet-Draft                   HTTP/2                       March 2014
               Jackson, "Talking to Yourself for Fun and Profit ", 2011,
               <http://w2spconf.com/2011/papers/websocket.pdf>.
 
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 75]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    [TLSBCP]   Sheffer, Y., Holz, R., and P. Saint-Andre,
               "Recommendations for Secure Use of TLS and DTLS ", draft-
               sheffer-tls-bcp-02 (work in progress), February 2014.
@@ -4193,14 +4221,6 @@ A.1.  Since draft-ietf-httpbis-http2-10
 A.2.  Since draft-ietf-httpbis-http2-09
 
    Adding padding for data frames.
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 75]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Renumbering frame types, error codes, and settings.
 
@@ -4229,6 +4249,15 @@ A.3.  Since draft-ietf-httpbis-http2-08
 
    Added header field ordering with the value-concatenation mechanism.
 
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 76]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
 A.4.  Since draft-ietf-httpbis-http2-07
 
    Marked draft for implementation.
@@ -4250,13 +4279,6 @@ A.5.  Since draft-ietf-httpbis-http2-06
    CONTINUATION.
 
    Added denial of service considerations.
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 76]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 A.6.  Since draft-ietf-httpbis-http2-05
 
@@ -4284,6 +4306,14 @@ A.7.  Since draft-ietf-httpbis-http2-04
    Clarified requirements around handling different frames after stream
    close, stream reset and GOAWAY [GOAWAY].
 
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 77]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Added more specific prohibitions for sending of different frame types
    in various stream states.
 
@@ -4306,13 +4336,6 @@ A.8.  Since draft-ietf-httpbis-http2-03
    [HEADERS] frame.
 
    Added PRIORITY [PRIORITY] frame.
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 77]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
 A.9.  Since draft-ietf-httpbis-http2-02
 
@@ -4340,6 +4363,13 @@ A.10.  Since draft-ietf-httpbis-http2-01
 
    Removed zlib-based header compression mechanism.
 
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 78]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Updated references.
 
    Clarified stream identifier reuse.
@@ -4361,14 +4391,6 @@ A.10.  Since draft-ietf-httpbis-http2-01
    Changed protocol label form based on discussions.
 
 A.11.  Since draft-ietf-httpbis-http2-00
-
-
-
-
-Belshe, et al.          Expires October 02, 2014               [Page 78]
-
-Internet-Draft                   HTTP/2                       March 2014
-
 
    Changed title throughout.
 
@@ -4395,6 +4417,15 @@ A.12.  Since draft-mbelshe-httpbis-spdy-00
 
 Authors' Addresses
 
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 79]
+
+Internet-Draft                   HTTP/2                       March 2014
+
+
    Mike Belshe
    Twist
 
@@ -4420,4 +4451,29 @@ Authors' Addresses
 
 
 
-Belshe, et al.          Expires October 02, 2014               [Page 79]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires October 02, 2014               [Page 80]
