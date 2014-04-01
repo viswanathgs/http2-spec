@@ -83,21 +83,21 @@ Table of Contents
    3.  The Alt-Svc HTTP Header Field . . . . . . . . . . . . . . . .   7
      3.1.  Caching Alt-Svc Header Field Values . . . . . . . . . . .   8
    4.  The Service HTTP Header Field . . . . . . . . . . . . . . . .   9
-   5.  The 421 Not Authoritative HTTP Status Code  . . . . . . . . .   9
+   5.  The 421 Not Authoritative HTTP Status Code  . . . . . . . . .  10
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
      6.1.  The Alt-Svc Message Header Field  . . . . . . . . . . . .  10
      6.2.  The Service Message Header Field  . . . . . . . . . . . .  10
-     6.3.  The 421 Not Authoritative HTTP Status Code  . . . . . . .  10
+     6.3.  The 421 Not Authoritative HTTP Status Code  . . . . . . .  11
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .  11
      7.1.  Changing Ports  . . . . . . . . . . . . . . . . . . . . .  11
-     7.2.  Changing Hosts  . . . . . . . . . . . . . . . . . . . . .  11
+     7.2.  Changing Hosts  . . . . . . . . . . . . . . . . . . . . .  12
      7.3.  Changing Protocols  . . . . . . . . . . . . . . . . . . .  12
-   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  12
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  12
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  12
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  13
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  13
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  13
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  14
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  13
+                publication) . . . . . . . . . . . . . . . . . . . .  14
      A.1.  Since draft-nottingham-httpbis-alt-svc-05 . . . . . . . .  14
      A.2.  Since draft-ietf-httpbis-alt-svc-00 . . . . . . . . . . .  14
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  14
@@ -155,9 +155,9 @@ Internet-Draft            Alternative Services                April 2014
    document are to be interpreted as described in [RFC2119].
 
    This document uses the Augmented BNF defined in [RFC5234] along with
-   the "OWS", "DIGIT", "DQUOTE", "parameter", "uri-host", "port" and
-   "delta-second" rules from [HTTP-p1], and uses the "#rule" extension
-   defined in Section 7 of that document.
+   the "OWS", "delta-seconds", "parameter", "port", "token", and "uri-
+   host" rules from [HTTP-p1], and uses the "#rule" extension defined in
+   Section 7 of that document.
 
 2.  Alternative Services Concepts
 
@@ -355,17 +355,53 @@ Internet-Draft            Alternative Services                April 2014
    responses.
 
    Alt-Svc     = 1#( alternative *( OWS ";" OWS parameter ) )
-   alternative = DQUOTE protocol-id DQUOTE "=" port
-   protocol-id = <ALPN protocol identifier>
+   alternative = protocol-id "=" port
+   protocol-id = token ; percent-encoded ALPN protocol identifier
 
+
+   ALPN protocol names are octet sequences with no additional
+   constraints on format.  Octets not allowed in tokens ([HTTP-p1],
+   Section 3.2.6) MUST be percent-encoded as per Section 2.1 of
+   [RFC3986].  Consequently, the octet representing the percent
+   character "%" (hex 25) MUST be percent-encoded as well.
+
+   In order to have precisely one way to represent any ALPN protocol
+   name, the following additional constraints apply:
+
+   1.  Octets in the ALPN protocol MUST NOT be percent-encoded if they
+       are valid token characters except "%", and
+
+   2.  When using percent-encoding, uppercase hex digits MUST be used.
+
+   With these constraints, recipients can apply simple string comparison
+   to match protocol identifiers.
 
    For example:
 
-   Alt-Svc: "http2"=8000
-
+   Alt-Svc: http2=8000
 
    This indicates that the "http2" protocol on the same host using the
    indicated port (in this case, 8000).
+
+
+   Examples for protocol name escaping:
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014                [Page 7]
+
+Internet-Draft            Alternative Services                April 2014
+
+
+   +--------------------+-------------+---------------------+
+   | ALPN protocol name | protocol-id | Note                |
+   +--------------------+-------------+---------------------+
+   | http2              | http2       | No escaping needed  |
+   | w=x:y#z            | w%3Dx%3Ay#z | "=" and ":" escaped |
+   | x%y                | x%25y       | "%" needs escaping  |
+   +--------------------+-------------+---------------------+
+
 
    Alt-Svc MAY occur in any HTTP response message, regardless of the
    status code.
@@ -375,35 +411,14 @@ Internet-Draft            Alternative Services                April 2014
 
    It can, however, have multiple values:
 
-   Alt-Svc: "h2c"=8000, "h2"=443
+   Alt-Svc: h2c=8000, h2=443
 
 
    The value(s) advertised by Alt-Svc can be used by clients to open a
    new connection to one or more alternative services immediately, or
    simultaneously with subsequent requests on the same connection.
 
-   Intermediaries MUST NOT change or append Alt-Svc values.
-
-   Finally, note that while it may be technically possible to put
-   content other than printable ASCII in a HTTP header field, some
-
-
-
-Nottingham, et al.      Expires October 03, 2014                [Page 7]
-
-Internet-Draft            Alternative Services                April 2014
-
-
-   implementations only support ASCII (or a superset of it) in header
-   field values.  Therefore, this field SHOULD NOT be used to convey
-   protocol identifiers that are not printable ASCII, or those that
-   contain quote characters.
-
-   [[: syntax<https://github.com/http2/http2-spec/issues/446> The header
-   field syntax is both misleading (use of double quotes although not a
-   quoted string) and incomplete (does not support all values).
-   Alternate proposal in <http://lists.w3.org/Archives/Public/ietf-http-
-   wg/2014JanMar/0856.html>.]]
+   Intermediaries MUST NOT change or append Alt-Svc field values.
 
 3.1.  Caching Alt-Svc Header Field Values
 
@@ -425,6 +440,16 @@ Internet-Draft            Alternative Services                April 2014
 
    For example, a response:
 
+
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014                [Page 8]
+
+Internet-Draft            Alternative Services                April 2014
+
+
    HTTP/1.1 200 OK
    Content-Type: text/html
    Cache-Control: 600
@@ -441,14 +466,6 @@ Internet-Draft            Alternative Services                April 2014
    When an Alt-Svc response header field is received from an origin, its
    value invalidates and replaces all cached alternative services for
    that origin.
-
-
-
-
-Nottingham, et al.      Expires October 03, 2014                [Page 8]
-
-Internet-Draft            Alternative Services                April 2014
-
 
    See Section 2.2 for general requirements on caching alternative
    services.
@@ -482,6 +499,13 @@ Internet-Draft            Alternative Services                April 2014
    User-Agent: Example/1.0
 
 
+
+
+Nottingham, et al.      Expires October 03, 2014                [Page 9]
+
+Internet-Draft            Alternative Services                April 2014
+
+
 5.  The 421 Not Authoritative HTTP Status Code
 
    The 421 (Not Authoritative) status code indicates that the current
@@ -498,13 +522,6 @@ Internet-Draft            Alternative Services                April 2014
    421 (Not Authoritative) MAY carry an Alt-Svc header field.
 
    This status code MUST NOT be generated by proxies.
-
-
-
-Nottingham, et al.      Expires October 03, 2014                [Page 9]
-
-Internet-Draft            Alternative Services                April 2014
-
 
    A 421 response is cacheable by default; i.e., unless otherwise
    indicated by the method definition or explicit cache controls (see
@@ -538,6 +555,13 @@ Internet-Draft            Alternative Services                April 2014
 
    o  Application Protocol: http
 
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 10]
+
+Internet-Draft            Alternative Services                April 2014
+
+
    o  Status: standard
 
    o  Author/Change Controller: IETF
@@ -553,14 +577,6 @@ Internet-Draft            Alternative Services                April 2014
    ([HTTP-p2], Section 8.2).
 
       Status Code: 421
-
-
-
-
-Nottingham, et al.      Expires October 03, 2014               [Page 10]
-
-Internet-Draft            Alternative Services                April 2014
-
 
       Short Description: Not Authoritative
 
@@ -589,6 +605,19 @@ Internet-Draft            Alternative Services                April 2014
    alternative services, and restricting who can open a port for
    listening on that host.
 
+
+
+
+
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 11]
+
+Internet-Draft            Alternative Services                April 2014
+
+
 7.2.  Changing Hosts
 
    When the host is changed due to the use of an alternative service, it
@@ -610,14 +639,6 @@ Internet-Draft            Alternative Services                April 2014
 
    However, this authorization is only as strong as the method used to
    authenticate the alternative service.  In particular, there are well-
-
-
-
-Nottingham, et al.      Expires October 03, 2014               [Page 11]
-
-Internet-Draft            Alternative Services                April 2014
-
-
    known exploits to make an attacker's certificate appear as
    legitimate.
 
@@ -642,6 +663,17 @@ Internet-Draft            Alternative Services                April 2014
    not use some form of end-to-end encryption (most likely, TLS), it
    violates the expectations for security that the URI scheme implies.
 
+
+
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 12]
+
+Internet-Draft            Alternative Services                April 2014
+
+
    Therefore, clients cannot blindly use alternative services, but
    instead evaluate the option(s) presented to assure that security
    requirements and expectations (of specifications, implementations and
@@ -664,15 +696,6 @@ Internet-Draft            Alternative Services                April 2014
               Transfer Protocol (HTTP/1.1): Message Syntax and Routing",
               draft-ietf-httpbis-p1-messaging-26 (work in progress),
               February 2014.
-
-
-
-
-
-Nottingham, et al.      Expires October 03, 2014               [Page 12]
-
-Internet-Draft            Alternative Services                April 2014
-
 
    [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. F. Reschke,
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
@@ -698,6 +721,15 @@ Internet-Draft            Alternative Services                April 2014
    [RFC6066]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions", RFC 6066, January 2011.
 
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 13]
+
+Internet-Draft            Alternative Services                April 2014
+
+
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
@@ -721,15 +753,6 @@ Internet-Draft            Alternative Services                April 2014
 
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
-
-
-
-
-Nottingham, et al.      Expires October 03, 2014               [Page 13]
-
-Internet-Draft            Alternative Services                April 2014
-
-
 A.1.  Since draft-nottingham-httpbis-alt-svc-05
 
    This is the first version after adoption of draft-nottingham-httpbis-
@@ -740,6 +763,9 @@ A.2.  Since draft-ietf-httpbis-alt-svc-00
 
    Selected 421 as proposed status code for "Not Authoritative".
 
+   Changed header field syntax to use percent-encoding of ALPN protocol
+   names ([4]).
+
 Authors' Addresses
 
    Mark Nottingham
@@ -747,6 +773,17 @@ Authors' Addresses
 
    EMail: mnot@mnot.net
    URI:   http://www.mnot.net/
+
+
+
+
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 14]
+
+Internet-Draft            Alternative Services                April 2014
 
 
    Patrick McManus
@@ -780,4 +817,23 @@ Authors' Addresses
 
 
 
-Nottingham, et al.      Expires October 03, 2014               [Page 14]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nottingham, et al.      Expires October 03, 2014               [Page 15]

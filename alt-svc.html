@@ -202,6 +202,67 @@ pre.drawing {
 table {
   margin-left: 2em;
 }
+table.tt {
+  vertical-align: top;
+  border-color: gray;
+}
+table.tt th {
+  border-color: gray;
+}
+table.tt td {
+  border-color: gray;
+}
+table.all {
+  border-style: solid;
+  border-width: 2px;
+}
+table.full {
+  border-style: solid;
+  border-width: 2px;
+}
+table.tt td {
+  vertical-align: top;
+}
+table.all td {
+  border-style: solid;
+  border-width: 1px;
+}
+table.full td {
+  border-style: none solid;
+  border-width: 1px;
+}
+table.tt th {
+  vertical-align: top;
+}
+table.all th {
+  border-style: solid;
+  border-width: 1px;
+}
+table.full th {
+  border-style: solid;
+  border-width: 1px 1px 2px 1px;
+}
+table.headers th {
+  border-style: none none solid none;
+  border-width: 2px;
+}
+table.left {
+  margin-right: auto;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+caption {
+  caption-side: bottom;
+  font-weight: bold;
+  font-size: 10pt;
+  margin-top: .5em;
+}
+
 table.header {
   border-spacing: 1px;
   width: 95%;
@@ -559,7 +620,7 @@ samp, tt, code, pre {
             <p id="rfc.section.1.1.p.1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL"
                in this document are to be interpreted as described in <a href="#RFC2119"><cite title="Key words for use in RFCs to Indicate Requirement Levels">[RFC2119]</cite></a>.
             </p>
-            <p id="rfc.section.1.1.p.2">This document uses the Augmented BNF defined in <a href="#RFC5234"><cite title="Augmented BNF for Syntax Specifications: ABNF">[RFC5234]</cite></a> along with the "OWS", "DIGIT", "DQUOTE", "parameter", "uri-host", "port" and "delta-second" rules from <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, and uses the "#rule" extension defined in <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#abnf.extension" title="ABNF list extension: #rule">Section 7</a> of that document.
+            <p id="rfc.section.1.1.p.2">This document uses the Augmented BNF defined in <a href="#RFC5234"><cite title="Augmented BNF for Syntax Specifications: ABNF">[RFC5234]</cite></a> along with the "OWS", "delta-seconds", "parameter", "port", "token", and "uri-host" rules from <a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, and uses the "#rule" extension defined in <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#abnf.extension" title="ABNF list extension: #rule">Section 7</a> of that document.
             </p>
          </div>
       </div>
@@ -671,26 +732,59 @@ samp, tt, code, pre {
             to responses.
          </p>
          <div id="rfc.figure.u.3"></div><pre class="inline">Alt-Svc     = 1#( alternative *( OWS ";" OWS parameter ) )
-alternative = DQUOTE protocol-id DQUOTE "=" port
-protocol-id = &lt;ALPN protocol identifier&gt;
-</pre><div id="rfc.figure.u.4"></div>
-         <p>For example:</p><pre class="text">Alt-Svc: "http2"=8000
-</pre><p id="rfc.section.3.p.4">This indicates that the "http2" protocol on the same host using the indicated port (in this case, 8000).</p>
-         <p id="rfc.section.3.p.5">Alt-Svc <em class="bcp14">MAY</em> occur in any HTTP response message, regardless of the status code.
+alternative = protocol-id "=" port
+protocol-id = token ; percent-encoded ALPN protocol identifier
+</pre><p id="rfc.section.3.p.3">ALPN protocol names are octet sequences with no additional constraints on format. Octets not allowed in tokens (<a href="#HTTP-p1"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[HTTP-p1]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/draft-ietf-httpbis/26/p1-messaging.html#field.components" title="Field value components">Section 3.2.6</a>) <em class="bcp14">MUST</em> be percent-encoded as per <a href="http://tools.ietf.org/html/rfc3986#section-2.1">Section 2.1</a> of <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>. Consequently, the octet representing the percent character "%" (hex 25) <em class="bcp14">MUST</em> be percent-encoded as well.
          </p>
-         <p id="rfc.section.3.p.6">Alt-Svc does not allow advertisement of alternative services on other hosts, to protect against various header-based attacks.</p>
+         <p id="rfc.section.3.p.4">In order to have precisely one way to represent any ALPN protocol name, the following additional constraints apply: </p>
+         <ol>
+            <li>Octets in the ALPN protocol <em class="bcp14">MUST NOT</em> be percent-encoded if they are valid token characters except "%", and
+            </li>
+            <li>When using percent-encoding, uppercase hex digits <em class="bcp14">MUST</em> be used.
+            </li>
+         </ol>
+         <p id="rfc.section.3.p.5">With these constraints, recipients can apply simple string comparison to match protocol identifiers.</p>
+         <div id="rfc.figure.u.4"></div>
+         <p>For example:</p><pre class="text">Alt-Svc: http2=8000
+</pre><p>This indicates that the "http2" protocol on the same host using the indicated port (in this case, 8000).</p>
+         <div id="rfc.table.u.1">
+            <p>Examples for protocol name escaping:</p>
+            <table class="tt all left" cellpadding="3" cellspacing="0">
+               <thead>
+                  <tr>
+                     <th>ALPN protocol name</th>
+                     <th>protocol-id</th>
+                     <th>Note</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr>
+                     <td class="left">http2</td>
+                     <td class="left">http2</td>
+                     <td class="left">No escaping needed</td>
+                  </tr>
+                  <tr>
+                     <td class="left">w=x:y#z</td>
+                     <td class="left">w%3Dx%3Ay#z</td>
+                     <td class="left">"=" and ":" escaped</td>
+                  </tr>
+                  <tr>
+                     <td class="left">x%y</td>
+                     <td class="left">x%25y</td>
+                     <td class="left">"%" needs escaping</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+         <p id="rfc.section.3.p.7">Alt-Svc <em class="bcp14">MAY</em> occur in any HTTP response message, regardless of the status code.
+         </p>
+         <p id="rfc.section.3.p.8">Alt-Svc does not allow advertisement of alternative services on other hosts, to protect against various header-based attacks.</p>
          <div id="rfc.figure.u.5"></div>
-         <p>It can, however, have multiple values:</p><pre class="text">Alt-Svc: "h2c"=8000, "h2"=443
-</pre><p id="rfc.section.3.p.8">The value(s) advertised by Alt-Svc can be used by clients to open a new connection to one or more alternative services immediately,
+         <p>It can, however, have multiple values:</p><pre class="text">Alt-Svc: h2c=8000, h2=443
+</pre><p id="rfc.section.3.p.10">The value(s) advertised by Alt-Svc can be used by clients to open a new connection to one or more alternative services immediately,
             or simultaneously with subsequent requests on the same connection.
          </p>
-         <p id="rfc.section.3.p.9">Intermediaries <em class="bcp14">MUST NOT</em> change or append Alt-Svc values.
-         </p>
-         <p id="rfc.section.3.p.10">Finally, note that while it may be technically possible to put content other than printable ASCII in a HTTP header field,
-            some implementations only support ASCII (or a superset of it) in header field values. Therefore, this field <em class="bcp14">SHOULD NOT</em> be used to convey protocol identifiers that are not printable ASCII, or those that contain quote characters.
-         </p>
-         <p id="rfc.section.3.p.11"><span class="comment" id="syntax">[<a href="#syntax" class="smpl">syntax</a>: <a href="https://github.com/http2/http2-spec/issues/446">#446</a> The header field syntax is both misleading (use of double quotes although not a quoted string) and incomplete (does not support
-               all values). Alternate proposal in &lt;<a href="http://lists.w3.org/Archives/Public/ietf-http-wg/2014JanMar/0856.html">http://lists.w3.org/Archives/Public/ietf-http-wg/2014JanMar/0856.html</a>&gt;.]</span> 
+         <p id="rfc.section.3.p.11">Intermediaries <em class="bcp14">MUST NOT</em> change or append Alt-Svc field values.
          </p>
          <div id="caching-alt-svc-header-field-values">
             <h2 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1</a>&nbsp;<a href="#caching-alt-svc-header-field-values">Caching Alt-Svc Header Field Values</a></h2>
@@ -944,6 +1038,8 @@ User-Agent: Example/1.0
          <div id="changes.since.draft-ietf-httpbis-alt-svc-00">
             <h2 id="rfc.section.A.2"><a href="#rfc.section.A.2">A.2</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-alt-svc-00">Since draft-ietf-httpbis-alt-svc-00</a></h2>
             <p id="rfc.section.A.2.p.1">Selected 421 as proposed status code for "Not Authoritative".</p>
+            <p id="rfc.section.A.2.p.2">Changed header field syntax to use percent-encoding of ALPN protocol names (&lt;<a href="https://github.com/http2/http2-spec/issues/446">https://github.com/http2/http2-spec/issues/446</a>&gt;).
+            </p>
          </div>
       </div>
    </body>
