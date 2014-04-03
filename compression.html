@@ -436,7 +436,7 @@ samp, tt, code, pre {
        content: "Peon & Ruellan";
   }
   @bottom-center {
-       content: "Expires October 3, 2014";
+       content: "Expires October 5, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -474,7 +474,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Ruellan, H.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-header-compression-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-04-01">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-04-03">
       <meta name="dct.abstract" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
       <meta name="description" content="This specification defines HPACK, a compression format for efficiently representing HTTP header fields in the context of HTTP/2.">
    </head>
@@ -494,12 +494,12 @@ samp, tt, code, pre {
                <td class="right">H. Ruellan</td>
             </tr>
             <tr>
-               <td class="left">Expires: October 3, 2014</td>
+               <td class="left">Expires: October 5, 2014</td>
                <td class="right">Canon CRF</td>
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">April 1, 2014</td>
+               <td class="right">April 3, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -523,7 +523,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on October 3, 2014.</p>
+         <p>This Internet-Draft will expire on October 5, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -794,9 +794,12 @@ samp, tt, code, pre {
                   <dd>A literal representation defines a new header field. The header field name is represented either literally or as a reference
                      to an entry of the header table. The header field value is represented literally.
                   </dd>
-                  <dd>Two different literal representations are provided: 
+                  <dd>Three different literal representations are provided: 
                      <ul>
                         <li>A literal representation that does not add the header field to the header table (see <a href="#literal.header.without.indexing" title="Literal Header Field without Indexing">Section&nbsp;4.3.2</a>).
+                        </li>
+                        <li>A literal representation that does not add the header field to the header table and require that this header field always
+                           use a literal representation, in particular when re-encoded by an intermediary (see <a href="#literal.header.never.indexed" title="Literal Header Field never Indexed">Section&nbsp;4.3.3</a>).
                         </li>
                         <li>A literal representation that adds the header field as a new entry at the beginning of the header table (see <a href="#literal.header.with.incremental.indexing" title="Literal Header Field with Incremental Indexing">Section&nbsp;4.3.1</a>).
                         </li>
@@ -804,8 +807,18 @@ samp, tt, code, pre {
                   </dd>
                   <dt>Indexed Representation:</dt>
                   <dd>The indexed representation defines a header field as a reference to an entry in either the header table or the static table
-                     (see <a href="#indexed.header.representation" title="Indexed Header Field Representation">Section&nbsp;4.2</a>). 
-                     <div id="rfc.figure.1"></div><pre class="drawing">       &lt;----------  Index Address Space ----------&gt;
+                     (see <a href="#indexed.header.representation" title="Indexed Header Field Representation">Section&nbsp;4.2</a>).
+                  </dd>
+                  <dd>Indices between 1 and len(header table), inclusive, refer to elements in the header table, with index 1 referring to the beginning
+                     of the table.
+                  </dd>
+                  <dd>Indices between len(header table) + 1 and len(header table) + len(static table), inclusive, refer to elements in the static
+                     table, where the index len(header table) + 1 refers to the first entry in the static table.
+                  </dd>
+                  <dd>Any other indices MUST be treated as a decoding error.</dd>
+               </dl>
+               <p id="rfc.section.3.1.4.p.3"></p>
+               <div id="rfc.figure.1"></div><pre class="drawing">       &lt;----------  Index Address Space ----------&gt;
        &lt;-- Header  Table --&gt;  &lt;-- Static  Table --&gt;
        +---+-----------+---+  +---+-----------+---+
        | 1 |    ...    | k |  |k+1|    ...    | n |
@@ -813,21 +826,7 @@ samp, tt, code, pre {
        ^                   |
        |                   V
 Insertion Point       Drop Point
-</pre><p class="figure">Figure 1: Index Address Space</p> 
-                     <ul class="empty">
-                        <li>Indices between 1 and len(header table), inclusive, refer to elements in the header table, with index 1 referring to the beginning
-                           of the table.
-                        </li>
-                        <li>Indices between len(header table) + 1 and len(header table) + len(static table), inclusive, refer to elements in the static
-                           table, where the index len(header table) + 1 refers to the first entry in the static table.
-                        </li>
-                        <li>Index 0 signals a modification of the encoding context: either the reference set is emptied, or the maximum size of the header
-                           table is updated (see <a href="#encoding.context.update" title="Encoding Context Update">Section&nbsp;4.4</a>).
-                        </li>
-                        <li>Any other indices MUST be treated as erroneous, and the compression context considered corrupt and unusable.</li>
-                     </ul> 
-                  </dd>
-               </dl>
+</pre><p class="figure">Figure 1: Index Address Space</p>
             </div>
             <div id="header.emission">
                <h3 id="rfc.section.3.1.5"><a href="#rfc.section.3.1.5">3.1.5</a>&nbsp;<a href="#header.emission">Header Field Emission</a></h3>
@@ -872,8 +871,8 @@ Insertion Point       Drop Point
                      <ul>
                         <li>The header field corresponding to the referenced entry is emitted.</li>
                         <li>The referenced static entry is inserted at the beginning of the header table.</li>
-                        <li>A reference to this new header table entry is added to the reference set (except if this new entry didn't fit in the header
-                           table).
+                        <li>A reference to this new header table entry is added to the reference set, except if this new entry didn't fit in the header
+                           table.
                         </li>
                      </ul> 
                   </li>
@@ -965,7 +964,7 @@ Insertion Point       Drop Point
                   representation.
                </p>
                <p id="rfc.section.4.1.1.p.3">The N-bit prefix allows filling the current octet. If the value is small enough (strictly less than 2<sup>N</sup>-1), it is encoded within the N-bit prefix. Otherwise all the bits of the prefix are set to 1 and the value is encoded using
-                  an <a href="http://en.wikipedia.org/wiki/Variable-length_quantity">unsigned variable length integer</a> representation. N is always between 1 and 8 bits. An integer starting at an octet-boundary will have an 8-bit prefix.
+                  an unsigned variable length integer representation (see &lt;<a href="http://en.wikipedia.org/wiki/Variable-length_quantity">http://en.wikipedia.org/wiki/Variable-length_quantity</a>&gt;). N is always between 1 and 8 bits. An integer starting at an octet-boundary will have an 8-bit prefix.
                </p>
                <p id="rfc.section.4.1.1.p.4">The algorithm to represent an integer I is as follows: </p>
                <div id="rfc.figure.u.1"></div><pre class="inline">if I &lt; 2^N - 1, encode I on N bits
@@ -1330,6 +1329,9 @@ else
                <li>Updated format to include literal headers that must never be compressed.</li>
                <li>Updated security considerations.</li>
                <li>Moved integer encoding examples to the appendix.</li>
+               <li>Updated Huffman table.</li>
+               <li>Updated static header table (adding and removing status values).</li>
+               <li>Updated examples.</li>
             </ul>
          </div>
          <div id="changes.since.draft-ietf-httpbis-header-compression-05">
