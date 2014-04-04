@@ -5,8 +5,8 @@
 HTTPbis Working Group                                            R. Peon
 Internet-Draft                                               Google, Inc
 Intended status: Standards Track                              H. Ruellan
-Expires: October 05, 2014                                      Canon CRF
-                                                          April 03, 2014
+Expires: October 06, 2014                                      Canon CRF
+                                                          April 04, 2014
 
 
                  HPACK - Header Compression for HTTP/2
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on October 05, 2014.
+   This Internet-Draft will expire on October 06, 2014.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 1]
+Peon & Ruellan          Expires October 06, 2014                [Page 1]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -71,7 +71,7 @@ Internet-Draft                   HPACK                        April 2014
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
-   2.  Overview  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Overview  . . . . . . . . . . . . . . . . . . . . . . . . . .   4
      2.1.  Outline . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Header Field Encoding . . . . . . . . . . . . . . . . . . . .   5
      3.1.  Encoding Concepts . . . . . . . . . . . . . . . . . . . .   5
@@ -87,13 +87,13 @@ Table of Contents
      3.3.  Header Table Management . . . . . . . . . . . . . . . . .  10
        3.3.1.  Maximum Table Size  . . . . . . . . . . . . . . . . .  10
        3.3.2.  Entry Eviction When Header Table Size Changes . . . .  10
-       3.3.3.  Entry Eviction when Adding New Entries  . . . . . . .  10
+       3.3.3.  Entry Eviction when Adding New Entries  . . . . . . .  11
    4.  Detailed Format . . . . . . . . . . . . . . . . . . . . . . .  11
      4.1.  Low-level representations . . . . . . . . . . . . . . . .  11
        4.1.1.  Integer representation  . . . . . . . . . . . . . . .  11
        4.1.2.  String Literal Representation . . . . . . . . . . . .  12
      4.2.  Indexed Header Field Representation . . . . . . . . . . .  13
-     4.3.  Literal Header Field Representation . . . . . . . . . . .  13
+     4.3.  Literal Header Field Representation . . . . . . . . . . .  14
        4.3.1.  Literal Header Field with Incremental Indexing  . . .  14
        4.3.2.  Literal Header Field without Indexing . . . . . . . .  15
        4.3.3.  Literal Header Field never Indexed  . . . . . . . . .  16
@@ -103,30 +103,31 @@ Table of Contents
      5.2.  Memory Consumption  . . . . . . . . . . . . . . . . . . .  19
      5.3.  Implementation Limits . . . . . . . . . . . . . . . . . .  19
    6.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  19
-   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  19
-     7.1.  Normative References  . . . . . . . . . . . . . . . . . .  19
+   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  20
+     7.1.  Normative References  . . . . . . . . . . . . . . . . . .  20
      7.2.  Informative References  . . . . . . . . . . . . . . . . .  20
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 2]
+Peon & Ruellan          Expires October 06, 2014                [Page 2]
 
 Internet-Draft                   HPACK                        April 2014
 
 
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication  . . . . . . . . . . . . . . . . . . . .  20
-     A.1.  Since draft-ietf-httpbis-header-compression-06  . . . . .  20
-     A.2.  Since draft-ietf-httpbis-header-compression-05  . . . . .  21
-     A.3.  Since draft-ietf-httpbis-header-compression-04  . . . . .  21
-     A.4.  Since draft-ietf-httpbis-header-compression-03  . . . . .  21
-     A.5.  Since draft-ietf-httpbis-header-compression-02  . . . . .  22
-     A.6.  Since draft-ietf-httpbis-header-compression-01  . . . . .  22
-     A.7.  Since draft-ietf-httpbis-header-compression-00  . . . . .  22
+                publication  . . . . . . . . . . . . . . . . . . . .  21
+     A.1.  Since draft-ietf-httpbis-header-compression-07  . . . . .  21
+     A.2.  Since draft-ietf-httpbis-header-compression-06  . . . . .  21
+     A.3.  Since draft-ietf-httpbis-header-compression-05  . . . . .  21
+     A.4.  Since draft-ietf-httpbis-header-compression-04  . . . . .  21
+     A.5.  Since draft-ietf-httpbis-header-compression-03  . . . . .  22
+     A.6.  Since draft-ietf-httpbis-header-compression-02  . . . . .  22
+     A.7.  Since draft-ietf-httpbis-header-compression-01  . . . . .  22
+     A.8.  Since draft-ietf-httpbis-header-compression-00  . . . . .  22
    Appendix B.  Static Table . . . . . . . . . . . . . . . . . . . .  23
-   Appendix C.  Huffman Codes  . . . . . . . . . . . . . . . . . . .  24
-   Appendix D.  Examples . . . . . . . . . . . . . . . . . . . . . .  30
-     D.1.  Integer Representation Examples . . . . . . . . . . . . .  30
+   Appendix C.  Huffman Codes  . . . . . . . . . . . . . . . . . . .  25
+   Appendix D.  Examples . . . . . . . . . . . . . . . . . . . . . .  31
+     D.1.  Integer Representation Examples . . . . . . . . . . . . .  31
        D.1.1.  Example 1: Encoding 10 using a 5-bit prefix . . . . .  31
        D.1.2.  Example 2: Encoding 1337 using a 5-bit prefix . . . .  31
        D.1.3.  Example 3: Encoding 42 starting at an
@@ -135,10 +136,10 @@ Internet-Draft                   HPACK                        April 2014
        D.2.1.  Literal Header Field with Indexing  . . . . . . . . .  32
        D.2.2.  Literal Header Field without Indexing . . . . . . . .  33
        D.2.3.  Indexed Header Field  . . . . . . . . . . . . . . . .  34
-       D.2.4.  Indexed Header Field from Static Table  . . . . . . .  34
+       D.2.4.  Indexed Header Field from Static Table  . . . . . . .  35
      D.3.  Request Examples without Huffman  . . . . . . . . . . . .  35
-       D.3.1.  First request . . . . . . . . . . . . . . . . . . . .  35
-       D.3.2.  Second request  . . . . . . . . . . . . . . . . . . .  36
+       D.3.1.  First request . . . . . . . . . . . . . . . . . . . .  36
+       D.3.2.  Second request  . . . . . . . . . . . . . . . . . . .  37
        D.3.3.  Third request . . . . . . . . . . . . . . . . . . . .  38
      D.4.  Request Examples with Huffman . . . . . . . . . . . . . .  40
        D.4.1.  First request . . . . . . . . . . . . . . . . . . . .  40
@@ -160,15 +161,16 @@ Internet-Draft                   HPACK                        April 2014
    efficiently representing HTTP header fields in the context of HTTP/2
    (see [HTTP2]).
 
-2.  Overview
 
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 3]
+Peon & Ruellan          Expires October 06, 2014                [Page 3]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+2.  Overview
 
    In HTTP/1.1 (see [HTTP-p1]), header fields are encoded without any
    form of compression.  As web pages have grown to include dozens to
@@ -216,15 +218,16 @@ Internet-Draft                   HPACK                        April 2014
    as new entries in the header table.  The decoder executes the
    modifications to the header table and reference set prescribed by the
    encoder, reconstructing the set of header fields in the process.
-   This enables decoders to remain simple and understand a wide variety
-   of encoders.
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 4]
+Peon & Ruellan          Expires October 06, 2014                [Page 4]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   This enables decoders to remain simple and understand a wide variety
+   of encoders.
 
    Examples illustrating the use of these different mechanisms to
    represent header fields are available in Appendix D.
@@ -270,17 +273,18 @@ Internet-Draft                   HPACK                        April 2014
 
 3.1.1.  Encoding Context
 
-   The set of mutable structures used within an encoding context include
-   a header table and a reference set.  Everything else is either
-   immutable or conceptual.
 
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 5]
+Peon & Ruellan          Expires October 06, 2014                [Page 5]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   The set of mutable structures used within an encoding context include
+   a header table and a reference set.  Everything else is either
+   immutable or conceptual.
 
    HTTP messages are exchanged between a client and a server in both
    directions.  The encoding of header fields in each direction is
@@ -324,20 +328,22 @@ Internet-Draft                   HPACK                        April 2014
    set need to be encoded.  The use of differential encoding is optional
    for any header set.
 
+
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014                [Page 6]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    When an entry is evicted from the header table, if it was referenced
    from the reference set, its reference is removed from the reference
    set.
 
    To limit the memory requirements on the decoder side for handling the
    reference set, only entries within the header table can be contained
-
-
-
-Peon & Ruellan          Expires October 05, 2014                [Page 6]
-
-Internet-Draft                   HPACK                        April 2014
-
-
    in the reference set.  To still allow entries from the static table
    to take advantage of the differential encoding, when a header field
    is represented as a reference to an entry of the static table, this
@@ -381,19 +387,18 @@ Internet-Draft                   HPACK                        April 2014
 
       Any other indices MUST be treated as a decoding error.
 
+
+
+Peon & Ruellan          Expires October 06, 2014                [Page 7]
+
+Internet-Draft                   HPACK                        April 2014
+
+
           <----------  Index Address Space ---------->
           <-- Header  Table -->  <-- Static  Table -->
           +---+-----------+---+  +---+-----------+---+
           | 1 |    ...    | k |  |k+1|    ...    | n |
           +---+-----------+---+  +---+-----------+---+
-
-
-
-Peon & Ruellan          Expires October 05, 2014                [Page 7]
-
-Internet-Draft                   HPACK                        April 2014
-
-
           ^                   |
           |                   V
    Insertion Point       Drop Point
@@ -431,13 +436,6 @@ Internet-Draft                   HPACK                        April 2014
    processed in the order in which they are presented, as specified
    below.
 
-   An _indexed representation_ with an index value of 0 entails one of
-   the following actions, depending on what is encoded next:
-
-   o  The reference set is emptied.
-
-   o  The maximum size of the header table is updated.
-
    An _indexed representation_ corresponding to an entry _present_ in
    the reference set entails the following actions:
 
@@ -445,7 +443,9 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 8]
+
+
+Peon & Ruellan          Expires October 06, 2014                [Page 8]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -501,7 +501,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014                [Page 9]
+Peon & Ruellan          Expires October 06, 2014                [Page 9]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -524,6 +524,14 @@ Internet-Draft                   HPACK                        April 2014
    Section 4.4), but it must stay lower than or equal to the value of
    SETTINGS_HEADER_TABLE_SIZE.
 
+   After applying an updated value of the HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE that changes the maximum size of the
+   header table used by the encoder, the encoder MUST signal this change
+   via an encoding context update (see Section 4.4).  This encoding
+   context update MUST occurs at the beginning of the first header block
+   following the SETTINGS frame sent to acknowledge the application of
+   the updated settings.
+
    The size of the header table is the sum of the size of its entries.
 
    The size of an entry is the sum of its name's length in octets (as
@@ -545,6 +553,15 @@ Internet-Draft                   HPACK                        April 2014
    Whenever an entry is evicted from the header table, any reference to
    that entry contained by the reference set is removed.
 
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 10]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    Whenever the maximum size for the header table is made smaller,
    entries are evicted from the end of the header table until the size
    of the header table is less than or equal to the maximum size.
@@ -553,14 +570,6 @@ Internet-Draft                   HPACK                        April 2014
    the entries in the static table to be reduced by one.
 
 3.3.3.  Entry Eviction when Adding New Entries
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 10]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    Whenever a new entry is to be added to the table, any name referenced
    by the representation of this new entry is cached, and then entries
@@ -601,6 +610,14 @@ Internet-Draft                   HPACK                        April 2014
        encode (2^N - 1) on N bits
        I = I - (2^N - 1)
        while I >= 128
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 11]
+
+Internet-Draft                   HPACK                        April 2014
+
+
             encode (I % 128 + 128) on 8 bits
             I = I / 128
        encode I on 8 bits
@@ -608,15 +625,6 @@ Internet-Draft                   HPACK                        April 2014
 
    For informational purpose, the algorithm to decode an integer I is as
    follows:
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 11]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    decode I from the next N bits
    if I < 2^N - 1, return I
@@ -659,20 +667,19 @@ Internet-Draft                   HPACK                        April 2014
 
    A literal string representation contains the following fields:
 
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 12]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    H: A one bit flag, H, indicating whether or not the octets of the
       string are Huffman encoded.
 
    String Length:  The number of octets used to encode the string
       literal, encoded as an integer with 7-bit prefix (see
       Section 4.1.1).
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 12]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    String Data:  The encoded data of the string literal.  If H is '0',
       then the encoded data is the raw octets of the string literal.  If
@@ -715,20 +722,18 @@ Internet-Draft                   HPACK                        April 2014
    the index of the matching pair, represented as an integer with a
    7-bit prefix.
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 13]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    The index value of 0 is not used.  It MUST be treated as a decoding
    error if found in an indexed header field representation.
 
 4.3.  Literal Header Field Representation
-
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 13]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    Literal header field representations contain a literal header field
    value.  Header field names are either provided as a literal or by
@@ -773,18 +778,16 @@ Internet-Draft                   HPACK                        April 2014
    If the header field name matches the header field name of a (name,
    value) pair stored in the Header Table or Static Table, the header
    field name can be represented using the index of that entry.  In this
-   case, the index of the entry, index (which is strictly greater than
-   0), is represented as an integer with a 6-bit prefix (see
-   Section 4.1.1).
 
 
 
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 14]
+Peon & Ruellan          Expires October 06, 2014               [Page 14]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   case, the index of the entry (which is strictly greater than 0) is
+   represented as an integer with a 6-bit prefix (see Section 4.1.1).
 
    Otherwise, the header field name is represented as a literal.  The
    value 0 is represented on 6 bits followed by the header field name
@@ -827,20 +830,23 @@ Internet-Draft                   HPACK                        April 2014
    The literal header field without indexing representation starts with
    the '0000' 4-bit pattern.
 
-   If the header field name matches the header field name of a (name,
-   value) pair stored in the Header Table or Static Table, the header
-   field name can be represented using the index of that entry.  In this
-   case, the index of the entry, index (which is strictly greater than
-   0), is represented as an integer with a 6-bit prefix (see
-   Section 4.1.1).
 
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 15]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 15]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   If the header field name matches the header field name of a (name,
+   value) pair stored in the Header Table or Static Table, the header
+   field name can be represented using the index of that entry.  In this
+   case, the index of the entry (which is strictly greater than 0) is
+   represented as an integer with a 4-bit prefix (see Section 4.1.1).
 
    Otherwise, the header field name is represented as a literal.  The
    value 0 is represented on 4 bits followed by the header field name
@@ -883,20 +889,20 @@ Internet-Draft                   HPACK                        April 2014
    The literal header field never indexed representation starts with the
    '0001' 4-bit pattern.
 
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 16]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    When a header field is represented as a literal header field never
    indexed, it MUST always be encoded with this same representation.  In
    particular, when a peer sends a header field that it received
    represented as a literal header field never indexed, it MUST use the
    same representation to forward this header field.
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 16]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    This representation is intended for protecting header field values
    that are not to be put at risk by compressing them (see Section 5.1
@@ -939,20 +945,22 @@ Internet-Draft                   HPACK                        April 2014
 
                      Maximum Header Table Size Change
 
-   The flag bit being set to '0' signals that a change to the maximum
-   size of the header table.  This new maximum size MUST be lower than
-   or equal to the value of the setting SETTINGS_HEADER_TABLE_SIZE (see
-   [HTTP2]).
-
-   The new maximum size is encoded as an integer with a 4-bit prefix.
 
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 17]
+Peon & Ruellan          Expires October 06, 2014               [Page 17]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   The flag bit being set to '0' signals that a change to the maximum
+   size of the header table.  This new maximum size MUST be lower than
+   or equal to the value of the HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE (see [HTTP2]).
+
+   The new maximum size is encoded as an integer with a 4-bit prefix
+   (see Section 4.1.1).
 
    Change in the maximum size of the header table can trigger entry
    evictions (see Section 3.3.2).
@@ -995,20 +1003,19 @@ Internet-Draft                   HPACK                        April 2014
    needs to have an entropy high enough to not be endangered by a brute-
    force attack, in order to take advantage of HPACK indexing.
 
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 18]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    There is currently no known threat taking advantage of the use of a
    fixed Huffman encoding.  A study has shown that using a fixed Huffman
    encoding table created an information leakage, however this same
    study concluded that an attacker could not take advantage of this
    information leakage to recover any meaningful amount of information
    (see [PETAL]).
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 18]
-
-Internet-Draft                   HPACK                        April 2014
-
 
 5.2.  Memory Consumption
 
@@ -1017,16 +1024,17 @@ Internet-Draft                   HPACK                        April 2014
    allocated by an endpoint.
 
    The amount of memory used by the compressor state is limited by the
-   value of the setting SETTINGS_HEADER_TABLE_SIZE.  This limitation
-   takes into account both the size of the data stored in the header
-   table, and the overhead required by the table structure itself.
+   value of the HTTP/2 setting SETTINGS_HEADER_TABLE_SIZE.  This
+   limitation takes into account both the size of the data stored in the
+   header table, and the overhead required by the table structure
+   itself.
 
    For the decoding side, an endpoint can limit the amount of state
-   memory used by setting an appropriate value for
+   memory used by setting an appropriate value for the setting
    SETTINGS_HEADER_TABLE_SIZE.  For the encoding side, the endpoint can
    limit the amount of state memory it uses by defining a header table
-   maximum size lower than the value of SETTINGS_HEADER_TABLE_SIZE
-   defined by its peer (see Section 4.4).
+   maximum size lower than the value of setting
+   SETTINGS_HEADER_TABLE_SIZE defined by its peer (see Section 4.4).
 
    The amount of temporary memory consumed is linked to the set of
    header fields emitted or received.  However, this amount of temporary
@@ -1050,6 +1058,14 @@ Internet-Draft                   HPACK                        April 2014
    following individuals: Mike Bishop, Jeff Pinner, Julian Reschke,
    Martin Thomson.
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 19]
+
+Internet-Draft                   HPACK                        April 2014
+
+
 7.  References
 
 7.1.  Normative References
@@ -1058,13 +1074,6 @@ Internet-Draft                   HPACK                        April 2014
               Transfer Protocol (HTTP/1.1): Message Syntax and Routing",
               draft-ietf-httpbis-p1-messaging-26 (work in progress),
               February 2014.
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 19]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    [HTTP2]    Belshe, M., Peon, R., and M. Thomson, Ed., "Hypertext
               Transfer Protocol version 2", draft-ietf-httpbis-http2-10
@@ -1106,21 +1115,28 @@ Internet-Draft                   HPACK                        April 2014
    [SPDY]     Belshe, M. and R. Peon, "SPDY Protocol", draft-mbelshe-
               httpbis-spdy-00 (work in progress), February 2012.
 
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 20]
+
+Internet-Draft                   HPACK                        April 2014
+
+
 Appendix A.  Change Log (to be removed by RFC Editor before publication
 
-A.1.  Since draft-ietf-httpbis-header-compression-06
+A.1.  Since draft-ietf-httpbis-header-compression-07
+
+   o  Removed old text on index value of 0.
+
+   o  Added clarification for signalling of maximum table size after a
+      SETTINGS_HEADER_TABLE_SIZE update.
+
+A.2.  Since draft-ietf-httpbis-header-compression-06
 
    o  Updated format to include literal headers that must never be
       compressed.
 
    o  Updated security considerations.
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 20]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    o  Moved integer encoding examples to the appendix.
 
@@ -1130,7 +1146,7 @@ Internet-Draft                   HPACK                        April 2014
 
    o  Updated examples.
 
-A.2.  Since draft-ietf-httpbis-header-compression-05
+A.3.  Since draft-ietf-httpbis-header-compression-05
 
    o  Regenerated examples.
 
@@ -1143,7 +1159,7 @@ A.2.  Since draft-ietf-httpbis-header-compression-05
 
    o  Improved examples (removing unnecessary removals).
 
-A.3.  Since draft-ietf-httpbis-header-compression-04
+A.4.  Since draft-ietf-httpbis-header-compression-04
 
    o  Updated examples: take into account changes in the spec, and show
       more features.
@@ -1154,11 +1170,19 @@ A.3.  Since draft-ietf-httpbis-header-compression-04
 
    o  Editorial changes and clarifications.
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 21]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    o  Added "host" header to the static table.
 
    o  Ordering for list of values (either NULL- or comma-separated).
 
-A.4.  Since draft-ietf-httpbis-header-compression-03
+A.5.  Since draft-ietf-httpbis-header-compression-03
 
    o  A large number of editorial changes; changed the description of
       evicting/adding new entries.
@@ -1169,23 +1193,14 @@ A.4.  Since draft-ietf-httpbis-header-compression-03
 
    o  Merged 'request' and 'response' static headers, as per issue #259
 
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 21]
-
-Internet-Draft                   HPACK                        April 2014
-
-
    o  Changed text to indicate that new headers are added at index 0 and
       expire from the largest index, as per issue #233
 
-A.5.  Since draft-ietf-httpbis-header-compression-02
+A.6.  Since draft-ietf-httpbis-header-compression-02
 
    o  Corrected error in integer encoding pseudocode.
 
-A.6.  Since draft-ietf-httpbis-header-compression-01
+A.7.  Since draft-ietf-httpbis-header-compression-01
 
    o  Refactored of Header Encoding Section: split definitions and
       processing rule.
@@ -1208,9 +1223,16 @@ A.6.  Since draft-ietf-httpbis-header-compression-01
       also be able to free up memory more quickly.  Added information in
       Security Considerations section.
 
-A.7.  Since draft-ietf-httpbis-header-compression-00
+A.8.  Since draft-ietf-httpbis-header-compression-00
 
       Fixed bug/omission in integer representation algorithm.
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 22]
+
+Internet-Draft                   HPACK                        April 2014
+
 
       Changed the document title.
 
@@ -1225,14 +1247,6 @@ A.7.  Since draft-ietf-httpbis-header-compression-00
 
       Corrected erroneous statement about what index can be contained in
       one octet
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 22]
-
-Internet-Draft                   HPACK                        April 2014
-
 
       Added descriptions of opcodes
 
@@ -1268,6 +1282,14 @@ Appendix B.  Static Table
           | 15    | accept-charset              |              |
           | 16    | accept-encoding             |              |
           | 17    | accept-language             |              |
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 23]
+
+Internet-Draft                   HPACK                        April 2014
+
+
           | 18    | accept-ranges               |              |
           | 19    | accept                      |              |
           | 20    | access-control-allow-origin |              |
@@ -1282,14 +1304,6 @@ Appendix B.  Static Table
           | 29    | content-location            |              |
           | 30    | content-range               |              |
           | 31    | content-type                |              |
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 23]
-
-Internet-Draft                   HPACK                        April 2014
-
-
           | 32    | cookie                      |              |
           | 33    | date                        |              |
           | 34    | etag                        |              |
@@ -1324,6 +1338,14 @@ Internet-Draft                   HPACK                        April 2014
 
                        Table 1: Static Table Entries
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 24]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    The table give the index of each entry in the static table.  The full
    index of each entry, to be used for encoding a reference to this
    entry, is computed by adding the number of entries in the header
@@ -1338,14 +1360,6 @@ Appendix C.  Huffman Codes
 
    sym:  The symbol to be represented.  It is the decimal value of an
       octet, possibly prepended with its ASCII representation.  A
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 24]
-
-Internet-Draft                   HPACK                        April 2014
-
-
       specific symbol, "EOS", is used to indicate the end of a string
       literal.
 
@@ -1380,6 +1394,14 @@ Internet-Draft                   HPACK                        April 2014
        ( 12)  |11111111|11111111|11110001|10  3ffffc6  [26]
        ( 13)  |11111111|11111111|11110001|11  3ffffc7  [26]
        ( 14)  |11111111|11111111|11110010|00  3ffffc8  [26]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 25]
+
+Internet-Draft                   HPACK                        April 2014
+
+
        ( 15)  |11111111|11111111|11110010|01  3ffffc9  [26]
        ( 16)  |11111111|11111111|11110010|10  3ffffca  [26]
        ( 17)  |11111111|11111111|11110010|11  3ffffcb  [26]
@@ -1394,14 +1416,6 @@ Internet-Draft                   HPACK                        April 2014
        ( 26)  |11111111|11111111|11110101|00  3ffffd4  [26]
        ( 27)  |11111111|11111111|11110101|01  3ffffd5  [26]
        ( 28)  |11111111|11111111|11110101|10  3ffffd6  [26]
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 25]
-
-Internet-Draft                   HPACK                        April 2014
-
-
        ( 29)  |11111111|11111111|11110101|11  3ffffd7  [26]
        ( 30)  |11111111|11111111|11110110|00  3ffffd8  [26]
        ( 31)  |11111111|11111111|11110110|01  3ffffd9  [26]
@@ -1436,6 +1450,14 @@ Internet-Draft                   HPACK                        April 2014
    '<' ( 60)  |11111111|11111110|0              1fffc  [17]
    '=' ( 61)  |100111                              27  [ 6]
    '>' ( 62)  |11111111|1111101                  7ffd  [15]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 26]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    '?' ( 63)  |11111111|01                        3fd  [10]
    '@' ( 64)  |11111111|1111110                  7ffe  [15]
    'A' ( 65)  |1100111                             67  [ 7]
@@ -1450,14 +1472,6 @@ Internet-Draft                   HPACK                        April 2014
    'J' ( 74)  |11111001|1                         1f3  [ 9]
    'K' ( 75)  |11111010|0                         1f4  [ 9]
    'L' ( 76)  |11111010|1                         1f5  [ 9]
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 26]
-
-Internet-Draft                   HPACK                        April 2014
-
-
    'M' ( 77)  |1101011                             6b  [ 7]
    'N' ( 78)  |1101100                             6c  [ 7]
    'O' ( 79)  |11110001|                           f1  [ 8]
@@ -1492,6 +1506,14 @@ Internet-Draft                   HPACK                        April 2014
    'l' (108)  |101100                              2c  [ 6]
    'm' (109)  |101101                              2d  [ 6]
    'n' (110)  |101110                              2e  [ 6]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 27]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    'o' (111)  |01101                                d  [ 5]
    'p' (112)  |101111                              2f  [ 6]
    'q' (113)  |11111110|0                         1fc  [ 9]
@@ -1506,14 +1528,6 @@ Internet-Draft                   HPACK                        April 2014
    'z' (122)  |11110111|                           f7  [ 8]
    '{' (123)  |11111111|11111110|1              1fffd  [17]
    '|' (124)  |11111111|1100                      ffc  [12]
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 27]
-
-Internet-Draft                   HPACK                        April 2014
-
-
    '}' (125)  |11111111|11111111|0              1fffe  [17]
    '~' (126)  |11111111|1101                      ffd  [12]
        (127)  |11111111|11111111|11110110|11  3ffffdb  [26]
@@ -1548,6 +1562,14 @@ Internet-Draft                   HPACK                        April 2014
        (156)  |11111111|11111111|11111110|00  3fffff8  [26]
        (157)  |11111111|11111111|11111110|01  3fffff9  [26]
        (158)  |11111111|11111111|11111110|10  3fffffa  [26]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 28]
+
+Internet-Draft                   HPACK                        April 2014
+
+
        (159)  |11111111|11111111|11111110|11  3fffffb  [26]
        (160)  |11111111|11111111|11111111|00  3fffffc  [26]
        (161)  |11111111|11111111|11111111|01  3fffffd  [26]
@@ -1562,14 +1584,6 @@ Internet-Draft                   HPACK                        April 2014
        (170)  |11111111|11111111|11000011|0   1ffff86  [25]
        (171)  |11111111|11111111|11000011|1   1ffff87  [25]
        (172)  |11111111|11111111|11000100|0   1ffff88  [25]
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 28]
-
-Internet-Draft                   HPACK                        April 2014
-
-
        (173)  |11111111|11111111|11000100|1   1ffff89  [25]
        (174)  |11111111|11111111|11000101|0   1ffff8a  [25]
        (175)  |11111111|11111111|11000101|1   1ffff8b  [25]
@@ -1604,6 +1618,14 @@ Internet-Draft                   HPACK                        April 2014
        (204)  |11111111|11111111|11010100|0   1ffffa8  [25]
        (205)  |11111111|11111111|11010100|1   1ffffa9  [25]
        (206)  |11111111|11111111|11010101|0   1ffffaa  [25]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 29]
+
+Internet-Draft                   HPACK                        April 2014
+
+
        (207)  |11111111|11111111|11010101|1   1ffffab  [25]
        (208)  |11111111|11111111|11010110|0   1ffffac  [25]
        (209)  |11111111|11111111|11010110|1   1ffffad  [25]
@@ -1618,14 +1640,6 @@ Internet-Draft                   HPACK                        April 2014
        (218)  |11111111|11111111|11011011|0   1ffffb6  [25]
        (219)  |11111111|11111111|11011011|1   1ffffb7  [25]
        (220)  |11111111|11111111|11011100|0   1ffffb8  [25]
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 29]
-
-Internet-Draft                   HPACK                        April 2014
-
-
        (221)  |11111111|11111111|11011100|1   1ffffb9  [25]
        (222)  |11111111|11111111|11011101|0   1ffffba  [25]
        (223)  |11111111|11111111|11011101|1   1ffffbb  [25]
@@ -1660,6 +1674,14 @@ Internet-Draft                   HPACK                        April 2014
        (252)  |11111111|11111111|11101100|0   1ffffd8  [25]
        (253)  |11111111|11111111|11101100|1   1ffffd9  [25]
        (254)  |11111111|11111111|11101101|0   1ffffda  [25]
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 30]
+
+Internet-Draft                   HPACK                        April 2014
+
+
        (255)  |11111111|11111111|11101101|1   1ffffdb  [25]
    EOS (256)  |11111111|11111111|11101110|0   1ffffdc  [25]
 
@@ -1672,15 +1694,6 @@ Appendix D.  Examples
    without Huffman coding.
 
 D.1.  Integer Representation Examples
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 30]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    This section shows the representation of integer values in details
    (see Section 4.1.1).
@@ -1717,6 +1730,14 @@ D.1.2.  Example 2: Encoding 1337 using a 5-bit prefix
 
 
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 31]
+
+Internet-Draft                   HPACK                        April 2014
+
+
             I % 128 == 26
 
             26 + 128 == 154
@@ -1729,14 +1750,6 @@ D.1.2.  Example 2: Encoding 1337 using a 5-bit prefix
             terminates.
 
          I, now 10, is encoded on 8 bits as: 00001010.
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 31]
-
-Internet-Draft                   HPACK                        April 2014
-
 
       The process ends.
 
@@ -1773,6 +1786,14 @@ D.2.1.  Literal Header Field with Indexing
 
    Header set to encode:
 
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 32]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    custom-key: custom-header
 
 
@@ -1785,14 +1806,6 @@ D.2.1.  Literal Header Field with Indexing
 
 
    Decoding process:
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 32]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    40                                      | == Literal indexed ==
    0a                                      |   Literal name (len = 10)
@@ -1826,6 +1839,17 @@ D.2.2.  Literal Header Field without Indexing
 
    Reference set: empty.
 
+
+
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 33]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    Hex dump of encoded data:
 
    040c 2f73 616d 706c 652f 7061 7468      | ../sample/path
@@ -1842,13 +1866,6 @@ D.2.2.  Literal Header Field without Indexing
 
 
    Header table (after decoding): empty.
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 33]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    Decoded header set:
 
@@ -1880,6 +1897,15 @@ D.2.3.  Indexed Header Field
                                            | -> :method: GET
 
 
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 34]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    Header Table (after decoding):
 
    [  1] (s =  42) :method: GET
@@ -1894,17 +1920,9 @@ D.2.3.  Indexed Header Field
 D.2.4.  Indexed Header Field from Static Table
 
    The header field representation uses an indexed header field, from
-   the static table.  In this example, the SETTINGS_HEADER_TABLE_SIZE is
-   set to 0, therefore, the entry is not copied into the header table.
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 34]
-
-Internet-Draft                   HPACK                        April 2014
-
+   the static table.  In this example, the HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE is set to 0, therefore, the entry is not
+   copied into the header table.
 
    Header set to encode:
 
@@ -1937,6 +1955,13 @@ D.3.  Request Examples without Huffman
    This section shows several consecutive header sets, corresponding to
    HTTP requests, on the same connection.
 
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 35]
+
+Internet-Draft                   HPACK                        April 2014
+
+
 D.3.1.  First request
 
    Header set to encode:
@@ -1953,13 +1978,6 @@ D.3.1.  First request
 
    8287 8644 0f77 7777 2e65 7861 6d70 6c65 | ...D.www.example
    2e63 6f6d                               | .com
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 35]
-
-Internet-Draft                   HPACK                        April 2014
 
 
    Decoding process:
@@ -1991,6 +2009,15 @@ Internet-Draft                   HPACK                        April 2014
          Table size: 180
 
 
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 36]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    Decoded header set:
 
    :method: GET
@@ -2005,18 +2032,6 @@ D.3.2.  Second request
    sets.
 
    Header set to encode:
-
-
-
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 36]
-
-Internet-Draft                   HPACK                        April 2014
-
 
    :method: GET
    :scheme: http
@@ -2050,6 +2065,15 @@ Internet-Draft                   HPACK                        April 2014
 
    Header Table (after decoding):
 
+
+
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 37]
+
+Internet-Draft                   HPACK                        April 2014
+
+
    [  1] (s =  53) cache-control: no-cache
    [  2] (s =  57) :authority: www.example.com
    [  3] (s =  38) :path: /
@@ -2065,13 +2089,6 @@ Internet-Draft                   HPACK                        April 2014
    :path: /
    :scheme: http
    :method: GET
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 37]
-
-Internet-Draft                   HPACK                        April 2014
 
 
 D.3.3.  Third request
@@ -2104,31 +2121,16 @@ D.3.3.  Third request
    790c 6375 7374 6f6d 2d76 616c 7565      | y.custom-value
 
 
-   Decoding process:
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 38]
+Peon & Ruellan          Expires October 06, 2014               [Page 38]
 
 Internet-Draft                   HPACK                        April 2014
 
+
+   Decoding process:
 
    30                                      | == Empty reference set ==
                                            |   idx = 0
@@ -2179,9 +2181,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 39]
+Peon & Ruellan          Expires October 06, 2014               [Page 39]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2237,7 +2237,7 @@ D.4.1.  First request
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 40]
+Peon & Ruellan          Expires October 06, 2014               [Page 40]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2293,7 +2293,7 @@ D.4.2.  Second request
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 41]
+Peon & Ruellan          Expires October 06, 2014               [Page 41]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2349,7 +2349,7 @@ D.4.3.  Third request
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 42]
+Peon & Ruellan          Expires October 06, 2014               [Page 42]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2405,7 +2405,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 43]
+Peon & Ruellan          Expires October 06, 2014               [Page 43]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2433,8 +2433,9 @@ Internet-Draft                   HPACK                        April 2014
 D.5.  Response Examples without Huffman
 
    This section shows several consecutive header sets, corresponding to
-   HTTP responses, on the same connection.  SETTINGS_HEADER_TABLE_SIZE
-   is set to the value of 256 octets, causing some evictions to occur.
+   HTTP responses, on the same connection.  The HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE is set to the value of 256 octets, causing
+   some evictions to occur.
 
 D.5.1.  First response
 
@@ -2460,8 +2461,7 @@ D.5.1.  First response
 
 
 
-
-Peon & Ruellan          Expires October 05, 2014               [Page 44]
+Peon & Ruellan          Expires October 06, 2014               [Page 44]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2517,7 +2517,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 45]
+Peon & Ruellan          Expires October 06, 2014               [Page 45]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2573,7 +2573,7 @@ D.5.2.  Second response
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 46]
+Peon & Ruellan          Expires October 06, 2014               [Page 46]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2629,7 +2629,7 @@ D.5.3.  Third response
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 47]
+Peon & Ruellan          Expires October 06, 2014               [Page 47]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2685,7 +2685,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 48]
+Peon & Ruellan          Expires October 06, 2014               [Page 48]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2716,9 +2716,11 @@ Internet-Draft                   HPACK                        April 2014
 D.6.  Response Examples with Huffman
 
    This section shows the same examples as the previous section, but
-   using Huffman encoding for the literal values.  The eviction
-   mechanism uses the length of the decoded literal values, so the same
-   evictions occurs as in the previous section.
+   using Huffman encoding for the literal values.  The HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE is set to the value of 256 octets, causing
+   some evictions to occur.  The eviction mechanism uses the length of
+   the decoded literal values, so the same evictions occurs as in the
+   previous section.
 
 D.6.1.  First response
 
@@ -2732,21 +2734,17 @@ D.6.1.  First response
 
    Reference set: empty.
 
+   Hex dump of encoded data:
 
 
 
 
 
 
-
-
-
-Peon & Ruellan          Expires October 05, 2014               [Page 49]
+Peon & Ruellan          Expires October 06, 2014               [Page 49]
 
 Internet-Draft                   HPACK                        April 2014
 
-
-   Hex dump of encoded data:
 
    4882 4017 5985 bf06 724b 9763 93d6 dbb2 | H.@.Y...rK.c....
    9884 de2a 7188 0506 2098 5131 09b5 6ba3 | ...*q... .Q1..k.
@@ -2797,7 +2795,9 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 50]
+
+
+Peon & Ruellan          Expires October 06, 2014               [Page 50]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2853,7 +2853,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 51]
+Peon & Ruellan          Expires October 06, 2014               [Page 51]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2909,7 +2909,7 @@ D.6.2.  Second response
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 52]
+Peon & Ruellan          Expires October 06, 2014               [Page 52]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -2965,7 +2965,7 @@ D.6.3.  Third response
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 53]
+Peon & Ruellan          Expires October 06, 2014               [Page 53]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -3021,7 +3021,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 54]
+Peon & Ruellan          Expires October 06, 2014               [Page 54]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -3077,7 +3077,7 @@ Internet-Draft                   HPACK                        April 2014
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 55]
+Peon & Ruellan          Expires October 06, 2014               [Page 55]
 
 Internet-Draft                   HPACK                        April 2014
 
@@ -3132,4 +3132,4 @@ Authors' Addresses
 
 
 
-Peon & Ruellan          Expires October 05, 2014               [Page 56]
+Peon & Ruellan          Expires October 06, 2014               [Page 56]
