@@ -2317,7 +2317,7 @@ B   C              / \
                <h3 id="rfc.section.8.1.2"><a href="#rfc.section.8.1.2">8.1.2</a>&nbsp;Examples
                </h3>
                <p id="rfc.section.8.1.2.p.1">This section shows HTTP/1.1 requests and responses, with illustrations of equivalent HTTP/2 requests and responses.</p>
-               <p id="rfc.section.8.1.2.p.2">An HTTP GET request includes request header fields and no body and is therefore transmitted as a single <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the serialized block of request header fields. The last <a href="#HEADERS" class="smpl">HEADERS</a> frame in the sequence has both the END_HEADERS and END_STREAM flags set:
+               <p id="rfc.section.8.1.2.p.2">An HTTP GET request includes request header fields and no body and is therefore transmitted as a single <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the serialized block of request header fields. The <a href="#HEADERS" class="smpl">HEADERS</a> frame in the following has both the END_HEADERS and END_STREAM flags set; no <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames are sent:
                </p>
                <div id="rfc.figure.u.7"></div><pre class="inline">  GET /resource HTTP/1.1           HEADERS
   Host: example.org          ==&gt;     + END_STREAM
@@ -2327,7 +2327,7 @@ B   C              / \
                                        :path = /resource
                                        host = example.org
                                        accept = image/jpeg
-</pre><p id="rfc.section.8.1.2.p.4">Similarly, a response that includes only response header fields is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame (again, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the serialized block of response header fields. The last <a href="#HEADERS" class="smpl">HEADERS</a> frame in the sequence has both the END_HEADERS and END_STREAM flag set:
+</pre><p id="rfc.section.8.1.2.p.4">Similarly, a response that includes only response header fields is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame (again, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the serialized block of response header fields.
                </p>
                <div id="rfc.figure.u.8"></div><pre class="inline">  HTTP/1.1 304 Not Modified        HEADERS
   ETag: "xyzzy"              ==&gt;     + END_STREAM
@@ -2339,18 +2339,24 @@ B   C              / \
                </p>
                <div id="rfc.figure.u.9"></div><pre class="inline">  POST /resource HTTP/1.1          HEADERS
   Host: example.org          ==&gt;     - END_STREAM
-  Content-Type: image/jpeg           + END_HEADERS
+  Content-Type: image/jpeg           - END_HEADERS
   Content-Length: 123                  :method = POST
-                                       :scheme = https
-  {binary data}                        :path = /resource
+                                       :path = /resource
+  {binary data}                        content-type = image/jpeg
+
+                                   CONTINUATION
+                                     + END_HEADERS
                                        :authority = example.org
-                                       content-type = image/jpeg
+                                       :scheme = https
                                        content-length = 123
 
                                    DATA
                                      + END_STREAM
                                    {binary data}
-</pre><p id="rfc.section.8.1.2.p.8">A response that includes header fields and payload data is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#DATA" class="smpl">DATA</a> frame in the sequence having the END_STREAM flag set:
+</pre><p>Note that data contributing to any given header field could be spread between header block fragments. The allocation of header
+                  fields to frames this example is illustrative only.
+               </p>
+               <p id="rfc.section.8.1.2.p.8">A response that includes header fields and payload data is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#DATA" class="smpl">DATA</a> frame in the sequence having the END_STREAM flag set:
                </p>
                <div id="rfc.figure.u.10"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
   Content-Type: image/jpeg   ==&gt;     - END_STREAM
@@ -2362,7 +2368,7 @@ B   C              / \
                                    DATA
                                      + END_STREAM
                                    {binary data}
-</pre><p id="rfc.section.8.1.2.p.10">Trailing header fields are sent as a header block after both the request or response header block and all the <a href="#DATA" class="smpl">DATA</a> frames have been sent. The sequence of <a href="#HEADERS" class="smpl">HEADERS</a>/<a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames that bears the trailers includes a terminal frame that has both END_HEADERS and END_STREAM flags set.
+</pre><p id="rfc.section.8.1.2.p.10">Trailing header fields are sent as a header block after both the request or response header block and all the <a href="#DATA" class="smpl">DATA</a> frames have been sent. The <a href="#HEADERS" class="smpl">HEADERS</a> frame starting the trailers header block has the END_STREAM flag set.
                </p>
                <div id="rfc.figure.u.11"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
   Content-Type: image/jpeg   ==&gt;     - END_STREAM

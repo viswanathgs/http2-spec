@@ -2981,9 +2981,9 @@ Internet-Draft                   HTTP/2                       April 2014
    An HTTP GET request includes request header fields and no body and is
    therefore transmitted as a single HEADERS [HEADERS] frame, followed
    by zero or more CONTINUATION [CONTINUATION] frames containing the
-   serialized block of request header fields.  The last HEADERS
-   [HEADERS] frame in the sequence has both the END_HEADERS and
-   END_STREAM flags set:
+   serialized block of request header fields.  The HEADERS [HEADERS]
+   frame in the following has both the END_HEADERS and END_STREAM flags
+   set; no CONTINUATION [CONTINUATION] frames are sent:
 
    GET /resource HTTP/1.1           HEADERS
    Host: example.org          ==>     + END_STREAM
@@ -2998,8 +2998,7 @@ Internet-Draft                   HTTP/2                       April 2014
    Similarly, a response that includes only response header fields is
    transmitted as a HEADERS [HEADERS] frame (again, followed by zero or
    more CONTINUATION [CONTINUATION] frames) containing the serialized
-   block of response header fields.  The last HEADERS [HEADERS] frame in
-   the sequence has both the END_HEADERS and END_STREAM flag set:
+   block of response header fields.
 
    HTTP/1.1 304 Not Modified        HEADERS
    ETag: "xyzzy"              ==>     + END_STREAM
@@ -3017,7 +3016,8 @@ Internet-Draft                   HTTP/2                       April 2014
    the END_HEADERS flag set and the final DATA [DATA] frame having the
    END_STREAM flag set:
 
-
+     POST /resource HTTP/1.1          HEADERS
+     Host: example.org          ==>     - END_STREAM
 
 
 
@@ -3026,19 +3026,24 @@ Belshe, et al.          Expires October 09, 2014               [Page 54]
 Internet-Draft                   HTTP/2                       April 2014
 
 
-     POST /resource HTTP/1.1          HEADERS
-     Host: example.org          ==>     - END_STREAM
-     Content-Type: image/jpeg           + END_HEADERS
+     Content-Type: image/jpeg           - END_HEADERS
      Content-Length: 123                  :method = POST
-                                          :scheme = https
-     {binary data}                        :path = /resource
+                                          :path = /resource
+     {binary data}                        content-type = image/jpeg
+
+                                      CONTINUATION
+                                        + END_HEADERS
                                           :authority = example.org
-                                          content-type = image/jpeg
+                                          :scheme = https
                                           content-length = 123
 
                                       DATA
                                         + END_STREAM
                                       {binary data}
+
+   Note that data contributing to any given header field could be spread
+   between header block fragments.  The allocation of header fields to
+   frames this example is illustrative only.
 
 
    A response that includes header fields and payload data is
@@ -3061,19 +3066,14 @@ Internet-Draft                   HTTP/2                       April 2014
 
    Trailing header fields are sent as a header block after both the
    request or response header block and all the DATA [DATA] frames have
-   been sent.  The sequence of HEADERS [HEADERS]/CONTINUATION
-   [CONTINUATION] frames that bears the trailers includes a terminal
-   frame that has both END_HEADERS and END_STREAM flags set.
+   been sent.  The HEADERS [HEADERS] frame starting the trailers header
+   block has the END_STREAM flag set.
 
      HTTP/1.1 200 OK                  HEADERS
      Content-Type: image/jpeg   ==>     - END_STREAM
      Transfer-Encoding: chunked         + END_HEADERS
      Trailer: Foo                         :status        = 200
                                           content-length = 123
-     123                                  content-type   = image/jpeg
-     {binary data}                        trailer        = Foo
-     0
-     Foo: bar                         DATA
 
 
 
@@ -3082,6 +3082,10 @@ Belshe, et al.          Expires October 09, 2014               [Page 55]
 Internet-Draft                   HTTP/2                       April 2014
 
 
+     123                                  content-type   = image/jpeg
+     {binary data}                        trailer        = Foo
+     0
+     Foo: bar                         DATA
                                         - END_STREAM
                                       {binary data}
 
@@ -3125,10 +3129,6 @@ Internet-Draft                   HTTP/2                       April 2014
    an HTTP/2 request, but when it is MUST NOT contain any value other
    than "trailers".
 
-   Note:  HTTP/2 purposefully does not support upgrade to another
-      protocol.  The handshake methods described in Section 3 are
-      believed sufficient to negotiate the use of alternative protocols.
-
 
 
 
@@ -3137,6 +3137,10 @@ Belshe, et al.          Expires October 09, 2014               [Page 56]
 
 Internet-Draft                   HTTP/2                       April 2014
 
+
+   Note:  HTTP/2 purposefully does not support upgrade to another
+      protocol.  The handshake methods described in Section 3 are
+      believed sufficient to negotiate the use of alternative protocols.
 
 8.1.3.1.  Request Header Fields
 
@@ -3180,10 +3184,6 @@ Internet-Draft                   HTTP/2                       April 2014
    ":method", ":scheme", and ":path" header fields, unless this is a
    CONNECT request (Section 8.3).  An HTTP request that omits mandatory
    header fields is malformed (Section 8.1.3.5).
-
-
-
-
 
 
 
