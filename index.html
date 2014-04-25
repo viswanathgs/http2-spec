@@ -1955,7 +1955,9 @@ Upgrade: h2c
                until all in-progress streams complete.
             </p>
             <p id="rfc.section.6.8.p.10">An endpoint MAY send multiple GOAWAY frames if circumstances change. For instance, an endpoint that sends GOAWAY with <a href="#NO_ERROR" class="smpl">NO_ERROR</a> during graceful shutdown could subsequently encounter an condition that requires immediate termination of the connection.
-               The last stream identifier from the last GOAWAY frame received applies.
+               The last stream identifier from the last GOAWAY frame received indicates which streams could have been acted upon. Servers
+               SHOULD NOT increase the value they send in the last stream identifier, since this would cause clients to abandon automatic
+               retry of requests if a GOAWAY frame is lost.
             </p>
             <p id="rfc.section.6.8.p.11">After sending a GOAWAY frame, the sender can discard frames for streams with identifiers higher than the identified last stream.
                However, any frames that alter connection state cannot be completely ignored. For instance, <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be minimally processed to ensure the state maintained for header compression is consistent (see <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>); similarly DATA frames MUST be counted toward the connection flow control window. Failure to process these frames can cause
