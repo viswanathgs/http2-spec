@@ -115,16 +115,16 @@ Internet-Draft                   HTTP/2                       April 2014
 
 
        5.3.2.  Dependency Weighting  . . . . . . . . . . . . . . . .  24
-       5.3.3.  Reprioritization  . . . . . . . . . . . . . . . . . .  24
+       5.3.3.  Reprioritization  . . . . . . . . . . . . . . . . . .  25
        5.3.4.  Prioritization State Management . . . . . . . . . . .  25
-       5.3.5.  Default Priorities  . . . . . . . . . . . . . . . . .  26
-     5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  26
+       5.3.5.  Default Priorities  . . . . . . . . . . . . . . . . .  27
+     5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  27
        5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  27
        5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  27
        5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  28
    6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  28
      6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  28
-     6.2.  HEADERS . . . . . . . . . . . . . . . . . . . . . . . . .  30
+     6.2.  HEADERS . . . . . . . . . . . . . . . . . . . . . . . . .  31
      6.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . . . .  33
      6.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . . . .  34
      6.5.  SETTINGS  . . . . . . . . . . . . . . . . . . . . . . . .  34
@@ -1274,13 +1274,13 @@ Internet-Draft                   HTTP/2                       April 2014
    A stream that is not dependent on any other stream can be given a
    stream dependency of 0x0.
 
+   A stream that depends on another stream is a dependent stream.  The
+   stream upon which a stream is dependent is a depedency parent, or
+   parent stream.
+
    When assigning a dependency on another stream, by default, the stream
-   is added as a new dependency of the stream it depends on.  For
-   example, if streams B and C are dependent on stream A, and if stream
-   D is created with a dependency on stream A, this results in a
-   dependency order of A followed by B, C, and D.
-
-
+   is added as a new dependency of the parent stream.  For example, if
+   streams B and C are dependent on stream A, and if stream D is created
 
 
 
@@ -1290,6 +1290,9 @@ Belshe, et al.          Expires October 27, 2014               [Page 23]
 Internet-Draft                   HTTP/2                       April 2014
 
 
+   with a dependency on stream A, this results in a dependency order of
+   A followed by B, C, and D.
+
        A                 A
       / \      ==>      /|\
      B   C             B D C
@@ -1298,11 +1301,10 @@ Internet-Draft                   HTTP/2                       April 2014
 
    An exclusive flag allows for the insertion of a new level of
    dependencies.  The exclusive flag causes the stream to become the
-   sole dependency of the stream it depends on, causing other
-   dependencies to become dependencies of the stream.  In the previous
-   example, if stream D is created with an exclusive dependency on
-   stream A, this results in a dependency order of A followed by D
-   followed by B and C.
+   sole dependency of its parent stream, causing other dependencies to
+   become dependent on the prioritized stream.  In the previous example,
+   if stream D is created with an exclusive dependency on stream A, this
+   results in D becoming the dependency parent of B and C.
 
                          A
        A                 |
@@ -1313,29 +1315,27 @@ Internet-Draft                   HTTP/2                       April 2014
                  Example of Exclusive Dependency Creation
 
    Inside the dependency tree, a dependent stream SHOULD only be
-   allocated resources if the streams that it depends on are either
-   closed, or it is not possible to make progress on them.
+   allocated resources if all of the streams that it depends on (the
+   chain of parent streams up to 0x0) are either closed, or it is not
+   possible to make progress on them.
+
+   A stream cannot depend on itself.  An endpoint MAY either treat this
+   as a stream error (Section 5.4.2) of type PROTOCOL_ERROR, or assign
+   default priority values (Section 5.3.5) to the stream.
 
 5.3.2.  Dependency Weighting
 
-   Each dependency is allocated an integer weight between 1 to 256
-   (inclusive).
+   All dependent streams are allocated an integer weight between 1 to
+   256 (inclusive).
 
-   Streams with the same dependencies SHOULD be allocated resources
+   Streams with the same parent SHOULD be allocated resources
    proportionally based on their weight.  Thus, if stream B depends on
    stream A with weight 4, and C depends on stream A with weight 12, and
    if no progress can be made on A, stream B ideally receives one third
    of the resources allocated to stream C.
 
-   A stream MUST NOT depend on itself.  An endpoint MAY either treat
-   this as a stream error (Section 5.4.2) of type PROTOCOL_ERROR, or
-   assign default priority values (Section 5.3.5) to the stream.
 
-5.3.3.  Reprioritization
 
-   Stream priorities are changed using the PRIORITY frame.  Setting a
-   dependency causes a stream to become dependent on the identified
-   stream.
 
 
 
@@ -1346,19 +1346,27 @@ Belshe, et al.          Expires October 27, 2014               [Page 24]
 Internet-Draft                   HTTP/2                       April 2014
 
 
-   All streams that are dependent on a reprioritized stream move with
-   it.  Setting a dependency with the exclusive flag for a reprioritized
-   stream moves all the dependencies of the stream it depends on to
-   become dependencies of the reprioritized stream.
+5.3.3.  Reprioritization
+
+   Stream priorities are changed using the PRIORITY frame.  Setting a
+   dependency causes a stream to become dependent on the identified
+   parent stream.
+
+   Dependent streams move with their parent stream if the parent is
+   reprioritized.  Setting a dependency with the exclusive flag for a
+   reprioritized stream moves all the dependencies of the new parent
+   stream to become dependent on the reprioritized stream.
 
    If a stream is made dependent on one of its own dependencies, the
    formerly dependent stream is first moved to be dependent on the
-   reprioritized stream's previous dependency, retaining its weight.
+   reprioritized stream's previous parent.  The moved dependency retains
+   its weight.
 
    For example, for an original dependency tree where B and C depend on
-   A, D and E depend on C, and F depends on D; if A is made dependent on
-   D, then D takes the place of A with A dependent on D and all other
-   dependency relationships staying the same.
+   A, D and E depend on C, and F depends on D.  If A is made dependent
+   on D, then D takes the place of A.  All other dependency
+   relationships either stay the same, except for F, which becomes
+   dependent on A if the reprioritization is exclusive.
 
        ?                ?                ?                 ?
        |               / \               |                 |
@@ -1368,7 +1376,7 @@ Internet-Draft                   HTTP/2                       April 2014
         / \                 |             / \             /|\
        D   E                E            B   C           B C F
        |                                     |             |
-       F                                     E             F
+       F                                     E             E
                   (intermediate)   (non-exclusive)    (exclusive)
 
                      Example of Dependency Reordering
@@ -1376,24 +1384,16 @@ Internet-Draft                   HTTP/2                       April 2014
 5.3.4.  Prioritization State Management
 
    When a stream is removed from the dependency tree, its dependencies
-   can be moved to become dependent on the stream the closed stream
-   depends on.  The weights of new dependencies SHOULD be assigned by
-   distributing the weight of the dependency of the closed stream
-   proportionally based on the weights of its dependencies.
+   can be moved to become dependent on the parent of the closed stream.
+   The weights of new dependencies are recalculated by distributing the
+   weight of the dependency of the closed stream proportionally based on
+   the weights of its dependencies.
 
    Streams that are removed from the dependency tree cause some
    prioritization information to be lost.  Resources are shared between
-   streams that depend on the same stream, which means that if a stream
-   in that set closes or becomes blocked, any spare capacity allocated
-   to a stream is distributed to the immediate neighbors of the stream.
-   However, if the common dependency is removed from the tree, those
-   streams share resources with streams at the next highest level.
-
-   For example, assume streams A and B share a dependency, and streams C
-   and D both depend on stream A. Prior to the removal of stream A, if
-   streams A and D are unable to proceed, then stream C receives all the
-   resources dedicated to stream A.  If stream A is removed from the
-   tree, the weight of stream A is divided between streams C and D.  If
+   streams with the same parent stream, which means that if a stream in
+   that set closes or becomes blocked, any spare capacity allocated to a
+   stream is distributed to the immediate neighbors of the stream.
 
 
 
@@ -1402,6 +1402,14 @@ Belshe, et al.          Expires October 27, 2014               [Page 25]
 Internet-Draft                   HTTP/2                       April 2014
 
 
+   However, if the common dependency is removed from the tree, those
+   streams share resources with streams at the next highest level.
+
+   For example, assume streams A and B share a parent, and streams C and
+   D both depend on stream A. Prior to the removal of stream A, if
+   streams A and D are unable to proceed, then stream C receives all the
+   resources dedicated to stream A.  If stream A is removed from the
+   tree, the weight of stream A is divided between streams C and D.  If
    stream D is still unable to proceed, this results in stream C
    receiving a reduced proportion of resources.  For equal starting
    weights, C receives one third, rather than one half, of available
@@ -1409,11 +1417,11 @@ Internet-Draft                   HTTP/2                       April 2014
 
    It is possible for a stream to become closed while prioritization
    information that creates a dependency on that stream is in transit.
-   If a stream identified in a dependency has been closed and any
-   associated priority information destroyed then the dependent stream
-   is instead assigned a default priority.  This potentially creates
-   suboptimal prioritization, since the stream can be given an effective
-   priority that is higher than expressed by a peer.
+   If a stream identified in a dependency has had any associated
+   priority information destroyed, then the dependent stream is instead
+   assigned a default priority.  This potentially creates suboptimal
+   prioritization, since the stream could be given a priority that is
+   higher than intended.
 
    To avoid these problems, endpoints SHOULD maintain prioritization
    state for closed streams for a period after streams close.
@@ -1438,16 +1446,8 @@ Internet-Draft                   HTTP/2                       April 2014
    closed stream SHOULD alter the dependencies of the streams that
    depend on it, if it has retained enough state to do so.
 
-5.3.5.  Default Priorities
 
-   Providing priority information is optional.  Streams are assigned a
-   dependency on stream 0x0.  Pushed streams (Section 8.2) initially
-   depend on their associated stream.  In both cases, streams are
-   assigned a default weight of 16.
 
-5.4.  Error Handling
-
-   HTTP/2 framing permits two classes of error:
 
 
 
@@ -1457,6 +1457,17 @@ Belshe, et al.          Expires October 27, 2014               [Page 26]
 
 Internet-Draft                   HTTP/2                       April 2014
 
+
+5.3.5.  Default Priorities
+
+   Providing priority information is optional.  Streams are assigned a
+   default dependency on stream 0x0.  Pushed streams (Section 8.2)
+   initially depend on their associated stream.  In both cases, streams
+   are assigned a default weight of 16.
+
+5.4.  Error Handling
+
+   HTTP/2 framing permits two classes of error:
 
    o  An error condition that renders the entire connection unusable is
       a connection error.
@@ -1494,6 +1505,15 @@ Internet-Draft                   HTTP/2                       April 2014
 
    An endpoint that detects a stream error sends a RST_STREAM frame
    (Section 6.4) that contains the stream identifier of the stream where
+
+
+
+
+Belshe, et al.          Expires October 27, 2014               [Page 27]
+
+Internet-Draft                   HTTP/2                       April 2014
+
+
    the error occurred.  The RST_STREAM frame includes an error code that
    indicates the type of error.
 
@@ -1506,14 +1526,6 @@ Internet-Draft                   HTTP/2                       April 2014
 
    Normally, an endpoint SHOULD NOT send more than one RST_STREAM frame
    for any stream.  However, an endpoint MAY send additional RST_STREAM
-
-
-
-Belshe, et al.          Expires October 27, 2014               [Page 27]
-
-Internet-Draft                   HTTP/2                       April 2014
-
-
    frames if it receives frames on a closed stream after more than a
    round-trip time.  This behavior is permitted to deal with misbehaving
    implementations.
@@ -1550,6 +1562,14 @@ Internet-Draft                   HTTP/2                       April 2014
    DATA frames MAY also contain arbitrary padding.  Padding can be added
    to DATA frames to hide the size of messages.
 
+
+
+
+Belshe, et al.          Expires October 27, 2014               [Page 28]
+
+Internet-Draft                   HTTP/2                       April 2014
+
+
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1561,14 +1581,6 @@ Internet-Draft                   HTTP/2                       April 2014
     +---------------------------------------------------------------+
 
                             DATA Frame Payload
-
-
-
-
-Belshe, et al.          Expires October 27, 2014               [Page 28]
-
-Internet-Draft                   HTTP/2                       April 2014
-
 
    The DATA frame contains the following fields:
 
@@ -1605,6 +1617,15 @@ Internet-Draft                   HTTP/2                       April 2014
    PAD_LOW (0x8):  Bit 4 being set indicates that the Pad Low field is
       present.
 
+
+
+
+
+Belshe, et al.          Expires October 27, 2014               [Page 29]
+
+Internet-Draft                   HTTP/2                       April 2014
+
+
    PAD_HIGH (0x10):  Bit 5 being set indicates that the Pad High field
       is present.  This bit MUST NOT be set unless the PAD_LOW flag is
       also set.  Endpoints that receive a frame with PAD_HIGH set and
@@ -1618,13 +1639,6 @@ Internet-Draft                   HTTP/2                       April 2014
    received whose stream identifier field is 0x0, the recipient MUST
    respond with a connection error (Section 5.4.1) of type
    PROTOCOL_ERROR.
-
-
-
-Belshe, et al.          Expires October 27, 2014               [Page 29]
-
-Internet-Draft                   HTTP/2                       April 2014
-
 
    Data frames are optionally compressed using GZip compression [GZIP].
    Each frame is individually compressed; the state of the compressor is
@@ -1657,20 +1671,6 @@ Internet-Draft                   HTTP/2                       April 2014
    Use of padding is a security feature; as such, its use demands some
    care, see Section 10.7.
 
-6.2.  HEADERS
-
-   The HEADERS frame (type=0x1) carries name-value pairs.  It is used to
-   open a stream (Section 5.1).  HEADERS frames can be sent on a stream
-   in the "open" or "half closed (remote)" states.
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1681,6 +1681,12 @@ Belshe, et al.          Expires October 27, 2014               [Page 30]
 
 Internet-Draft                   HTTP/2                       April 2014
 
+
+6.2.  HEADERS
+
+   The HEADERS frame (type=0x1) carries name-value pairs.  It is used to
+   open a stream (Section 5.1).  HEADERS frames can be sent on a stream
+   in the "open" or "half closed (remote)" states.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1724,12 +1730,6 @@ Internet-Draft                   HTTP/2                       April 2014
 
    The HEADERS frame defines the following flags:
 
-   END_STREAM (0x1):  Bit 1 being set indicates that the header block
-      (Section 4.3) is the last that the endpoint will send for the
-      identified stream.  Setting this flag causes the stream to enter
-      one of "half closed" states (Section 5.1).
-
-
 
 
 
@@ -1737,6 +1737,11 @@ Belshe, et al.          Expires October 27, 2014               [Page 31]
 
 Internet-Draft                   HTTP/2                       April 2014
 
+
+   END_STREAM (0x1):  Bit 1 being set indicates that the header block
+      (Section 4.3) is the last that the endpoint will send for the
+      identified stream.  Setting this flag causes the stream to enter
+      one of "half closed" states (Section 5.1).
 
       A HEADERS frame that is followed by CONTINUATION frames carries
       the END_STREAM flag that signals the end of a stream.  A
@@ -1782,17 +1787,15 @@ Internet-Draft                   HTTP/2                       April 2014
    The HEADERS frame changes the connection state as described in
    Section 4.3.
 
-   The HEADERS frame includes optional padding.  Padding fields and
-   flags are identical to those defined for DATA frames (Section 6.1).
-
-
-
 
 
 Belshe, et al.          Expires October 27, 2014               [Page 32]
 
 Internet-Draft                   HTTP/2                       April 2014
 
+
+   The HEADERS frame includes optional padding.  Padding fields and
+   flags are identical to those defined for DATA frames (Section 6.1).
 
 6.3.  PRIORITY
 
@@ -1837,9 +1840,6 @@ Internet-Draft                   HTTP/2                       April 2014
    would cause it to have no effect.  For a stream that is in the "half
    closed (remote)" state, this frame can only affect processing of the
    stream and not frame transmission.
-
-
-
 
 
 
@@ -2151,8 +2151,9 @@ Internet-Draft                   HTTP/2                       April 2014
    field specifies the value 0x0, a recipient MUST respond with a
    connection error (Section 5.4.1) of type PROTOCOL_ERROR.
 
-   Promised streams are not required to be used in order promised.  The
-   PUSH_PROMISE only reserves stream identifiers for later use.
+   Promised streams are not required to be used in the order they are
+   promised.  The PUSH_PROMISE only reserves stream identifiers for
+   later use.
 
    Recipients of PUSH_PROMISE frames can choose to reject promised
    streams by returning a RST_STREAM referencing the promised stream
@@ -2177,7 +2178,6 @@ Internet-Draft                   HTTP/2                       April 2014
    "open" nor "half-closed (local)" as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR.  Similarly, a receiver MUST
    treat the receipt of a PUSH_PROMISE that promises an illegal stream
-   identifier (Section 5.1.1) (that is, an identifier for a stream that
 
 
 
@@ -2186,6 +2186,7 @@ Belshe, et al.          Expires October 27, 2014               [Page 39]
 Internet-Draft                   HTTP/2                       April 2014
 
 
+   identifier (Section 5.1.1) (that is, an identifier for a stream that
    is not currently in the "idle" state) as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR.
 
@@ -2232,7 +2233,6 @@ Internet-Draft                   HTTP/2                       April 2014
    Receipt of a PING frame with a length field value other than 8 MUST
    be treated as a connection error (Section 5.4.1) of type
    FRAME_SIZE_ERROR.
-
 
 
 
