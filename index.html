@@ -375,7 +375,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires October 26, 2014";
+       content: "Expires October 27, 2014";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -417,7 +417,7 @@ samp, tt, code, pre {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-04-24">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-04-25">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This document is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -437,7 +437,7 @@ samp, tt, code, pre {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: October 26, 2014</td>
+               <td class="left">Expires: October 27, 2014</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -450,7 +450,7 @@ samp, tt, code, pre {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">April 24, 2014</td>
+               <td class="right">April 25, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -482,7 +482,7 @@ samp, tt, code, pre {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on October 26, 2014.</p>
+         <p>This Internet-Draft will expire on October 27, 2014.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -1293,7 +1293,7 @@ Upgrade: h2c
                <p id="rfc.section.5.3.1.p.1">Each stream can be given an explicit dependency on another stream. Including a dependency expresses a preference to allocate
                   resources to the identified stream rather than to the dependent stream.
                </p>
-               <p id="rfc.section.5.3.1.p.2">A stream that is not dependent on any other stream can given a stream dependency of 0x0.</p>
+               <p id="rfc.section.5.3.1.p.2">A stream that is not dependent on any other stream can be given a stream dependency of 0x0.</p>
                <p id="rfc.section.5.3.1.p.3">When assigning a dependency on another stream, by default, the stream is added as a new dependency of the stream it depends
                   on. For example, if streams B and C are dependent on stream A, and if stream D is created with a dependency on stream A, this
                   results in a dependency order of A followed by B, C, and D.
@@ -1336,19 +1336,20 @@ Upgrade: h2c
                <p id="rfc.section.5.3.3.p.2">All streams that are dependent on a reprioritized stream move with it. Setting a dependency with the exclusive flag for a
                   reprioritized stream moves all the dependencies of the stream it depends on to become dependencies of the reprioritized stream.
                </p>
-               <p id="rfc.section.5.3.3.p.3">If a stream is made dependent on one of its own dependencies, the formerly dependent stream is first moved to be depedent
-                  on the reprioritized streams previous dependency, retaining its weight.
+               <p id="rfc.section.5.3.3.p.3">If a stream is made dependent on one of its own dependencies, the formerly dependent stream is first moved to be dependent
+                  on the reprioritized stream's previous dependency, retaining its weight.
                </p>
                <div id="rfc.figure.5"></div>
                <p>For example, for an original dependency tree where B and C depend on A, D and E depend on C, and F depends on D; if A is made
                   dependent on D, then D takes the place of A with A dependent on D and all other dependency relationships staying the same.
-               </p><pre class="inline">                     0
-    A               / \               D                 D
-   / \             D   A             / \        OR      |
-  B   C     ==&gt;   /   / \    ==&gt;    F   A       ==&gt;     A
-     / \         F   B   C             / \             /|\
-    D   E                |            B   C           B C F
-    |                    E                |             |
+               </p><pre class="inline">    ?                ?                ?                 ?
+    |               / \               |                 |
+    A              D   A              D                 D
+   / \            /   / \            / \                |
+  B   C     ==&gt;  F   B   C   ==&gt;    F   A       OR      A
+     / \                 |             / \             /|\
+    D   E                E            B   C           B C F
+    |                                     |             |
     F                                     E             F
                (intermediate)   (non-exclusive)    (exclusive)
 </pre><p class="figure">Figure 5: Example of Dependency Reordering</p>
@@ -1363,27 +1364,30 @@ Upgrade: h2c
                <p id="rfc.section.5.3.4.p.2">Streams that are removed from the dependency tree cause some prioritization information to be lost. Resources are shared between
                   streams that depend on the same stream, which means that if a stream in that set closes or becomes blocked, any spare capacity
                   allocated to a stream is distributed to the immediate neighbors of the stream. However, if the common dependency is removed
-                  from the tree, those streams share resources with streams at the next highest level. For example, assume streams A and B share
-                  a dependency, and C and D both depend on A. Prior to the removal of A, if stream A and D are unable to proceed, then C receives
-                  all the resources dedicated to A. If A is removed from the tree, the weight of A is divided equally between D and E, which
-                  results in stream C receiving a reduced proportion of resources (one third, rather than one half).
+                  from the tree, those streams share resources with streams at the next highest level.
                </p>
-               <p id="rfc.section.5.3.4.p.3">It is possible for a stream to become closed while prioritization information that creates a dependency on that stream is
+               <p id="rfc.section.5.3.4.p.3">For example, assume streams A and B share a dependency, and streams C and D both depend on stream A. Prior to the removal
+                  of stream A, if streams A and D are unable to proceed, then stream C receives all the resources dedicated to stream A. If
+                  stream A is removed from the tree, the weight of stream A is divided between streams C and D. If stream D is still unable
+                  to proceed, this results in stream C receiving a reduced proportion of resources. For equal starting weights, C receives one
+                  third, rather than one half, of available resources.
+               </p>
+               <p id="rfc.section.5.3.4.p.4">It is possible for a stream to become closed while prioritization information that creates a dependency on that stream is
                   in transit. If a stream identified in a dependency has been closed and any associated priority information destroyed then
                   the dependent stream is instead assigned a default priority. This potentially creates suboptimal prioritization, since the
                   stream can be given an effective priority that is higher than expressed by a peer.
                </p>
-               <p id="rfc.section.5.3.4.p.4">To avoid these problems, endpoints SHOULD maintain prioritization state for closed streams for a period after streams close.</p>
-               <p id="rfc.section.5.3.4.p.5">An endpoint SHOULD retain stream prioritization state for a period after streams become closed. The longer state is retained,
+               <p id="rfc.section.5.3.4.p.5">To avoid these problems, endpoints SHOULD maintain prioritization state for closed streams for a period after streams close.</p>
+               <p id="rfc.section.5.3.4.p.6">An endpoint SHOULD retain stream prioritization state for a period after streams become closed. The longer state is retained,
                   the lower the chance that streams are assigned incorrect or default priority values.
                </p>
-               <p id="rfc.section.5.3.4.p.6">This could create a large state burden for an endpoint, so this state MAY be limited. An endpoint MAY apply a fixed upper
+               <p id="rfc.section.5.3.4.p.7">This could create a large state burden for an endpoint, so this state MAY be limited. An endpoint MAY apply a fixed upper
                   limit on the number of closed streams for which prioritization state is tracked to limit state exposure. The amount of additional
                   state an endpoint maintains could be dependent on load; under high load, prioritization state can be discarded to limit resource
                   commitments. In extreme cases, an endpoint could even discard prioritization state for active or reserved streams. If a fixed
                   limit is applied, endpoints SHOULD maintain state for at least as many streams as allowed by their setting for <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a>.
                </p>
-               <p id="rfc.section.5.3.4.p.7">An endpoint receiving a <a href="#PRIORITY" class="smpl">PRIORITY</a> frame that changes the priority of a closed stream SHOULD alter the dependencies of the streams that depend on it, if it has
+               <p id="rfc.section.5.3.4.p.8">An endpoint receiving a <a href="#PRIORITY" class="smpl">PRIORITY</a> frame that changes the priority of a closed stream SHOULD alter the dependencies of the streams that depend on it, if it has
                   retained enough state to do so.
                </p>
             </div>
