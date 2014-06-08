@@ -1,14 +1,13 @@
 
 
 
-
 HTTPbis Working Group                                          M. Belshe
 Internet-Draft                                                     Twist
 Intended status: Standards Track                                 R. Peon
-Expires: November 6, 2014                                    Google, Inc
+Expires: December 10, 2014                                   Google, Inc
                                                          M. Thomson, Ed.
                                                                  Mozilla
-                                                             May 5, 2014
+                                                            June 8, 2014
 
 
                  Hypertext Transfer Protocol version 2
@@ -23,16 +22,18 @@ Abstract
    concurrent messages on the same connection.  It also introduces
    unsolicited push of representations from servers to clients.
 
-   This document is an alternative to, but does not obsolete, the HTTP/
-   1.1 message syntax.  HTTP's existing semantics remain unchanged.
+   This document is an alternative to, but does not obsolete, the
+   HTTP/1.1 message syntax.  HTTP's existing semantics remain unchanged.
 
 Editorial Note (To be removed by RFC Editor)
 
    Discussion of this draft takes place on the HTTPBIS working group
-   mailing list (ietf-http-wg@w3.org), which is archived at [1].
+   mailing list (ietf-http-wg@w3.org), which is archived at
+   <http://lists.w3.org/Archives/Public/ietf-http-wg/>.
 
-   Working Group information can be found at [2]; that specific to HTTP/
-   2 are at [3].
+   Working Group information can be found at
+   <http://tools.ietf.org/wg/httpbis/>; that specific to HTTP/2 are at
+   <http://http2.github.io/>.
 
    The changes in this draft are summarized in Appendix A.
 
@@ -48,17 +49,18 @@ Status of This Memo
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 1]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 1]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   This Internet-Draft will expire on November 6, 2014.
+   This Internet-Draft will expire on December 10, 2014.
 
 Copyright Notice
 
@@ -77,130 +79,158 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-   2.  HTTP/2 Protocol Overview  . . . . . . . . . . . . . . . . . .   5
-     2.1.  Document Organization . . . . . . . . . . . . . . . . . .   6
-     2.2.  Conventions and Terminology . . . . . . . . . . . . . . .   6
-   3.  Starting HTTP/2 . . . . . . . . . . . . . . . . . . . . . . .   7
-     3.1.  HTTP/2 Version Identification . . . . . . . . . . . . . .   7
-     3.2.  Starting HTTP/2 for "http" URIs . . . . . . . . . . . . .   8
-       3.2.1.  HTTP2-Settings Header Field . . . . . . . . . . . . .  10
-     3.3.  Starting HTTP/2 for "https" URIs  . . . . . . . . . . . .  10
-     3.4.  Starting HTTP/2 with Prior Knowledge  . . . . . . . . . .  10
-     3.5.  HTTP/2 Connection Preface . . . . . . . . . . . . . . . .  11
-   4.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . . . .  12
-     4.1.  Frame Format  . . . . . . . . . . . . . . . . . . . . . .  12
-     4.2.  Frame Size  . . . . . . . . . . . . . . . . . . . . . . .  13
-     4.3.  Header Compression and Decompression  . . . . . . . . . .  13
-   5.  Streams and Multiplexing  . . . . . . . . . . . . . . . . . .  14
-     5.1.  Stream States . . . . . . . . . . . . . . . . . . . . . .  15
-       5.1.1.  Stream Identifiers  . . . . . . . . . . . . . . . . .  20
-       5.1.2.  Stream Concurrency  . . . . . . . . . . . . . . . . .  20
-     5.2.  Flow Control  . . . . . . . . . . . . . . . . . . . . . .  21
-       5.2.1.  Flow Control Principles . . . . . . . . . . . . . . .  21
-       5.2.2.  Appropriate Use of Flow Control . . . . . . . . . . .  22
-     5.3.  Stream priority . . . . . . . . . . . . . . . . . . . . .  23
-       5.3.1.  Stream Dependencies . . . . . . . . . . . . . . . . .  23
-       5.3.2.  Dependency Weighting  . . . . . . . . . . . . . . . .  24
-       5.3.3.  Reprioritization  . . . . . . . . . . . . . . . . . .  25
-       5.3.4.  Prioritization State Management . . . . . . . . . . .  25
-       5.3.5.  Default Priorities  . . . . . . . . . . . . . . . . .  27
-     5.4.  Error Handling  . . . . . . . . . . . . . . . . . . . . .  27
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  5
+   2.  HTTP/2 Protocol Overview . . . . . . . . . . . . . . . . . . .  5
+     2.1.  Document Organization  . . . . . . . . . . . . . . . . . .  6
+     2.2.  Conventions and Terminology  . . . . . . . . . . . . . . .  7
+   3.  Starting HTTP/2  . . . . . . . . . . . . . . . . . . . . . . .  7
+     3.1.  HTTP/2 Version Identification  . . . . . . . . . . . . . .  8
+     3.2.  Starting HTTP/2 for "http" URIs  . . . . . . . . . . . . .  9
+       3.2.1.  HTTP2-Settings Header Field  . . . . . . . . . . . . . 10
+     3.3.  Starting HTTP/2 for "https" URIs . . . . . . . . . . . . . 11
+     3.4.  Starting HTTP/2 with Prior Knowledge . . . . . . . . . . . 11
+     3.5.  HTTP/2 Connection Preface  . . . . . . . . . . . . . . . . 11
+   4.  HTTP Frames  . . . . . . . . . . . . . . . . . . . . . . . . . 12
+     4.1.  Frame Format . . . . . . . . . . . . . . . . . . . . . . . 12
+     4.2.  Frame Size . . . . . . . . . . . . . . . . . . . . . . . . 13
+     4.3.  Header Compression and Decompression . . . . . . . . . . . 14
+   5.  Streams and Multiplexing . . . . . . . . . . . . . . . . . . . 15
+     5.1.  Stream States  . . . . . . . . . . . . . . . . . . . . . . 16
+       5.1.1.  Stream Identifiers . . . . . . . . . . . . . . . . . . 20
+       5.1.2.  Stream Concurrency . . . . . . . . . . . . . . . . . . 21
+     5.2.  Flow Control . . . . . . . . . . . . . . . . . . . . . . . 21
+       5.2.1.  Flow Control Principles  . . . . . . . . . . . . . . . 21
+       5.2.2.  Appropriate Use of Flow Control  . . . . . . . . . . . 22
+     5.3.  Stream priority  . . . . . . . . . . . . . . . . . . . . . 23
+       5.3.1.  Stream Dependencies  . . . . . . . . . . . . . . . . . 24
+       5.3.2.  Dependency Weighting . . . . . . . . . . . . . . . . . 25
+       5.3.3.  Reprioritization . . . . . . . . . . . . . . . . . . . 25
 
 
 
-Belshe, et al.          Expires November 6, 2014                [Page 2]
+Belshe, et al.          Expires December 10, 2014               [Page 2]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
-       5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  27
-       5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  27
-       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  28
-   6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  28
-     6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  28
-     6.2.  HEADERS . . . . . . . . . . . . . . . . . . . . . . . . .  31
-     6.3.  PRIORITY  . . . . . . . . . . . . . . . . . . . . . . . .  33
-     6.4.  RST_STREAM  . . . . . . . . . . . . . . . . . . . . . . .  34
-     6.5.  SETTINGS  . . . . . . . . . . . . . . . . . . . . . . . .  34
-       6.5.1.  SETTINGS Format . . . . . . . . . . . . . . . . . . .  35
-       6.5.2.  Defined SETTINGS Parameters . . . . . . . . . . . . .  36
-       6.5.3.  Settings Synchronization  . . . . . . . . . . . . . .  37
-     6.6.  PUSH_PROMISE  . . . . . . . . . . . . . . . . . . . . . .  37
-     6.7.  PING  . . . . . . . . . . . . . . . . . . . . . . . . . .  40
-     6.8.  GOAWAY  . . . . . . . . . . . . . . . . . . . . . . . . .  41
-     6.9.  WINDOW_UPDATE . . . . . . . . . . . . . . . . . . . . . .  43
-       6.9.1.  The Flow Control Window . . . . . . . . . . . . . . .  44
-       6.9.2.  Initial Flow Control Window Size  . . . . . . . . . .  45
-       6.9.3.  Reducing the Stream Window Size . . . . . . . . . . .  46
-     6.10. CONTINUATION  . . . . . . . . . . . . . . . . . . . . . .  46
-     6.11. ALTSVC  . . . . . . . . . . . . . . . . . . . . . . . . .  48
-     6.12. BLOCKED . . . . . . . . . . . . . . . . . . . . . . . . .  49
-   7.  Error Codes . . . . . . . . . . . . . . . . . . . . . . . . .  50
-   8.  HTTP Message Exchanges  . . . . . . . . . . . . . . . . . . .  51
-     8.1.  HTTP Request/Response Exchange  . . . . . . . . . . . . .  52
-       8.1.1.  Informational Responses . . . . . . . . . . . . . . .  53
-       8.1.2.  Examples  . . . . . . . . . . . . . . . . . . . . . .  54
-       8.1.3.  HTTP Header Fields  . . . . . . . . . . . . . . . . .  56
-       8.1.4.  Request Reliability Mechanisms in HTTP/2  . . . . . .  60
-     8.2.  Server Push . . . . . . . . . . . . . . . . . . . . . . .  61
-       8.2.1.  Push Requests . . . . . . . . . . . . . . . . . . . .  62
-       8.2.2.  Push Responses  . . . . . . . . . . . . . . . . . . .  63
-     8.3.  The CONNECT Method  . . . . . . . . . . . . . . . . . . .  63
-   9.  Additional HTTP Requirements/Considerations . . . . . . . . .  64
-     9.1.  Connection Management . . . . . . . . . . . . . . . . . .  65
-     9.2.  Use of TLS Features . . . . . . . . . . . . . . . . . . .  65
-     9.3.  GZip Content-Encoding . . . . . . . . . . . . . . . . . .  66
-   10. Security Considerations . . . . . . . . . . . . . . . . . . .  66
-     10.1.  Server Authority . . . . . . . . . . . . . . . . . . . .  66
-     10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  67
-     10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  67
-     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  68
-     10.5.  Denial of Service Considerations . . . . . . . . . . . .  68
-     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  69
-     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  70
-     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  70
-   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  71
-     11.1.  Registration of HTTP/2 Identification Strings  . . . . .  71
+       5.3.4.  Prioritization State Management  . . . . . . . . . . . 26
+       5.3.5.  Default Priorities . . . . . . . . . . . . . . . . . . 27
+     5.4.  Error Handling . . . . . . . . . . . . . . . . . . . . . . 27
+       5.4.1.  Connection Error Handling  . . . . . . . . . . . . . . 27
+       5.4.2.  Stream Error Handling  . . . . . . . . . . . . . . . . 28
+       5.4.3.  Connection Termination . . . . . . . . . . . . . . . . 28
+     5.5.  Extending HTTP/2 . . . . . . . . . . . . . . . . . . . . . 28
+   6.  Frame Definitions  . . . . . . . . . . . . . . . . . . . . . . 29
+     6.1.  DATA . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+     6.2.  HEADERS  . . . . . . . . . . . . . . . . . . . . . . . . . 31
+     6.3.  PRIORITY . . . . . . . . . . . . . . . . . . . . . . . . . 33
+     6.4.  RST_STREAM . . . . . . . . . . . . . . . . . . . . . . . . 34
+     6.5.  SETTINGS . . . . . . . . . . . . . . . . . . . . . . . . . 35
+       6.5.1.  SETTINGS Format  . . . . . . . . . . . . . . . . . . . 36
+       6.5.2.  Defined SETTINGS Parameters  . . . . . . . . . . . . . 36
+       6.5.3.  Settings Synchronization . . . . . . . . . . . . . . . 37
+     6.6.  PUSH_PROMISE . . . . . . . . . . . . . . . . . . . . . . . 37
+     6.7.  PING . . . . . . . . . . . . . . . . . . . . . . . . . . . 39
+     6.8.  GOAWAY . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+     6.9.  WINDOW_UPDATE  . . . . . . . . . . . . . . . . . . . . . . 43
+       6.9.1.  The Flow Control Window  . . . . . . . . . . . . . . . 44
+       6.9.2.  Initial Flow Control Window Size . . . . . . . . . . . 45
+       6.9.3.  Reducing the Stream Window Size  . . . . . . . . . . . 46
+     6.10. CONTINUATION . . . . . . . . . . . . . . . . . . . . . . . 46
+   7.  Error Codes  . . . . . . . . . . . . . . . . . . . . . . . . . 47
+   8.  HTTP Message Exchanges . . . . . . . . . . . . . . . . . . . . 48
+     8.1.  HTTP Request/Response Exchange . . . . . . . . . . . . . . 49
+       8.1.1.  Informational Responses  . . . . . . . . . . . . . . . 50
+       8.1.2.  HTTP Header Fields . . . . . . . . . . . . . . . . . . 51
+       8.1.3.  Examples . . . . . . . . . . . . . . . . . . . . . . . 55
+       8.1.4.  Request Reliability Mechanisms in HTTP/2 . . . . . . . 57
+     8.2.  Server Push  . . . . . . . . . . . . . . . . . . . . . . . 58
+       8.2.1.  Push Requests  . . . . . . . . . . . . . . . . . . . . 58
+       8.2.2.  Push Responses . . . . . . . . . . . . . . . . . . . . 59
+     8.3.  The CONNECT Method . . . . . . . . . . . . . . . . . . . . 60
+   9.  Additional HTTP Requirements/Considerations  . . . . . . . . . 61
+     9.1.  Connection Management  . . . . . . . . . . . . . . . . . . 61
+     9.2.  Use of TLS Features  . . . . . . . . . . . . . . . . . . . 62
+   10. Security Considerations  . . . . . . . . . . . . . . . . . . . 63
+     10.1. Server Authority . . . . . . . . . . . . . . . . . . . . . 63
+     10.2. Cross-Protocol Attacks . . . . . . . . . . . . . . . . . . 63
+     10.3. Intermediary Encapsulation Attacks . . . . . . . . . . . . 64
+     10.4. Cacheability of Pushed Responses . . . . . . . . . . . . . 64
+     10.5. Denial of Service Considerations . . . . . . . . . . . . . 65
+       10.5.1. Limits on Header Block Size  . . . . . . . . . . . . . 65
+     10.6. Use of Compression . . . . . . . . . . . . . . . . . . . . 66
+     10.7. Use of Padding . . . . . . . . . . . . . . . . . . . . . . 66
+     10.8. Privacy Considerations . . . . . . . . . . . . . . . . . . 67
 
 
 
-Belshe, et al.          Expires November 6, 2014                [Page 3]
+Belshe, et al.          Expires December 10, 2014               [Page 3]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
-     11.2.  Error Code Registry  . . . . . . . . . . . . . . . . . .  71
-     11.3.  HTTP2-Settings Header Field Registration . . . . . . . .  72
-     11.4.  PRI Method Registration  . . . . . . . . . . . . . . . .  72
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  73
-   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  73
-     13.1.  Normative References . . . . . . . . . . . . . . . . . .  73
-     13.2.  Informative References . . . . . . . . . . . . . . . . .  75
-     13.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  76
+   11. IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 67
+     11.1. Registration of HTTP/2 Identification Strings  . . . . . . 68
+     11.2. Frame Type Registry  . . . . . . . . . . . . . . . . . . . 68
+     11.3. Settings Registry  . . . . . . . . . . . . . . . . . . . . 69
+     11.4. Error Code Registry  . . . . . . . . . . . . . . . . . . . 69
+     11.5. HTTP2-Settings Header Field Registration . . . . . . . . . 70
+     11.6. PRI Method Registration  . . . . . . . . . . . . . . . . . 70
+   12. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 71
+   13. References . . . . . . . . . . . . . . . . . . . . . . . . . . 71
+     13.1. Normative References . . . . . . . . . . . . . . . . . . . 71
+     13.2. Informative References . . . . . . . . . . . . . . . . . . 73
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  77
-     A.1.  Since draft-ietf-httpbis-http2-12 . . . . . . . . . . . .  77
-     A.2.  Since draft-ietf-httpbis-http2-11 . . . . . . . . . . . .  77
-     A.3.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  77
-     A.4.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  77
-     A.5.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  78
-     A.6.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  78
-     A.7.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  78
-     A.8.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  78
-     A.9.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  79
-     A.10. Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  79
-     A.11. Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  79
-     A.12. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  80
-     A.13. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  80
-     A.14. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  81
+                publication)  . . . . . . . . . . . . . . . . . . . . 74
+     A.1.  Since draft-ietf-httpbis-http2-12  . . . . . . . . . . . . 74
+     A.2.  Since draft-ietf-httpbis-http2-11  . . . . . . . . . . . . 74
+     A.3.  Since draft-ietf-httpbis-http2-10  . . . . . . . . . . . . 74
+     A.4.  Since draft-ietf-httpbis-http2-09  . . . . . . . . . . . . 75
+     A.5.  Since draft-ietf-httpbis-http2-08  . . . . . . . . . . . . 75
+     A.6.  Since draft-ietf-httpbis-http2-07  . . . . . . . . . . . . 75
+     A.7.  Since draft-ietf-httpbis-http2-06  . . . . . . . . . . . . 75
+     A.8.  Since draft-ietf-httpbis-http2-05  . . . . . . . . . . . . 76
+     A.9.  Since draft-ietf-httpbis-http2-04  . . . . . . . . . . . . 76
+     A.10. Since draft-ietf-httpbis-http2-03  . . . . . . . . . . . . 76
+     A.11. Since draft-ietf-httpbis-http2-02  . . . . . . . . . . . . 77
+     A.12. Since draft-ietf-httpbis-http2-01  . . . . . . . . . . . . 77
+     A.13. Since draft-ietf-httpbis-http2-00  . . . . . . . . . . . . 78
+     A.14. Since draft-mbelshe-httpbis-spdy-00  . . . . . . . . . . . 78
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 4]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
 1.  Introduction
 
    The Hypertext Transfer Protocol (HTTP) is a wildly successful
-   protocol.  However, the HTTP/1.1 message format ([HTTP-p1],
-   Section 3) was designed to be implemented with the tools at hand in
-   the 1990s, not modern Web application performance.  As such it has
+   protocol.  However, the HTTP/1.1 message format ([HTTP-p1], Section
+   3) was designed to be implemented with the tools at hand in the
+   1990s, not modern Web application performance.  As such it has
    several characteristics that have a negative overall effect on
    application performance today.
 
@@ -218,14 +248,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    This document addresses these issues by defining an optimized mapping
    of HTTP's semantics to an underlying connection.  Specifically, it
-
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 4]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    allows interleaving of request and response messages on the same
    connection and uses an efficient coding for HTTP header fields.  It
    also allows prioritization of requests, letting more important
@@ -233,7 +255,7 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The resulting protocol is designed to be more friendly to the
    network, because fewer TCP connections can be used in comparison to
-   HTTP/1.x. This means less competition with other flows, and longer-
+   HTTP/1.x.  This means less competition with other flows, and longer-
    lived connections, which in turn leads to better utilization of
    available network capacity.
 
@@ -251,6 +273,13 @@ Internet-Draft                   HTTP/2                         May 2014
    DATA frames form the basis of HTTP requests and responses
    (Section 8.1); other frame types like SETTINGS, WINDOW_UPDATE, and
    PUSH_PROMISE are used in support of other HTTP/2 features.
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 5]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    Multiplexing of requests is achieved by having each HTTP request-
    response exchanged assigned to a single stream (Section 5).  Streams
@@ -275,17 +304,6 @@ Internet-Draft                   HTTP/2                         May 2014
    HTTP requests can be highly redundant, so compression can reduce the
    size of requests and responses significantly.
 
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 5]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   HTTP/2 also supports HTTP Alternative Services (see [ALT-SVC]) using
-   the ALTSVC frame type (Section 6.11), to allow servers more control
-   over traffic to them.
-
 2.1.  Document Organization
 
    The HTTP/2 specification is split into four parts:
@@ -309,6 +327,16 @@ Internet-Draft                   HTTP/2                         May 2014
    The framing and streams layers are tailored to the needs of the HTTP
    protocol and server push.
 
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 6]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 2.2.  Conventions and Terminology
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -330,13 +358,6 @@ Internet-Draft                   HTTP/2                         May 2014
       connection.
 
    endpoint:  Either the client or server of the connection.
-
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 6]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    frame:  The smallest unit of communication within an HTTP/2
       connection, consisting of a header and a variable-length sequence
@@ -364,6 +385,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    An HTTP/2 connection is an application level protocol running on top
    of a TCP connection ([TCP]).  The client is the TCP connection
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 7]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    initiator.
 
    HTTP/2 uses the same "http" and "https" URI schemes used by HTTP/1.1.
@@ -387,13 +416,6 @@ Internet-Draft                   HTTP/2                         May 2014
       protocol negotiation extension [TLSALPN] field and any place that
       HTTP/2 over TLS is identified.
 
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 7]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
       When serialised into an ALPN protocol identifier (which is a
       sequence of octets), the HTTP/2 protocol identifier string is
       encoded using UTF-8 [UTF-8].
@@ -405,7 +427,7 @@ Internet-Draft                   HTTP/2                         May 2014
    Negotiating "h2" or "h2c" implies the use of the transport, security,
    framing and message semantics described in this document.
 
-   [[CREF1: RFC Editor's Note: please remove the remainder of this
+   [[anchor3: RFC Editor's Note: please remove the remainder of this
    section prior to the publication of a final version of this
    document.]]
 
@@ -419,6 +441,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Implementations of draft versions of the protocol MUST add the string
    "-" and the corresponding draft number to the identifier.  For
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 8]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    example, draft-ietf-httpbis-http2-11 over TLS is identified using the
    string "h2-11".
 
@@ -437,18 +467,8 @@ Internet-Draft                   HTTP/2                         May 2014
    knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
    (Section 6.7 of [HTTP-p1]).  The client makes an HTTP/1.1 request
    that includes an Upgrade header field identifying HTTP/2 with the
-   "h2c" token.  The HTTP/1.1 request MUST include exactly one
-   HTTP2-Settings (Section 3.2.1) header field.
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 8]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   "h2c" token.  The HTTP/1.1 request MUST include exactly one HTTP2-
+   Settings (Section 3.2.1) header field.
 
    For example:
 
@@ -465,8 +485,8 @@ Internet-Draft                   HTTP/2                         May 2014
    completely sent.
 
    If concurrency of an initial request with subsequent requests is
-   important, a small request can be used to perform the upgrade to HTTP
-   /2, at the cost of an additional round-trip.
+   important, a small request can be used to perform the upgrade to
+   HTTP/2, at the cost of an additional round-trip.
 
    A server that does not support HTTP/2 can respond to the request as
    though the Upgrade header field were absent:
@@ -476,6 +496,18 @@ Internet-Draft                   HTTP/2                         May 2014
      Content-Type: text/html
 
      ...
+
+
+
+
+Belshe, et al.          Expires December 10, 2014               [Page 9]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   A server SHOULD ignore a "h2" token in an Upgrade header field.
+   Presence of a token with "h2" implies HTTP/2 over TLS, which is
+   instead negotiated as described in Section 3.3.
 
    A server that supports HTTP/2 can accept the upgrade with a 101
    (Switching Protocols) response.  After the empty line that terminates
@@ -499,13 +531,6 @@ Internet-Draft                   HTTP/2                         May 2014
    since the request is completed as an HTTP/1.1 request.  After
    commencing the HTTP/2 connection, stream 1 is used for the response.
 
-
-
-Belshe, et al.          Expires November 6, 2014                [Page 9]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
 3.2.1.  HTTP2-Settings Header Field
 
    A request that upgrades from HTTP/1.1 to HTTP/2 MUST include exactly
@@ -528,6 +553,14 @@ Internet-Draft                   HTTP/2                         May 2014
    include a value of "HTTP2-Settings" in addition to "Upgrade" when
    upgrading to HTTP/2.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 10]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    A server decodes and interprets these values as it would any other
    SETTINGS frame.  Acknowledgement of the SETTINGS parameters
    (Section 6.5.3) is not necessary, since a 101 response serves as
@@ -543,6 +576,9 @@ Internet-Draft                   HTTP/2                         May 2014
    knowledge about support for HTTP/2 uses TLS [TLS12] with the
    application layer protocol negotiation extension [TLSALPN].
 
+   HTTP/2 over TLS uses the "h2" application token.  The "h2c" token
+   MUST NOT be used.
+
    Once TLS negotiation is complete, both the client and the server send
    a connection preface (Section 3.5).
 
@@ -550,24 +586,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    A client can learn that a particular server supports HTTP/2 by other
    means.  For example, [ALT-SVC] describes a mechanism for advertising
-   this capability in an HTTP header field; the ALTSVC frame
-   (Section 6.11) describes a similar mechanism in HTTP/2.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 10]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   this capability.
 
    A client MAY immediately send HTTP/2 frames to a server that is known
    to support HTTP/2, after the connection preface (Section 3.5).  A
    server can identify such a connection by the use of the "PRI" method
-   in the connection preface.  This only affects the resolution of
-   "http" URIs; servers supporting HTTP/2 are required to support
-   protocol negotiation in TLS [TLSALPN] for "https" URIs.
+   in the connection preface.  This only affects the establishment of
+   HTTP/2 connections over cleartext TCP; implementations that support
+   HTTP/2 over TLS MUST use protocol negotiation in TLS [TLSALPN].
 
    Prior support for HTTP/2 is not a strong signal that a given server
    will support HTTP/2 for future connections.  It is possible for
@@ -583,6 +609,13 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The client connection preface starts with a sequence of 24 octets,
    which in hex notation are:
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 11]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
      0x505249202a20485454502f322e300d0a0d0a534d0d0a0d0a
 
@@ -610,14 +643,6 @@ Internet-Draft                   HTTP/2                         May 2014
    preface.  It is important to note, however, that the server
    connection preface SETTINGS frame might include parameters that
    necessarily alter how a client is expected to communicate with the
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 11]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    server.  Upon receiving the SETTINGS frame, the client is expected to
    honor any parameters established.
 
@@ -635,6 +660,18 @@ Internet-Draft                   HTTP/2                         May 2014
 
    All frames begin with an 8-octet header followed by a payload of
    between 0 and 16,383 octets.
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 12]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
      0                   1                   2                   3
      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -654,25 +691,16 @@ Internet-Draft                   HTTP/2                         May 2014
       and the bits MUST remain unset (0) when sending and MUST be
       ignored when receiving.
 
-   Length:  The length of the frame payload expressed as an unsigned
-      14-bit integer.  The 8 octets of the frame header are not included
-      in this value.
+   Length:  The length of the frame payload expressed as an unsigned 14-
+      bit integer.  The 8 octets of the frame header are not included in
+      this value.
 
-   Type:  The 8-bit type of the frame.  The frame type determines how
-      the remainder of the frame header and payload are interpreted.
-      Implementations MUST treat the receipt of an unknown frame type
-      (any frame types not defined in this document) as a connection
-      error (Section 5.4.1) of type PROTOCOL_ERROR.
+   Type:  The 8-bit type of the frame.  The frame type determines the
+      format and semantics of the frame.  Implementations MUST ignore
+      and discard any unknown frame type.
 
    Flags:  An 8-bit field reserved for frame-type specific boolean
       flags.
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 12]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
       Flags are assigned semantics specific to the indicated frame type.
       Flags that have no defined semantics for a particular frame type
@@ -693,6 +721,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The maximum size of a frame payload varies by frame type.  The
    absolute maximum size of a frame payload is 2^14-1 (16,383) octets,
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 13]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    meaning that the maximum frame size is 16,391 octets.  All
    implementations SHOULD be capable of receiving and minimally
    processing frames up to this maximum size.
@@ -721,24 +757,15 @@ Internet-Draft                   HTTP/2                         May 2014
    header block using HTTP Header Compression [COMPRESSION].  The
    serialized header block is then divided into one or more octet
    sequences, called header block fragments, and transmitted within the
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 13]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    payload of HEADERS (Section 6.2), PUSH_PROMISE (Section 6.6) or
    CONTINUATION (Section 6.10) frames.
 
    HTTP Header Compression does not preserve the relative ordering of
    header fields.  Header fields with multiple values are encoded into a
-   single header field using a special delimiter; see Section 8.1.3.3.
+   single header field using a special delimiter; see Section 8.1.2.3.
 
    The Cookie header field [COOKIE] is treated specially by the HTTP
-   mapping; see Section 8.1.3.4.
+   mapping; see Section 8.1.2.4.
 
    A receiving endpoint reassembles the header block by concatenating
    its fragments, then decompresses the block to reconstruct the header
@@ -748,6 +775,15 @@ Internet-Draft                   HTTP/2                         May 2014
 
    o  a single HEADERS or PUSH_PROMISE frame, with the END_HEADERS flag
       set, or
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 14]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    o  a HEADERS or PUSH_PROMISE frame with the END_HEADERS flag cleared
       and one or more CONTINUATION frames, where the last CONTINUATION
@@ -777,15 +813,6 @@ Internet-Draft                   HTTP/2                         May 2014
    exchanged between the client and server within an HTTP/2 connection.
    Streams have several important characteristics:
 
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 14]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    o  A single HTTP/2 connection can contain multiple concurrently open
       streams, with either endpoint interleaving frames from multiple
       streams.
@@ -795,51 +822,28 @@ Internet-Draft                   HTTP/2                         May 2014
 
    o  Streams can be closed by either endpoint.
 
-   o  The order in which frames are sent within a stream is significant.
-      Recipients process frames in the order they are received.
+   o  The order in which frames are sent on a stream is significant.
+      Recipients process frames in the order they are received.  In
+      particular, the order of HEADERS, and DATA frames is semantically
+      significant.
 
    o  Streams are identified by an integer.  Stream identifiers are
       assigned to streams by the endpoint initiating the stream.
 
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 15]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 5.1.  Stream States
 
    The lifecycle of a stream is shown in Figure 1.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 15]
-
-Internet-Draft                   HTTP/2                         May 2014
 
 
                           +--------+
@@ -876,10 +880,23 @@ Internet-Draft                   HTTP/2                         May 2014
 
                           Figure 1: Stream States
 
+   Note that this diagram shows stream state transitions and frames that
+   affect those transitions only.  In this regard, CONTINUATION frames
+   do not result in state transitions and are effectively part of the
+   HEADERS or PUSH_PROMISE that they follow.
+
    Both endpoints have a subjective view of the state of a stream that
    could be different when frames are in transit.  Endpoints do not
    coordinate the creation of streams; they are created unilaterally by
    either endpoint.  The negative consequences of a mismatch in states
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 16]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    are limited to the "closed" state after sending RST_STREAM, where
    frames might be received for some time after closing.
 
@@ -890,13 +907,6 @@ Internet-Draft                   HTTP/2                         May 2014
       have been exchanged.
 
       The following transitions are valid from this state:
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 16]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
       *  Sending or receiving a HEADERS frame causes the stream to
          become "open".  The stream identifier is selected as described
@@ -925,12 +935,23 @@ Internet-Draft                   HTTP/2                         May 2014
       *  Either endpoint can send a RST_STREAM frame to cause the stream
          to become "closed".  This releases the stream reservation.
 
+
       An endpoint MUST NOT send frames other than HEADERS or RST_STREAM
       in this state.
 
       A PRIORITY frame MAY be received in this state.  Receiving any
       frames other than RST_STREAM, or PRIORITY MUST be treated as a
       connection error (Section 5.4.1) of type PROTOCOL_ERROR.
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 17]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    reserved (remote):
       A stream in the "reserved (remote)" state has been reserved by a
@@ -943,15 +964,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
       *  Either endpoint can send a RST_STREAM frame to cause the stream
          to become "closed".  This releases the stream reservation.
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 17]
-
-Internet-Draft                   HTTP/2                         May 2014
 
 
       An endpoint MAY send a PRIORITY frame in this state to
@@ -987,9 +999,20 @@ Internet-Draft                   HTTP/2                         May 2014
       a RST_STREAM frame.  A HEADERS frame bearing an END_STREAM flag
       can be followed by CONTINUATION frames.
 
-      A receiver can ignore WINDOW_UPDATE or PRIORITY frames in this
-      state.  These frame types might arrive for a short period after a
-      frame bearing the END_STREAM flag is sent.
+      A receiver can ignore WINDOW_UPDATE frames in this state, which
+      might arrive for a short period after a frame bearing the
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 18]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+      END_STREAM flag is sent.
+
+      PRIORITY frames received in this state are used to reprioritize
+      streams that depend on the current stream..
 
    half closed (remote):
       A stream that is "half closed (remote)" is no longer being used by
@@ -1000,15 +1023,6 @@ Internet-Draft                   HTTP/2                         May 2014
       If an endpoint receives additional frames for a stream that is in
       this state, other than CONTINUATION frames, it MUST respond with a
       stream error (Section 5.4.2) of type STREAM_CLOSED.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 18]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
       A stream can transition from this state to "closed" by sending a
       frame that contains an END_STREAM flag, or when either peer sends
@@ -1023,18 +1037,33 @@ Internet-Draft                   HTTP/2                         May 2014
       Similarly, an endpoint that receives any frames after receiving a
       DATA frame with the END_STREAM flag set, or any frames except a
       CONTINUATION frame after receiving a HEADERS frame with an
-      END_STREAM flag set MUST treat that as a stream error
-      (Section 5.4.2) of type STREAM_CLOSED.
+      END_STREAM flag set MUST treat that as a connection error
+      (Section 5.4.1) of type STREAM_CLOSED, unless the frame is
+      permitted as described below.
 
-      WINDOW_UPDATE, PRIORITY, or RST_STREAM frames can be received in
-      this state for a short period after a DATA or HEADERS frame
-      containing an END_STREAM flag is sent.  Until the remote peer
-      receives and processes the frame bearing the END_STREAM flag, it
-      might send frame of any of these types.  Endpoints MUST ignore
-      WINDOW_UPDATE, PRIORITY, or RST_STREAM frames received in this
-      state, though endpoints MAY choose to treat frames that arrive a
-      significant time after sending END_STREAM as a connection error
-      (Section 5.4.1) of type PROTOCOL_ERROR.
+      WINDOW_UPDATE or RST_STREAM frames can be received in this state
+      for a short period after a DATA or HEADERS frame containing an
+      END_STREAM flag is sent.  Until the remote peer receives and
+      processes the frame bearing the END_STREAM flag, it might send
+      frames of any of these types.  Endpoints MUST ignore WINDOW_UPDATE
+      or RST_STREAM frames received in this state, though endpoints MAY
+      choose to treat frames that arrive a significant time after
+      sending END_STREAM as a connection error (Section 5.4.1) of type
+      PROTOCOL_ERROR.
+
+      PRIORITY frames can be sent on closed streams to prioritize
+      streams that are dependent on the closed stream.  Endpoints MUST
+      either process or ignore PRIORITY frames in this state.  Endpoints
+      SHOULD process the frame, unless the stream has been removed from
+      the dependency tree (see Section 5.3.4).
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 19]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
       If this state is reached as a result of sending a RST_STREAM
       frame, the peer that receives the RST_STREAM might have already
@@ -1057,15 +1086,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    In the absence of more specific guidance elsewhere in this document,
    implementations SHOULD treat the receipt of a message that is not
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 19]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    expressly permitted in the description of a state as a connection
    error (Section 5.4.1) of type PROTOCOL_ERROR.
 
@@ -1093,13 +1113,21 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The first use of a new stream identifier implicitly closes all
    streams in the "idle" state that might have been initiated by that
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 20]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    peer with a lower-valued stream identifier.  For example, if a client
    sends a HEADERS frame on stream 7 without ever sending a frame on
    stream 5, then stream 5 transitions to the "closed" state when the
    first frame for stream 7 is sent or received.
 
    Stream identifiers cannot be reused.  Long-lived connections can
-   result in endpoint exhausting the available range of stream
+   result in an endpoint exhausting the available range of stream
    identifiers.  A client that is unable to establish a new stream
    identifier can establish a new connection for new streams.
 
@@ -1111,16 +1139,7 @@ Internet-Draft                   HTTP/2                         May 2014
    and applies only to the peer that receives the setting.  That is,
    clients specify the maximum number of concurrent streams the server
    can initiate, and servers specify the maximum number of concurrent
-   streams the client can initiate.  Endpoints MUST NOT exceed the limit
-   set by their peer.
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 20]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   streams the client can initiate.
 
    Streams that are in the "open" state, or either of the "half closed"
    states count toward the maximum number of streams that an endpoint is
@@ -1128,9 +1147,10 @@ Internet-Draft                   HTTP/2                         May 2014
    the limit advertised in the SETTINGS_MAX_CONCURRENT_STREAMS setting
    (see Section 6.5.2).
 
-   An endpoint that receives a HEADERS frame that causes their
-   advertised concurrent stream limit to be exceeded MUST treat this as
-   a stream error (Section 5.4.2).
+   Endpoints MUST NOT exceed the limit set by their peer.  An endpoint
+   that receives a HEADERS frame that causes their advertised concurrent
+   stream limit to be exceeded MUST treat this as a stream error
+   (Section 5.4.2).
 
    Streams in either of the "reserved" states do not count as open.
 
@@ -1149,6 +1169,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    HTTP/2 stream flow control aims to allow for future improvements to
    flow control algorithms without requiring protocol changes.  Flow
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 21]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    control in HTTP/2 has the following characteristics:
 
    1.  Flow control is hop-by-hop, not end-to-end.
@@ -1170,14 +1198,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    5.  The frame type determines whether flow control applies to a
        frame.  Of the frames specified in this document, only DATA
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 21]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
        frames are subject to flow control; all other frame types do not
        consume space in the advertised flow control window.  This
        ensures that important control frames are not blocked by flow
@@ -1206,6 +1226,13 @@ Internet-Draft                   HTTP/2                         May 2014
    where the receiver is unable process data on one stream, yet wants to
    continue to process other streams in the same connection.
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 22]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Deployments that do not require this capability can advertise a flow
    control window of the maximum size, incrementing the available space
    when new data is received.  Sending data is always subject to the
@@ -1224,15 +1251,6 @@ Internet-Draft                   HTTP/2                         May 2014
    critical frames, such as WINDOW_UPDATE, are not available to HTTP/2.
    However, flow control can ensure that constrained resources are
    protected without any reduction in connection utilization.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 22]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
 5.3.  Stream priority
 
@@ -1263,6 +1281,14 @@ Internet-Draft                   HTTP/2                         May 2014
    they are created using the HEADERS frame, or changed using the
    PRIORITY frame.  Providing prioritization information is optional, so
    default values are used if no explicit indicator is provided
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 23]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    (Section 5.3.5).
 
 5.3.1.  Stream Dependencies
@@ -1281,15 +1307,6 @@ Internet-Draft                   HTTP/2                         May 2014
    When assigning a dependency on another stream, by default, the stream
    is added as a new dependency of the parent stream.  For example, if
    streams B and C are dependent on stream A, and if stream D is created
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 23]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    with a dependency on stream A, this results in a dependency order of
    A followed by B, C, and D.
 
@@ -1320,6 +1337,14 @@ Internet-Draft                   HTTP/2                         May 2014
    possible to make progress on them.
 
    A stream cannot depend on itself.  An endpoint MAY either treat this
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 24]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    as a stream error (Section 5.4.2) of type PROTOCOL_ERROR, or assign
    default priority values (Section 5.3.5) to the stream.
 
@@ -1333,18 +1358,6 @@ Internet-Draft                   HTTP/2                         May 2014
    stream A with weight 4, and C depends on stream A with weight 12, and
    if no progress can be made on A, stream B ideally receives one third
    of the resources allocated to stream C.
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 24]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
 5.3.3.  Reprioritization
 
@@ -1363,10 +1376,10 @@ Internet-Draft                   HTTP/2                         May 2014
    its weight.
 
    For example, for an original dependency tree where B and C depend on
-   A, D and E depend on C, and F depends on D.  If A is made dependent
-   on D, then D takes the place of A.  All other dependency
-   relationships either stay the same, except for F, which becomes
-   dependent on A if the reprioritization is exclusive.
+   A, D and E depend on C, and F depends on D. If A is made dependent on
+   D, then D takes the place of A. All other dependency relationships
+   either stay the same, except for F, which becomes dependent on A if
+   the reprioritization is exclusive.
 
        ?                ?                ?                 ?
        |               / \               |                 |
@@ -1381,6 +1394,13 @@ Internet-Draft                   HTTP/2                         May 2014
 
                      Example of Dependency Reordering
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 25]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 5.3.4.  Prioritization State Management
 
    When a stream is removed from the dependency tree, its dependencies
@@ -1394,22 +1414,14 @@ Internet-Draft                   HTTP/2                         May 2014
    streams with the same parent stream, which means that if a stream in
    that set closes or becomes blocked, any spare capacity allocated to a
    stream is distributed to the immediate neighbors of the stream.
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 25]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    However, if the common dependency is removed from the tree, those
    streams share resources with streams at the next highest level.
 
    For example, assume streams A and B share a parent, and streams C and
    D both depend on stream A. Prior to the removal of stream A, if
    streams A and D are unable to proceed, then stream C receives all the
-   resources dedicated to stream A.  If stream A is removed from the
-   tree, the weight of stream A is divided between streams C and D.  If
+   resources dedicated to stream A. If stream A is removed from the
+   tree, the weight of stream A is divided between streams C and D. If
    stream D is still unable to proceed, this results in stream C
    receiving a reduced proportion of resources.  For equal starting
    weights, C receives one third, rather than one half, of available
@@ -1437,6 +1449,14 @@ Internet-Draft                   HTTP/2                         May 2014
    limit state exposure.  The amount of additional state an endpoint
    maintains could be dependent on load; under high load, prioritization
    state can be discarded to limit resource commitments.  In extreme
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 26]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    cases, an endpoint could even discard prioritization state for active
    or reserved streams.  If a fixed limit is applied, endpoints SHOULD
    maintain state for at least as many streams as allowed by their
@@ -1445,18 +1465,6 @@ Internet-Draft                   HTTP/2                         May 2014
    An endpoint receiving a PRIORITY frame that changes the priority of a
    closed stream SHOULD alter the dependencies of the streams that
    depend on it, if it has retained enough state to do so.
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 26]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
 5.3.5.  Default Priorities
 
@@ -1498,6 +1506,13 @@ Internet-Draft                   HTTP/2                         May 2014
    Endpoints SHOULD send a GOAWAY frame when ending a connection, as
    long as circumstances permit it.
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 27]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 5.4.2.  Stream Error Handling
 
    A stream error is an error related to a specific stream identifier
@@ -1505,15 +1520,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    An endpoint that detects a stream error sends a RST_STREAM frame
    (Section 6.4) that contains the stream identifier of the stream where
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 27]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    the error occurred.  The RST_STREAM frame includes an error code that
    indicates the type of error.
 
@@ -1539,6 +1545,46 @@ Internet-Draft                   HTTP/2                         May 2014
    half closed states, then the endpoint MUST assume that those streams
    were abnormally interrupted and could be incomplete.
 
+5.5.  Extending HTTP/2
+
+   HTTP/2 permits extension of the protocol.  Protocol extensions can be
+   used to provide additional services or alter any aspect of the
+   protocol, within the limitations described in this section.
+   Extensions are effective only within the scope of a single HTTP/2
+   connection.
+
+   Extensions are permitted to use new frame types (Section 4.1),
+   settings (Section 6.5.2), error codes (Section 7), or any reserved
+   flags or fields in frames.  Implementations MUST ignore unknown or
+   unsupported values in all of these elements.  Implementations MUST
+   also discard frames that have unknown or unsupported types.  Note
+   that only DATA frames can be flow controlled, extensions cannot be
+   flow controlled.  This means that any of these extension points can
+   be safely used by extensions without prior arrangement or
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 28]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   negotiation.
+
+   However, extensions MUST negotiate any use that could change to the
+   semantics of existing protocol components.  For example, an extension
+   that changes the layout of the HEADERS frame cannot be used until the
+   peer has given a positive signal that this is acceptable.  In this
+   case, it could also be necessary to coordinate when the revised
+   layout comes into effect.
+
+   This document doesn't mandate a specific method for negotiating the
+   use of an extension, but notes that a setting (Section 6.5.2) could
+   be used for that purpose.  If both peers set a value that indicates
+   willingness to use the extension, only then can the extension be
+   used.  If a setting is used for extension negotiation, the initial
+   value MUST be set so that the extension is initially disabled.
+
 6.  Frame Definitions
 
    This specification defines a number of frame types, each identified
@@ -1562,37 +1608,30 @@ Internet-Draft                   HTTP/2                         May 2014
    DATA frames MAY also contain arbitrary padding.  Padding can be added
    to DATA frames to hide the size of messages.
 
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 28]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    | Pad High? (8) |  Pad Low? (8) |
-    +---------------+---------------+-------------------------------+
+    |Pad Length? (8)|
+    +---------------+-----------------------------------------------+
     |                            Data (*)                         ...
     +---------------------------------------------------------------+
     |                           Padding (*)                       ...
     +---------------------------------------------------------------+
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 29]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
                             DATA Frame Payload
 
    The DATA frame contains the following fields:
 
-   Pad High:  An 8-bit field containing an amount of padding in units of
-      256 octets.  This field is optional and is only present if the
-      PAD_HIGH flag is set.  This field, in combination with Pad Low,
-      determines how much padding there is on a frame.
-
-   Pad Low:  An 8-bit field containing an amount of padding in units of
-      single octets.  This field is optional and is only present if the
-      PAD_LOW flag is set.  This field, in combination with Pad High,
-      determines how much padding there is on a frame.
+   Pad Length:  An 8-bit field containing the length of the frame
+      padding in units of octets.  This field is optional and is only
+      present if the PADDED flag is set.
 
    Data:  Application data.  The amount of data is the remainder of the
       frame payload after subtracting the length of the other fields
@@ -1614,41 +1653,13 @@ Internet-Draft                   HTTP/2                         May 2014
       frames across a segment boundary and MUST preserve segment
       boundaries when forwarding frames.
 
-   PAD_LOW (0x8):  Bit 4 being set indicates that the Pad Low field is
+   PADDED (0x8):  Bit 4 being set indicates that the Pad Length field is
       present.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 29]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   PAD_HIGH (0x10):  Bit 5 being set indicates that the Pad High field
-      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
-      also set.  Endpoints that receive a frame with PAD_HIGH set and
-      PAD_LOW cleared MUST treat this as a connection error
-      (Section 5.4.1) of type PROTOCOL_ERROR.
-
-   COMPRESSED (0x20):  Bit 6 being set indicates that the data in the
-      frame has been compressed with GZIP compression ([GZIP]).
 
    DATA frames MUST be associated with a stream.  If a DATA frame is
    received whose stream identifier field is 0x0, the recipient MUST
    respond with a connection error (Section 5.4.1) of type
    PROTOCOL_ERROR.
-
-   Data frames are optionally compressed using GZip compression [GZIP].
-   Each frame is individually compressed; the state of the compressor is
-   reset for each frame.
-
-   An endpoint MUST NOT send a DATA frame with the COMPRESSED flag set
-   unless the SETTINGS_COMPRESS_DATA setting is enabled, that is, set to
-   1.  An endpoint that has not enabled DATA frame compression MUST
-   treat the receipt of a DATA frame with the COMPRESSED flag set as a
-   connection error (Section 5.4.1) of type PROTOCOL_ERROR.
 
    DATA frames are subject to flow control and can only be sent when a
    stream is in the "open" or "half closed (remote)" states.  The entire
@@ -1662,6 +1673,14 @@ Internet-Draft                   HTTP/2                         May 2014
    value of the Pad High field by 256 and adding the value of the Pad
    Low field.  Both Pad High and Pad Low fields assume a value of zero
    if absent.  If the length of the padding is greater than the length
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 30]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    of the remainder of the frame payload, the recipient MUST treat this
    as a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
 
@@ -1670,17 +1689,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Use of padding is a security feature; as such, its use demands some
    care, see Section 10.7.
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 30]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
 6.2.  HEADERS
 
@@ -1691,8 +1699,8 @@ Internet-Draft                   HTTP/2                         May 2014
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    | Pad High? (8) |  Pad Low? (8) |
-    +-+-------------+---------------+-------------------------------+
+    |Pad Length? (8)|
+    +-+-------------+-----------------------------------------------+
     |E|                 Stream Dependency? (31)                     |
     +-+-------------+-----------------------------------------------+
     |  Weight? (8)  |
@@ -1706,11 +1714,9 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The HEADERS frame payload has the following fields:
 
-   Pad High:  Padding size high bits.  This field is only present if the
-      PAD_HIGH flag is set.
-
-   Pad Low:  Padding size low bits.  This field is only present if the
-      PAD_LOW flag is set.
+   Pad Length:  An 8-bit field containing the length of the frame
+      padding in units of octets.  This field is optional and is only
+      present if the PADDED flag is set.
 
    E: A single bit flag indicates that the stream dependency is
       exclusive, see Section 5.3.  This field is optional and is only
@@ -1719,6 +1725,17 @@ Internet-Draft                   HTTP/2                         May 2014
    Stream Dependency:  A 31-bit stream identifier for the stream that
       this stream depends on, see Section 5.3.  This field is optional
       and is only present if the PRIORITY flag is set.
+
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 31]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    Weight:  An 8-bit weight for the stream, see Section 5.3.  Add one to
       the value to obtain a weight between 1 and 256.  This field is
@@ -1729,14 +1746,6 @@ Internet-Draft                   HTTP/2                         May 2014
    Padding:  Padding octets.
 
    The HEADERS frame defines the following flags:
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 31]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    END_STREAM (0x1):  Bit 1 being set indicates that the header block
       (Section 4.3) is the last that the endpoint will send for the
@@ -1762,14 +1771,8 @@ Internet-Draft                   HTTP/2                         May 2014
       different stream as a connection error (Section 5.4.1) of type
       PROTOCOL_ERROR.
 
-   PAD_LOW (0x8):  Bit 4 being set indicates that the Pad Low field is
+   PADDED (0x8):  Bit 4 being set indicates that the Pad Length field is
       present.
-
-   PAD_HIGH (0x10):  Bit 5 being set indicates that the Pad High field
-      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
-      also set.  Endpoints that receive a frame with PAD_HIGH set and
-      PAD_LOW cleared MUST treat this as a connection error
-      (Section 5.4.1) of type PROTOCOL_ERROR.
 
    PRIORITY (0x20):  Bit 6 being set indicates that the Exclusive Flag
       (E), Stream Dependency, and Weight fields are present; see
@@ -1782,17 +1785,18 @@ Internet-Draft                   HTTP/2                         May 2014
    HEADERS frames MUST be associated with a stream.  If a HEADERS frame
    is received whose stream identifier field is 0x0, the recipient MUST
    respond with a connection error (Section 5.4.1) of type
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 32]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    PROTOCOL_ERROR.
 
    The HEADERS frame changes the connection state as described in
    Section 4.3.
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 32]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    The HEADERS frame includes optional padding.  Padding fields and
    flags are identical to those defined for DATA frames (Section 6.1).
@@ -1801,7 +1805,8 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The PRIORITY frame (type=0x2) specifies the sender-advised priority
    of a stream (Section 5.3).  It can be sent at any time for an
-   existing stream.  This enables reprioritization of existing streams.
+   existing stream, including closed streams.  This enables
+   reprioritization of existing streams.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1833,22 +1838,28 @@ Internet-Draft                   HTTP/2                         May 2014
    type PROTOCOL_ERROR.
 
    The PRIORITY frame can be sent on a stream in any of the "reserved
-   (remote)", "open", "half-closed (local)", or "half closed (remote)"
-   states, though it cannot be sent between consecutive frames that
-   comprise a single header block (Section 4.3).  Note that this frame
-   could arrive after processing or frame sending has completed, which
-   would cause it to have no effect.  For a stream that is in the "half
-   closed (remote)" state, this frame can only affect processing of the
-   stream and not frame transmission.
+   (remote)", "open", "half closed (local)", "half closed (remote)", or
+   "closed" states, though it cannot be sent between consecutive frames
+   that comprise a single header block (Section 4.3).  Note that this
 
 
 
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 33]
+Belshe, et al.          Expires December 10, 2014              [Page 33]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
+
+   frame could arrive after processing or frame sending has completed,
+   which would cause it to have no effect on the current stream.  For a
+   stream that is in the "half closed (remote)" or "closed" - state,
+   this frame can only affect processing of the current stream and not
+   frame transmission.
+
+   The PRIORITY frame is the only frame that can be sent for a closed
+   stream.  This allows for the reprioritization of a group of dependent
+   streams by altering the priority of the parent stream.  However, a
+   PRIORITY frame sent on a closed stream risks being ignored due to the
+   peer having discarded priority state information for that stream.
 
 6.4.  RST_STREAM
 
@@ -1886,6 +1897,14 @@ Internet-Draft                   HTTP/2                         May 2014
    treat this as a connection error (Section 5.4.1) of type
    PROTOCOL_ERROR.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 34]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    RST_STREAM frames MUST NOT be sent for a stream in the "idle" state.
    If a RST_STREAM frame identifying an idle stream is received, the
    recipient MUST treat this as a connection error (Section 5.4.1) of
@@ -1898,13 +1917,6 @@ Internet-Draft                   HTTP/2                         May 2014
    endpoints communicate, and is also used to acknowledge the receipt of
    those parameters.  Individually, a SETTINGS parameter can also be
    referred to as a "setting".
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 34]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    SETTINGS parameters are not negotiated; they describe characteristics
    of the sending peer, which are used by the receiving peer.  Different
@@ -1941,6 +1953,14 @@ Internet-Draft                   HTTP/2                         May 2014
    anything other than 0x0, the endpoint MUST respond with a connection
    error (Section 5.4.1) of type PROTOCOL_ERROR.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 35]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    The SETTINGS frame affects connection state.  A badly formed or
    incomplete SETTINGS frame MUST be treated as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR.
@@ -1948,25 +1968,14 @@ Internet-Draft                   HTTP/2                         May 2014
 6.5.1.  SETTINGS Format
 
    The payload of a SETTINGS frame consists of zero or more parameters,
-   each consisting of an unsigned 8-bit identifier and an unsigned
-   32-bit value.
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 35]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   each consisting of an unsigned 16-bit setting identifier and an
+   unsigned 32-bit value.
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    | Identifier (8)|
-    +---------------+-----------------------------------------------+
+    |       Identifier (16)         |
+    +-------------------------------+-------------------------------+
     |                        Value (32)                             |
     +---------------------------------------------------------------+
 
@@ -2000,6 +2009,14 @@ Internet-Draft                   HTTP/2                         May 2014
       this value.  It is recommended that this value be no smaller than
       100, so as to not unnecessarily limit parallelism.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 36]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
       A value of 0 for SETTINGS_MAX_CONCURRENT_STREAMS SHOULD NOT be
       treated as special by endpoints.  A zero value does prevent the
       creation of new streams, however this can also happen for any
@@ -2011,13 +2028,6 @@ Internet-Draft                   HTTP/2                         May 2014
       window size (in bytes) for stream level flow control.  The initial
       value is 65,535.
 
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 36]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
       This setting affects the window size of all streams, including
       existing streams, see Section 6.9.2.
 
@@ -2025,20 +2035,8 @@ Internet-Draft                   HTTP/2                         May 2014
       be treated as a connection error (Section 5.4.1) of type
       FLOW_CONTROL_ERROR.
 
-   SETTINGS_COMPRESS_DATA (5):  This setting is used to enable GZip
-      compression of DATA frames.
-
-      A value of 1 indicates that DATA frames MAY be compressed.  A
-      value of 0 indicates that compression is not permitted.  The
-      initial value is 0.
-
-      Values other than 0 or 1 are invalid.  An endpoint MUST treat the
-      receipt of any other value as a connection error (Section 5.4.1)
-      of type PROTOCOL_ERROR.
-
-   An endpoint that receives a SETTINGS frame with any other identifier
-   MUST treat this as a connection error (Section 5.4.1) of type
-   PROTOCOL_ERROR.
+   An endpoint that receives a SETTINGS frame with any unknown or
+   unsupported identifier MUST ignore that setting.
 
 6.5.3.  Settings Synchronization
 
@@ -2066,15 +2064,15 @@ Internet-Draft                   HTTP/2                         May 2014
    in advance of streams the sender intends to initiate.  The
    PUSH_PROMISE frame includes the unsigned 31-bit identifier of the
    stream the endpoint plans to create along with a set of headers that
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 37]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    provide additional context for the stream.  Section 8.2 contains a
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 37]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    thorough description of the use of PUSH_PROMISE frames.
 
    PUSH_PROMISE MUST NOT be sent if the SETTINGS_ENABLE_PUSH setting of
@@ -2083,8 +2081,8 @@ Internet-Draft                   HTTP/2                         May 2014
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    | Pad High? (8) | Pad Low? (8)  |
-    +-+-------------+---------------+-------------------------------+
+    |Pad Length? (8)|
+    +-+-------------+-----------------------------------------------+
     |R|                  Promised Stream ID (31)                    |
     +-+-----------------------------+-------------------------------+
     |                   Header Block Fragment (*)                 ...
@@ -2096,11 +2094,9 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The PUSH_PROMISE frame payload has the following fields:
 
-   Pad High:  Padding size high bits.  This field is only present if the
-      PAD_HIGH flag is set.
-
-   Pad Low:  Padding size low bits.  This field is only present if the
-      PAD_LOW flag is set.
+   Pad Length:  An 8-bit field containing the length of the frame
+      padding in units of octets.  This field is optional and is only
+      present if the PADDED flag is set.
 
    R: A single reserved bit.
 
@@ -2121,29 +2117,22 @@ Internet-Draft                   HTTP/2                         May 2014
       contains an entire header block (Section 4.3) and is not followed
       by any CONTINUATION frames.
 
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 38]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
       A PUSH_PROMISE frame without the END_HEADERS flag set MUST be
       followed by a CONTINUATION frame for the same stream.  A receiver
       MUST treat the receipt of any other type of frame or a frame on a
       different stream as a connection error (Section 5.4.1) of type
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 38]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
       PROTOCOL_ERROR.
 
-   PAD_LOW (0x8):  Bit 4 being set indicates that the Pad Low field is
+   PADDED (0x8):  Bit 4 being set indicates that the Pad Length field is
       present.
-
-   PAD_HIGH (0x10):  Bit 5 being set indicates that the Pad High field
-      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
-      also set.  Endpoints that receive a frame with PAD_HIGH set and
-      PAD_LOW cleared MUST treat this as a connection error
-      (Section 5.4.1) of type PROTOCOL_ERROR.
 
    PUSH_PROMISE frames MUST be associated with an existing, peer-
    initiated stream.  The stream identifier of a PUSH_PROMISE frame
@@ -2159,9 +2148,6 @@ Internet-Draft                   HTTP/2                         May 2014
    streams by returning a RST_STREAM referencing the promised stream
    identifier back to the sender of the PUSH_PROMISE.
 
-   The PUSH_PROMISE frame modifies the connection state as defined in
-   Section 4.3.
-
    A PUSH_PROMISE frame modifies the connection state in two ways.  The
    inclusion of a header block (Section 4.3) potentially modifies the
    state maintained for header compression.  PUSH_PROMISE also reserves
@@ -2175,17 +2161,9 @@ Internet-Draft                   HTTP/2                         May 2014
    Since PUSH_PROMISE reserves a stream, ignoring a PUSH_PROMISE frame
    causes the stream state to become indeterminate.  A receiver MUST
    treat the receipt of a PUSH_PROMISE on a stream that is neither
-   "open" nor "half-closed (local)" as a connection error
+   "open" nor "half closed (local)" as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR.  Similarly, a receiver MUST
    treat the receipt of a PUSH_PROMISE that promises an illegal stream
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 39]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    identifier (Section 5.1.1) (that is, an identifier for a stream that
    is not currently in the "idle" state) as a connection error
    (Section 5.4.1) of type PROTOCOL_ERROR.
@@ -2199,6 +2177,13 @@ Internet-Draft                   HTTP/2                         May 2014
    round-trip time from the sender, as well as determining whether an
    idle connection is still functional.  PING frames can be sent from
    any endpoint.
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 39]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -2234,14 +2219,6 @@ Internet-Draft                   HTTP/2                         May 2014
    be treated as a connection error (Section 5.4.1) of type
    FRAME_SIZE_ERROR.
 
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 40]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
 6.8.  GOAWAY
 
    The GOAWAY frame (type=0x7) informs the remote peer to stop creating
@@ -2256,6 +2233,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    There is an inherent race condition between an endpoint starting new
    streams and the remote sending a GOAWAY frame.  To deal with this
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 40]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    case, the GOAWAY contains the stream identifier of the last stream
    which was processed on the sending endpoint in this connection.  If
    the receiver of the GOAWAY used streams that are newer than the
@@ -2289,15 +2274,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The GOAWAY frame applies to the connection, not a specific stream.
    An endpoint MUST treat a GOAWAY frame with a stream identifier other
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 41]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    than 0x0 as a connection error (Section 5.4.1) of type
    PROTOCOL_ERROR.
 
@@ -2313,6 +2289,14 @@ Internet-Draft                   HTTP/2                         May 2014
       taken some action as a result.
 
    If a connection terminates without a GOAWAY frame, this value is
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 41]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    effectively the highest possible stream identifier.
 
    On streams with lower or equal numbered identifiers that were not
@@ -2338,6 +2322,18 @@ Internet-Draft                   HTTP/2                         May 2014
    clients to abandon automatic retry of requests if a GOAWAY frame is
    lost.
 
+   A client that is unable to retry requests loses all requests that are
+   in flight when the server closes the connection.  This is especially
+   true for intermediaries that might not be serving clients using
+   HTTP/2.  A server that is attempting to gracefully shut down a
+   connection SHOULD send an initial GOAWAY frame with the last stream
+   identifier set to 2^31-1 and a NO_ERROR code.  This signals to the
+   client that a shutdown is imminent and that no further requests can
+   be initiated.  After waiting at least one round trip time, the server
+   can send another GOAWAY frame with an updated last stream identifier.
+   This ensures that a connection can be cleanly shut down without
+   losing requests.
+
    After sending a GOAWAY frame, the sender can discard frames for
    streams with identifiers higher than the identified last stream.
    However, any frames that alter connection state cannot be completely
@@ -2345,19 +2341,18 @@ Internet-Draft                   HTTP/2                         May 2014
    MUST be minimally processed to ensure the state maintained for header
    compression is consistent (see Section 4.3); similarly DATA frames
    MUST be counted toward the connection flow control window.  Failure
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 42]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    to process these frames can cause flow control or header compression
    state to become unsynchronized.
 
    The GOAWAY frame also contains a 32-bit error code (Section 7) that
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 42]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    contains the reason for closing the connection.
 
    Endpoints MAY append opaque data to the payload of any GOAWAY frame.
@@ -2401,19 +2396,18 @@ Internet-Draft                   HTTP/2                         May 2014
    The payload of a WINDOW_UPDATE frame is one reserved bit, plus an
    unsigned 31-bit integer indicating the number of bytes that the
    sender can transmit in addition to the existing flow control window.
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 43]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    The legal range for the increment to the flow control window is 1 to
    2^31 - 1 (0x7fffffff) bytes.
 
    The WINDOW_UPDATE frame does not define any flags.
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 43]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    The WINDOW_UPDATE frame can be specific to a stream or to the entire
    connection.  In the former case, the frame's stream identifier
@@ -2457,20 +2451,19 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The receiver of a frame sends a WINDOW_UPDATE frame as it consumes
    data and frees up space in flow control windows.  Separate
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 44]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    WINDOW_UPDATE frames are sent for the stream and connection level
    flow control windows.
 
    A sender that receives a WINDOW_UPDATE frame updates the
    corresponding window by the amount specified in the frame.
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 44]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    A sender MUST NOT allow a flow control window to exceed 2^31 - 1
    bytes.  If a sender receives a WINDOW_UPDATE that causes a flow
@@ -2483,11 +2476,6 @@ Internet-Draft                   HTTP/2                         May 2014
    the receiver are completely asynchronous with respect to each other.
    This property allows a receiver to aggressively update the window
    size kept by the sender to prevent streams from stalling.
-
-   A sender that is unable to send data on a stream due to either flow
-   control window being zero or lower MAY send a BLOCKED frame
-   (Section 6.12) in order to inform the receiver of a potential flow
-   control problem.
 
 6.9.2.  Initial Flow Control Window Size
 
@@ -2512,16 +2500,6 @@ Internet-Draft                   HTTP/2                         May 2014
    the old value.  A SETTINGS frame cannot alter the connection flow
    control window.
 
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 45]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    An endpoint MUST treat a change to SETTINGS_INITIAL_WINDOW_SIZE that
    causes any flow control window to exceed the maximum size as a
    connection error (Section 5.4.1) of type FLOW_CONTROL_ERROR.
@@ -2535,6 +2513,14 @@ Internet-Draft                   HTTP/2                         May 2014
    For example, if the client sends 60KB immediately on connection
    establishment, and the server sets the initial window size to be
    16KB, the client will recalculate the available flow control window
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 45]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    to be -44KB on receipt of the SETTINGS frame.  The client retains a
    negative flow control window until WINDOW_UPDATE frames restore the
    window to being positive, after which the client can resume sending.
@@ -2566,73 +2552,37 @@ Internet-Draft                   HTTP/2                         May 2014
    frame is on the same stream and is a HEADERS, PUSH_PROMISE or
    CONTINUATION frame without the END_HEADERS flag set.
 
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 46]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    | Pad High? (8) | Pad Low? (8)  |
-    +---------------+---------------+-------------------------------+
     |                   Header Block Fragment (*)                 ...
-    +---------------------------------------------------------------+
-    |                           Padding (*)                       ...
     +---------------------------------------------------------------+
 
                         CONTINUATION Frame Payload
 
-   The CONTINUATION frame payload has the following fields:
+   The CONTINUATION frame payload contains a header block fragment
+   (Section 4.3).
 
-   Pad High:  Padding size high bits.  This field is only present if the
-      PAD_HIGH flag is set.
-
-   Pad Low:  Padding size low bits.  This field is only present if the
-      PAD_LOW flag is set.
-
-   Header Block Fragment:  A header block fragment (Section 4.3).
-
-   Padding:  Padding octets.
-
-   The CONTINUATION frame defines the following flags:
+   The CONTINUATION frame defines the following flag:
 
    END_HEADERS (0x4):  Bit 3 being set indicates that this frame ends a
       header block (Section 4.3).
 
       If the END_HEADERS bit is not set, this frame MUST be followed by
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 46]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
       another CONTINUATION frame.  A receiver MUST treat the receipt of
       any other type of frame or a frame on a different stream as a
       connection error (Section 5.4.1) of type PROTOCOL_ERROR.
 
-   PAD_LOW (0x8):  Bit 4 being set indicates that the Pad Low field is
-      present.
-
-   PAD_HIGH (0x10):  Bit 5 being set indicates that the Pad High field
-      is present.  This bit MUST NOT be set unless the PAD_LOW flag is
-      also set.  Endpoints that receive a frame with PAD_HIGH set and
-      PAD_LOW cleared MUST treat this as a connection error
-      (Section 5.4.1) of type PROTOCOL_ERROR.
-
-   The payload of a CONTINUATION frame contains a header block fragment
-   (Section 4.3).
-
    The CONTINUATION frame changes the connection state as defined in
    Section 4.3.
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 47]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    CONTINUATION frames MUST be associated with a stream.  If a
    CONTINUATION frame is received whose stream identifier field is 0x0,
@@ -2643,130 +2593,6 @@ Internet-Draft                   HTTP/2                         May 2014
    CONTINUATION frame without the END_HEADERS flag set.  A recipient
    that observes violation of this rule MUST respond with a connection
    error (Section 5.4.1) of type PROTOCOL_ERROR.
-
-   The CONTINUATION frame includes optional padding.  Padding fields and
-   flags are identical to those defined for DATA frames (Section 6.1).
-
-6.11.  ALTSVC
-
-   The ALTSVC frame (type=0xA) advertises the availability of an
-   alternative service to the client.  It can be sent at any time for an
-   existing client-initiated stream or stream 0, and is intended to
-   allow servers to load balance or otherwise segment traffic; see
-   [ALT-SVC] for details (in particular, Section 2.4, which outlines
-   client handling of alternative services).
-
-   An ALTSVC frame on a client-initiated stream indicates that the
-   conveyed alternative service is associated with the origin of that
-   stream.
-
-   An ALTSVC frame on stream 0 indicates that the conveyed alternative
-   service is associated with the origin contained in the Origin field
-   of the frame.  An association with an origin that the client does not
-   consider authoritative for the current connection MUST be ignored.
-
-     0                   1                   2                   3
-     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |                          Max-Age (32)                         |
-    +-------------------------------+---------------+---------------+
-    |            Port (16)          | Proto-Len (8) |
-    +-------------------------------+---------------+---------------+
-    |                        Protocol-ID (*)                        |
-    +---------------+-----------------------------------------------+
-    | Host-Len (8)  |                   Host (*)                  ...
-    +---------------+-----------------------------------------------+
-    |                          Origin? (*)                        ...
-    +---------------------------------------------------------------+
-
-                           ALTSVC Frame Payload
-
-   The ALTSVC frame contains the following fields:
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 48]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   Max-Age:  An unsigned, 32-bit integer indicating the freshness
-      lifetime of the alternative service association, as per [ALT-SVC],
-      Section 2.2.
-
-   Port:  An unsigned, 16-bit integer indicating the port that the
-      alternative service is available upon.
-
-   Proto-Len:  An unsigned, 8-bit integer indicating the length, in
-      octets, of the Protocol-ID field.
-
-   Protocol-ID:  A sequence of bytes (length determined by "Proto-Len")
-      containing the ALPN protocol identifier of the alternative
-      service.
-
-   Host-Len:  An unsigned, 8-bit integer indicating the length, in
-      octets, of the Host field.
-
-   Host:  A sequence of characters (length determined by "Host-Len")
-      containing an ASCII string indicating the host that the
-      alternative service is available upon.  An internationalized
-      domain name [IDNA] MUST be expressed using A-labels.
-
-   Origin:  An optional sequence of characters (length determined by
-      subtracting the length of all preceding fields from the frame
-      length) containing the ASCII serialisation of an origin
-      ([RFC6454], Section 6.2) that the alternate service is applicable
-      to.
-
-   The ALTSVC frame does not define any flags.
-
-   The ALTSVC frame is intended for receipt by clients; a server that
-   receives an ALTSVC frame MUST treat it as a connection error
-   (Section 5.4.1) of type PROTOCOL_ERROR.
-
-   The ALTSVC frame is processed hop-by-hop.  An intermediary MUST NOT
-   forward ALTSVC frames, though it can use the information contained in
-   ALTSVC frames in forming new ALTSVC frames to send to its own
-   clients.
-
-6.12.  BLOCKED
-
-   The BLOCKED frame (type=0xB) indicates that the sender is unable to
-   send data due to a closed flow control window.
-
-   [[CREF2: The BLOCKED frame is included in this draft version to
-   facilitate experimentation.  If the results of the experiment do not
-   provide positive feedback, it could be removed.]]
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 49]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   The BLOCKED frame is used to provide feedback about the performance
-   of flow control for the purposes of performance tuning and debugging.
-   The BLOCKED frame can be sent by a peer when flow controlled data
-   cannot be sent due to the connection- or stream-level flow control.
-   This frame MUST NOT be sent if there are other reasons preventing
-   data from being sent, either a lack of available data, or the
-   underlying transport being blocked.
-
-   The BLOCKED frame is sent on the stream that is blocked, that is, the
-   stream with a non-positive number of bytes available in the flow
-   control window.  A BLOCKED frame can be sent on stream 0x0 to
-   indicate that connection-level flow control is blocked.
-
-   An endpoint MUST NOT send any subsequent BLOCKED frames until the
-   affected flow control window becomes positive.  This means that
-   WINDOW_UPDATE frames are received or SETTINGS_INITIAL_WINDOW_SIZE is
-   increased before more BLOCKED frames can be sent.
-
-   The BLOCKED frame defines no flags and contains no payload.  A
-   receiver MUST treat the receipt of a BLOCKED frame with a payload as
-   a connection error (Section 5.4.1) of type FRAME_SIZE_ERROR.
 
 7.  Error Codes
 
@@ -2793,18 +2619,19 @@ Internet-Draft                   HTTP/2                         May 2014
    FLOW_CONTROL_ERROR (3):  The endpoint detected that its peer violated
       the flow control protocol.
 
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 50]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    SETTINGS_TIMEOUT (4):  The endpoint sent a SETTINGS frame, but did
       not receive a response in a timely manner.  See Settings
       Synchronization (Section 6.5.3).
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 47]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    STREAM_CLOSED (5):  The endpoint received a frame after a stream was
       half closed.
@@ -2833,6 +2660,10 @@ Internet-Draft                   HTTP/2                         May 2014
       that do not meet the minimum requirements imposed by this document
       (see Section 9.2) or the endpoint.
 
+   Unknown or unsupported error codes MUST NOT trigger any special
+   behavior.  These MAY be treated by an implementation as being
+   equivalent to INTERNAL_ERROR.
+
 8.  HTTP Message Exchanges
 
    HTTP/2 is intended to be as compatible as possible with current uses
@@ -2853,9 +2684,9 @@ Internet-Draft                   HTTP/2                         May 2014
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 51]
+Belshe, et al.          Expires December 10, 2014              [Page 48]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
 8.1.  HTTP Request/Response Exchange
@@ -2909,9 +2740,9 @@ Internet-Draft                   HTTP/2                         May 2014
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 52]
+Belshe, et al.          Expires December 10, 2014              [Page 49]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
 8.1.1.  Informational Responses
@@ -2951,10 +2782,10 @@ Internet-Draft                   HTTP/2                         May 2014
 
    o  An intermediary that gateways HTTP/1.1 to HTTP/2 MUST generate a
       100 (Continue) response if a received request includes and Expect
-      header field with a "100-continue" token ([HTTP-p2],
-      Section 5.1.1), unless it can immediately generate a final status
-      code.  It MUST NOT forward the "100-continue" expectation in the
-      request header fields.
+      header field with a "100-continue" token ([HTTP-p2], Section
+      5.1.1), unless it can immediately generate a final status code.
+      It MUST NOT forward the "100-continue" expectation in the request
+      header fields.
 
    o  An intermediary that gateways HTTP/2 to HTTP/1.1 MAY add an Expect
       header field with a "100-continue" expectation when forwarding a
@@ -2965,15 +2796,248 @@ Internet-Draft                   HTTP/2                         May 2014
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 53]
+Belshe, et al.          Expires December 10, 2014              [Page 50]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
    o  An intermediary that gateways HTTP/2 to HTTP/1.1 MUST discard all
       other 1xx informational responses.
 
-8.1.2.  Examples
+8.1.2.  HTTP Header Fields
+
+   HTTP header fields carry information as a series of key-value pairs.
+   For a listing of registered HTTP headers, see the Message Header
+   Field Registry maintained at
+   <http://www.iana.org/assignments/message-headers>.
+
+   While HTTP/1.x used the message start-line (see [HTTP-p1], Section
+   3.1) to convey the target URI and method of the request, and the
+   status code for the response, HTTP/2 uses special pseudo-headers
+   beginning with ":" for these tasks.
+
+   Just as in HTTP/1.x, header field names are strings of ASCII
+   characters that are compared in a case-insensitive fashion.  However,
+   header field names MUST be converted to lowercase prior to their
+   encoding in HTTP/2.  A request or response containing uppercase
+   header field names MUST be treated as malformed (Section 8.1.2.5).
+
+   HTTP/2 does not use the Connection header field to indicate "hop-by-
+   hop" header fields; in this protocol, connection-specific metadata is
+   conveyed by other means.  As such, a HTTP/2 message containing
+   Connection MUST be treated as malformed (Section 8.1.2.5).
+
+   This means that an intermediary transforming an HTTP/1.x message to
+   HTTP/2 will need to remove any header fields nominated by the
+   Connection header field, along with the Connection header field
+   itself.  Such intermediaries SHOULD also remove other connection-
+   specific header fields, such as Keep-Alive, Proxy-Connection,
+   Transfer-Encoding and Upgrade, even if they are not nominated by
+   Connection.
+
+   One exception to this is the TE header field, which MAY be present in
+   an HTTP/2 request, but when it is MUST NOT contain any value other
+   than "trailers".
+
+   Note:  HTTP/2 purposefully does not support upgrade to another
+      protocol.  The handshake methods described in Section 3 are
+      believed sufficient to negotiate the use of alternative protocols.
+
+8.1.2.1.  Request Header Fields
+
+   HTTP/2 defines a number of header fields starting with a colon ':'
+   character that carry information about the request target:
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 51]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   o  The ":method" header field includes the HTTP method ([HTTP-p2],
+      Section 4).
+
+   o  The ":scheme" header field includes the scheme portion of the
+      target URI ([RFC3986], Section 3.1).
+
+      ":scheme" is not restricted to "http" and "https" schemed URIs.  A
+      proxy or gateway can translate requests for non-HTTP schemes,
+      enabling the use of HTTP to interact with non-HTTP services.
+
+   o  The ":authority" header field includes the authority portion of
+      the target URI ([RFC3986], Section 3.2).  The authority MUST NOT
+      include the deprecated "userinfo" subcomponent for "http" or
+      "https" schemed URIs.
+
+      To ensure that the HTTP/1.1 request line can be reproduced
+      accurately, this header field MUST be omitted when translating
+      from an HTTP/1.1 request that has a request target in origin or
+      asterisk form (see [HTTP-p1], Section 5.3).  Clients that generate
+      HTTP/2 requests directly SHOULD instead omit the "Host" header
+      field.  An intermediary that converts an HTTP/2 request to
+      HTTP/1.1 MUST create a "Host" header field if one is not present
+      in a request by copying the value of the ":authority" header
+      field.
+
+   o  The ":path" header field includes the path and query parts of the
+      target URI (the "path-absolute" production from [RFC3986] and
+      optionally a '?' character followed by the "query" production, see
+      [RFC3986], Section 3.3 and [RFC3986], Section 3.4).  This field
+      MUST NOT be empty; URIs that do not contain a path component MUST
+      include a value of '/', unless the request is an OPTIONS request
+      in asterisk form, in which case the ":path" header field MUST
+      include '*'.
+
+   All HTTP/2 requests MUST include exactly one valid value for the
+   ":method", ":scheme", and ":path" header fields, unless this is a
+   CONNECT request (Section 8.3).  An HTTP request that omits mandatory
+   header fields is malformed (Section 8.1.2.5).
+
+   Header field names that start with a colon are only valid in the
+   HTTP/2 context.  These are not HTTP header fields.  Implementations
+   MUST NOT generate header fields that start with a colon, but they
+   MUST ignore any header field that starts with a colon.  In
+   particular, header fields with names starting with a colon MUST NOT
+   be exposed as HTTP header fields.
+
+   HTTP/2 does not define a way to carry the version identifier that is
+   included in the HTTP/1.1 request line.
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 52]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+8.1.2.2.  Response Header Fields
+
+   A single ":status" header field is defined that carries the HTTP
+   status code field (see [HTTP-p2], Section 6).  This header field MUST
+   be included in all responses, otherwise the response is malformed
+   (Section 8.1.2.5).
+
+   HTTP/2 does not define a way to carry the version or reason phrase
+   that is included in an HTTP/1.1 status line.
+
+8.1.2.3.  Header Field Ordering
+
+   HTTP Header Compression [COMPRESSION] does not preserve the order of
+   header fields, because the relative order of header fields with
+   different names is not important.  However, the same header field can
+   be repeated to form a list (see [HTTP-p1], Section 3.2.2), where the
+   relative order of header field values is significant.  This
+   repetition can occur either as a single header field with a comma-
+   separated list of values, or as several header fields with a single
+   value, or any combination thereof.  Therefore, in the latter case,
+   ordering needs to be preserved before compression takes place.
+
+   To preserve the order of multiple occurrences of a header field with
+   the same name, its ordered values are concatenated into a single
+   value using a zero-valued octet (0x0) to delimit them.
+
+   After decompression, header fields that have values containing zero
+   octets (0x0) MUST be split into multiple header fields before being
+   processed.
+
+   For example, the following HTTP/1.x header block:
+
+     Content-Type: text/html
+     Cache-Control: max-age=60, private
+     Cache-Control: must-revalidate
+
+   contains three Cache-Control directives; two in the first Cache-
+   Control header field, and the last one in the second Cache-Control
+   field.  Before compression, they would need to be converted to a form
+   similar to this (with 0x0 represented as "\0"):
+
+     cache-control = max-age=60, private\0must-revalidate
+     content-type = text/html
+
+   Note here that the ordering between Content-Type and Cache-Control is
+   not preserved, but the relative ordering of the Cache-Control
+   directives -- as well as the fact that the first two were comma-
+   separated, while the last was on a different line -- is.
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 53]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   Header fields containing multiple values MUST be concatenated into a
+   single value unless the ordering of that header field is known to be
+   insignificant.
+
+   The special case of "set-cookie" - which does not form a comma-
+   separated list, but can have multiple values - does not depend on
+   ordering.  The "set-cookie" header field MAY be encoded as multiple
+   header field values, or as a single concatenated value.
+
+8.1.2.4.  Compressing the Cookie Header Field
+
+   The Cookie header field [COOKIE] can carry a significant amount of
+   redundant data.
+
+   The Cookie header field uses a semi-colon (";") to delimit cookie-
+   pairs (or "crumbs").  This header field doesn't follow the list
+   construction rules in HTTP (see [HTTP-p1], Section 3.2.2), which
+   prevents cookie-pairs from being separated into different name-value
+   pairs.  This can significantly reduce compression efficiency as
+   individual cookie-pairs are updated.
+
+   To allow for better compression efficiency, the Cookie header field
+   MAY be split into separate header fields, each with one or more
+   cookie-pairs.  If there are multiple Cookie header fields after
+   decompression, these MUST be concatenated into a single octet string
+   using the two octet delimiter of 0x3B, 0x20 (the ASCII string "; ").
+
+   The Cookie header field MAY be split using a zero octet (0x0), as
+   defined in Section 8.1.2.3.  When decoding, zero octets MUST be
+   replaced with the cookie delimiter ("; ").
+
+8.1.2.5.  Malformed Messages
+
+   A malformed request or response is one that uses a valid sequence of
+   HTTP/2 frames, but is otherwise invalid due to the presence of
+   prohibited header fields, the absence of mandatory header fields, or
+   the inclusion of uppercase header field names.
+
+   A request or response that includes an entity body can include a
+   "content-length" header field.  A request or response is also
+   malformed if the value of a "content-length" header field does not
+   equal the sum of the uncompressed DATA frame payload lengths that
+   form the body.
+
+   Note:  The "Content-Length" header field is set to the length of an
+      entity body.  Compression of DATA frames is a function of HTTP/2
+      that does not alter entities.
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 54]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   Intermediaries that process HTTP requests or responses (i.e., all
+   intermediaries other than those acting as tunnels) MUST NOT forward a
+   malformed request or response.
+
+   Implementations that detect malformed requests or responses need to
+   ensure that the stream ends.  For malformed requests, a server MAY
+   send an HTTP response prior to closing or resetting the stream.
+   Clients MUST NOT accept a malformed response.  Note that these
+   requirements are intended to protect against several types of common
+   attacks against HTTP; they are deliberately strict, because being
+   permissive can expose implementations to these vulnerabilities.
+
+8.1.3.  Examples
 
    This section shows HTTP/1.1 requests and responses, with
    illustrations of equivalent HTTP/2 requests and responses.
@@ -3003,28 +3067,23 @@ Internet-Draft                   HTTP/2                         May 2014
      ETag: "xyzzy"              ==>     + END_STREAM
      Expires: Thu, 23 Jan ...           + END_HEADERS
                                           :status = 304
-                                          etag: "xyzzy"
-                                          expires: Thu, 23 Jan ...
+                                          etag = "xyzzy"
+                                          expires = Thu, 23 Jan ...
 
    An HTTP POST request that includes request header fields and payload
    data is transmitted as one HEADERS frame, followed by zero or more
    CONTINUATION frames containing the request header fields, followed by
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 55]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    one or more DATA frames, with the last CONTINUATION (or HEADERS)
    frame having the END_HEADERS flag set and the final DATA frame having
    the END_STREAM flag set:
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 54]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
      POST /resource HTTP/1.1          HEADERS
      Host: example.org          ==>     - END_STREAM
@@ -3035,7 +3094,7 @@ Internet-Draft                   HTTP/2                         May 2014
 
                                       CONTINUATION
                                         + END_HEADERS
-                                          :authority = example.org
+                                          host = example.org
                                           :scheme = https
                                           content-length = 123
 
@@ -3073,22 +3132,18 @@ Internet-Draft                   HTTP/2                         May 2014
 
 
 
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 55]
+Belshe, et al.          Expires December 10, 2014              [Page 56]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
      HTTP/1.1 200 OK                  HEADERS
      Content-Type: image/jpeg   ==>     - END_STREAM
      Transfer-Encoding: chunked         + END_HEADERS
-     Trailer: Foo                         :status        = 200
+     Trailer: Foo                         :status = 200
                                           content-length = 123
-     123                                  content-type   = image/jpeg
-     {binary data}                        trailer        = Foo
+     123                                  content-type = image/jpeg
+     {binary data}                        trailer = Foo
      0
      Foo: bar                         DATA
                                         - END_STREAM
@@ -3097,243 +3152,7 @@ Internet-Draft                   HTTP/2                         May 2014
                                       HEADERS
                                         + END_STREAM
                                         + END_HEADERS
-                                          foo: bar
-
-8.1.3.  HTTP Header Fields
-
-   HTTP header fields carry information as a series of key-value pairs.
-   For a listing of registered HTTP headers, see the Message Header
-   Field Registry maintained at [4].
-
-   While HTTP/1.x used the message start-line (see [HTTP-p1],
-   Section 3.1) to convey the target URI and method of the request, and
-   the status code for the response, HTTP/2 uses special pseudo-headers
-   beginning with ":" for these tasks.
-
-   Just as in HTTP/1.x, header field names are strings of ASCII
-   characters that are compared in a case-insensitive fashion.  However,
-   header field names MUST be converted to lowercase prior to their
-   encoding in HTTP/2.  A request or response containing uppercase
-   header field names MUST be treated as malformed (Section 8.1.3.5).
-
-   HTTP/2 does not use the Connection header field to indicate "hop-by-
-   hop" header fields; in this protocol, connection-specific metadata is
-   conveyed by other means.  As such, a HTTP/2 message containing
-   Connection MUST be treated as malformed (Section 8.1.3.5).
-
-   This means that an intermediary transforming an HTTP/1.x message to
-   HTTP/2 will need to remove any header fields nominated by the
-   Connection header field, along with the Connection header field
-   itself.  Such intermediaries SHOULD also remove other connection-
-   specific header fields, such as Keep-Alive, Proxy-Connection,
-   Transfer-Encoding and Upgrade, even if they are not nominated by
-   Connection.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 56]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   One exception to this is the TE header field, which MAY be present in
-   an HTTP/2 request, but when it is MUST NOT contain any value other
-   than "trailers".
-
-   Note:  HTTP/2 purposefully does not support upgrade to another
-      protocol.  The handshake methods described in Section 3 are
-      believed sufficient to negotiate the use of alternative protocols.
-
-8.1.3.1.  Request Header Fields
-
-   HTTP/2 defines a number of header fields starting with a colon ':'
-   character that carry information about the request target:
-
-   o  The ":method" header field includes the HTTP method ([HTTP-p2],
-      Section 4).
-
-   o  The ":scheme" header field includes the scheme portion of the
-      target URI ([RFC3986], Section 3.1).
-
-      ":scheme" is not restricted to "http" and "https" schemed URIs.  A
-      proxy or gateway can translate requests for non-HTTP schemes,
-      enabling the use of HTTP to interact with non-HTTP services.
-
-   o  The ":authority" header field includes the authority portion of
-      the target URI ([RFC3986], Section 3.2).  The authority MUST NOT
-      include the deprecated "userinfo" subcomponent for "http" or
-      "https" schemed URIs.
-
-      To ensure that the HTTP/1.1 request line can be reproduced
-      accurately, this header field MUST be omitted when translating
-      from an HTTP/1.1 request that has a request target in origin or
-      asterisk form (see [HTTP-p1], Section 5.3).  Clients that generate
-      HTTP/2 requests directly SHOULD instead omit the "Host" header
-      field.  An intermediary that converts an HTTP/2 request to HTTP/
-      1.1 MUST create a "Host" header field if one is not present in a
-      request by copying the value of the ":authority" header field.
-
-   o  The ":path" header field includes the path and query parts of the
-      target URI (the "path-absolute" production from [RFC3986] and
-      optionally a '?' character followed by the "query" production, see
-      [RFC3986], Section 3.3 and [RFC3986], Section 3.4).  This field
-      MUST NOT be empty; URIs that do not contain a path component MUST
-      include a value of '/', unless the request is an OPTIONS request
-      in asterisk form, in which case the ":path" header field MUST
-      include '*'.
-
-   All HTTP/2 requests MUST include exactly one valid value for the
-   ":method", ":scheme", and ":path" header fields, unless this is a
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 57]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   CONNECT request (Section 8.3).  An HTTP request that omits mandatory
-   header fields is malformed (Section 8.1.3.5).
-
-   Header field names that start with a colon are only valid in the HTTP
-   /2 context.  These are not HTTP header fields.  Implementations MUST
-   NOT generate header fields that start with a colon, but they MUST
-   ignore any header field that starts with a colon.  In particular,
-   header fields with names starting with a colon MUST NOT be exposed as
-   HTTP header fields.
-
-   HTTP/2 does not define a way to carry the version identifier that is
-   included in the HTTP/1.1 request line.
-
-8.1.3.2.  Response Header Fields
-
-   A single ":status" header field is defined that carries the HTTP
-   status code field (see [HTTP-p2], Section 6).  This header field MUST
-   be included in all responses, otherwise the response is malformed
-   (Section 8.1.3.5).
-
-   HTTP/2 does not define a way to carry the version or reason phrase
-   that is included in an HTTP/1.1 status line.
-
-8.1.3.3.  Header Field Ordering
-
-   HTTP Header Compression [COMPRESSION] does not preserve the order of
-   header fields, because the relative order of header fields with
-   different names is not important.  However, the same header field can
-   be repeated to form a list (see [HTTP-p1], Section 3.2.2), where the
-   relative order of header field values is significant.  This
-   repetition can occur either as a single header field with a comma-
-   separated list of values, or as several header fields with a single
-   value, or any combination thereof.  Therefore, in the latter case,
-   ordering needs to be preserved before compression takes place.
-
-   To preserve the order of multiple occurrences of a header field with
-   the same name, its ordered values are concatenated into a single
-   value using a zero-valued octet (0x0) to delimit them.
-
-   After decompression, header fields that have values containing zero
-   octets (0x0) MUST be split into multiple header fields before being
-   processed.
-
-   For example, the following HTTP/1.x header block:
-
-                 Content-Type: text/html
-                 Cache-Control: max-age=60, private
-                 Cache-Control: must-revalidate
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 58]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-   contains three Cache-Control directives; two in the first Cache-
-   Control header field, and the last one in the second Cache-Control
-   field.  Before compression, they would need to be converted to a form
-   similar to this (with 0x0 represented as "\0"):
-
-                 cache-control: max-age=60, private\0must-revalidate
-                 content-type: text/html
-
-   Note here that the ordering between Content-Type and Cache-Control is
-   not preserved, but the relative ordering of the Cache-Control
-   directives -- as well as the fact that the first two were comma-
-   separated, while the last was on a different line -- is.
-
-   Header fields containing multiple values MUST be concatenated into a
-   single value unless the ordering of that header field is known to be
-   insignificant.
-
-   The special case of "set-cookie" - which does not form a comma-
-   separated list, but can have multiple values - does not depend on
-   ordering.  The "set-cookie" header field MAY be encoded as multiple
-   header field values, or as a single concatenated value.
-
-8.1.3.4.  Compressing the Cookie Header Field
-
-   The Cookie header field [COOKIE] can carry a significant amount of
-   redundant data.
-
-   The Cookie header field uses a semi-colon (";") to delimit cookie-
-   pairs (or "crumbs").  This header field doesn't follow the list
-   construction rules in HTTP (see [HTTP-p1], Section 3.2.2), which
-   prevents cookie-pairs from being separated into different name-value
-   pairs.  This can significantly reduce compression efficiency as
-   individual cookie-pairs are updated.
-
-   To allow for better compression efficiency, the Cookie header field
-   MAY be split into separate header fields, each with one or more
-   cookie-pairs.  If there are multiple Cookie header fields after
-   decompression, these MUST be concatenated into a single octet string
-   using the two octet delimiter of 0x3B, 0x20 (the ASCII string "; ").
-
-   The Cookie header field MAY be split using a zero octet (0x0), as
-   defined in Section 8.1.3.3.  When decoding, zero octets MUST be
-   replaced with the cookie delimiter ("; ").
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 59]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
-8.1.3.5.  Malformed Messages
-
-   A malformed request or response is one that uses a valid sequence of
-   HTTP/2 frames, but is otherwise invalid due to the presence of
-   prohibited header fields, the absence of mandatory header fields, or
-   the inclusion of uppercase header field names.
-
-   A request or response that includes an entity body can include a
-   "content-length" header field.  A request or response is also
-   malformed if the value of a "content-length" header field does not
-   equal the sum of the uncompressed DATA frame payload lengths that
-   form the body.
-
-   Note:  The "Content-Length" header field is set to the length of an
-      entity body.  Compression of DATA frames is a function of HTTP/2
-      that does not alter entities.
-
-   Intermediaries that process HTTP requests or responses (i.e., all
-   intermediaries other than those acting as tunnels) MUST NOT forward a
-   malformed request or response.
-
-   Implementations that detect malformed requests or responses need to
-   ensure that the stream ends.  For malformed requests, a server MAY
-   send an HTTP response prior to closing or resetting the stream.
-   Clients MUST NOT accept a malformed response.  Note that these
-   requirements are intended to protect against several types of common
-   attacks against HTTP; they are deliberately strict, because being
-   permissive can expose implementations to these vulnerabilities.
+                                          foo = bar
 
 8.1.4.  Request Reliability Mechanisms in HTTP/2
 
@@ -3355,13 +3174,6 @@ Internet-Draft                   HTTP/2                         May 2014
       processing having occurred.  Any request that was sent on the
       reset stream can be safely retried.
 
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 60]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    Requests that have not been processed have not failed; clients MAY
    automatically retry them, even those with non-idempotent methods.
 
@@ -3373,6 +3185,14 @@ Internet-Draft                   HTTP/2                         May 2014
    given stream identifier.
 
    In addition to these mechanisms, the PING frame provides a way for a
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 57]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    client to easily test a connection.  Connections that remain idle can
    become broken as some middleboxes (for instance, network address
    translators, or load balancers) silently discard connection bindings.
@@ -3406,17 +3226,8 @@ Internet-Draft                   HTTP/2                         May 2014
    PROTOCOL_ERROR.
 
    A server can only push responses that are cacheable (see [HTTP-p6],
-   Section 3); promised requests MUST be safe (see [HTTP-p2],
-   Section 4.2.1) and MUST NOT include a request body.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 61]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   Section 3); promised requests MUST be safe (see [HTTP-p2], Section
+   4.2.1) and MUST NOT include a request body.
 
 8.2.1.  Push Requests
 
@@ -3430,6 +3241,14 @@ Internet-Draft                   HTTP/2                         May 2014
    includes a request body.
 
    Pushed responses are always associated with an explicit request from
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 58]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    the client.  The PUSH_PROMISE frames sent by the server are sent on
    that explicit request's stream.  The PUSH_PROMISE frame also includes
    a promised stream identifier, chosen from the stream identifiers
@@ -3437,7 +3256,7 @@ Internet-Draft                   HTTP/2                         May 2014
 
    The header fields in PUSH_PROMISE and any subsequent CONTINUATION
    frames MUST be a valid and complete set of request header fields
-   (Section 8.1.3.1).  The server MUST include a method in the ":method"
+   (Section 8.1.2.1).  The server MUST include a method in the ":method"
    header field that is safe and cacheable.  If a client receives a
    PUSH_PROMISE that does not include a complete and valid set of header
    fields, or the ":method" header field identifies a method that is not
@@ -3467,17 +3286,10 @@ Internet-Draft                   HTTP/2                         May 2014
    they cannot be interspersed with HEADERS and CONTINUATION frames that
    comprise a single header block.
 
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 62]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
 8.2.2.  Push Responses
 
    After sending the PUSH_PROMISE frame, the server can begin delivering
-   the pushed response as a response (Section 8.1.3.2) on a server-
+   the pushed response as a response (Section 8.1.2.2) on a server-
    initiated stream that uses the promised stream identifier.  The
    server uses this stream to transmit an HTTP response, using the same
    sequence of frames as defined in Section 8.1.  This stream becomes
@@ -3485,6 +3297,14 @@ Internet-Draft                   HTTP/2                         May 2014
    frame is sent.
 
    Once a client receives a PUSH_PROMISE frame and chooses to accept the
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 59]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    pushed response, the client SHOULD NOT issue any requests for the
    promised response until after the promised stream has closed.
 
@@ -3505,8 +3325,8 @@ Internet-Draft                   HTTP/2                         May 2014
    Clients receiving a pushed response MUST validate that the server is
    authorized to provide the response, see Section 10.1.  For example, a
    server that offers a certificate for only the "example.com" DNS-ID or
-   Common Name is not permitted to push a response for "https://
-   www.example.org/doc".
+   Common Name is not permitted to push a response for
+   "https://www.example.org/doc".
 
 8.3.  The CONNECT Method
 
@@ -3519,16 +3339,8 @@ Internet-Draft                   HTTP/2                         May 2014
    In HTTP/2, the CONNECT method is used to establish a tunnel over a
    single HTTP/2 stream to a remote host, for similar purposes.  The
    HTTP header field mapping works as mostly as defined in Request
-   Header Fields (Section 8.1.3.1), with a few differences.
+   Header Fields (Section 8.1.2.1), with a few differences.
    Specifically:
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 63]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    o  The ":method" header field is set to "CONNECT".
 
@@ -3541,6 +3353,14 @@ Internet-Draft                   HTTP/2                         May 2014
    A proxy that supports CONNECT establishes a TCP connection [TCP] to
    the server identified in the ":authority" header field.  Once this
    connection is successfully established, the proxy sends a HEADERS
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 60]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    frame containing a 2xx series status code to the client, as defined
    in [HTTP-p2], Section 4.3.6.
 
@@ -3576,16 +3396,6 @@ Internet-Draft                   HTTP/2                         May 2014
    interoperability, reduce exposure to known security vulnerabilities,
    or reduce the potential for implementation variation.
 
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 64]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
 9.1.  Connection Management
 
    HTTP/2 connections are persistent.  For best performance, it is
@@ -3599,14 +3409,22 @@ Internet-Draft                   HTTP/2                         May 2014
    derived from a URI, a selected alternative service [ALT-SVC], or a
    configured proxy.  A client can create additional connections as
    replacements, either to replace connections that are near to
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 61]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    exhausting the available stream identifier space (Section 5.1.1), or
    to replace connections that have encountered errors (Section 5.4.1).
 
    A client MAY open multiple connections to the same IP address and TCP
    port using different Server Name Indication [TLS-EXT] values or to
    provide different TLS client certificates, but SHOULD avoid creating
-   multiple connections with the same configuration.  [[CREF3: Need more
-   text on how client certificates relate here, see issue #363.]]
+   multiple connections with the same configuration. [[anchor15: Need
+   more text on how client certificates relate here, see issue #363.]]
 
    Clients MAY use a single server connection to send requests for URIs
    with multiple different authority components as long as the server is
@@ -3622,9 +3440,10 @@ Internet-Draft                   HTTP/2                         May 2014
 
 9.2.  Use of TLS Features
 
-   Implementations of HTTP/2 MUST support TLS 1.2 [TLS12].  The general
-   TLS usage guidance in [TLSBCP] SHOULD be followed, with some
-   additional restrictions that are specific to HTTP/2.
+   Implementations of HTTP/2 MUST support TLS 1.2 [TLS12] for HTTP/2
+   over TLS.  The general TLS usage guidance in [TLSBCP] SHOULD be
+   followed, with some additional restrictions that are specific to
+   HTTP/2.
 
    The TLS implementation MUST support the Server Name Indication (SNI)
    [TLS-EXT] extension to TLS.  HTTP/2 clients MUST indicate the target
@@ -3634,52 +3453,40 @@ Internet-Draft                   HTTP/2                         May 2014
    lead to the exposure of information that would not otherwise be
    revealed [RFC3749].  Generic compression is unnecessary since HTTP/2
    provides compression features that are more aware of context and
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 65]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    therefore likely to be more appropriate for use for performance,
    security or other reasons.
 
-   Implementations MUST negotiate - and therefore use - ephemeral cipher
-   suites, such as ephemeral Diffie-Hellman (DHE) or the elliptic curve
-   variant (ECDHE) with a minimum size of 2048 bits (DHE) or security
-   level of 128 bits (ECDHE).  Clients MUST accept DHE sizes of up to
-   4096 bits.
+   The set of TLS cipher suites that are permitted in HTTP/2 is
+   restricted.  HTTP/2 MUST only be used with cipher suites that have
+   ephemeral key exchange, such as the ephemeral Diffie-Hellman (DHE)
+   [TLS12] or the elliptic curve variant (ECDHE) [RFC4492].  Ephemeral
+   key exchange MUST have a minimum size of 2048 bits for DHE or
+   security level of 128 bits for ECDHE.  Clients MUST accept DHE sizes
+   of up to 4096 bits.  HTTP MUST NOT be used with cipher suites that
+   use stream or block ciphers.  Authenticated Encryption with
+   Additional Data (AEAD) modes, such as the Galois Counter Model (GCM)
 
-   Implementations are encouraged not to negotiate TLS cipher suites
-   with known vulnerabilities, such as [RC4].
 
-   An implementation that negotiates a TLS connection that does not meet
-   the requirements in this section, or any policy-based constraints,
-   SHOULD NOT negotiate HTTP/2.  Removing HTTP/2 protocols from
-   consideration could result in the removal of all protocols from the
-   set of protocols offered by the client.  This causes protocol
-   negotiation failure, as described in Section 3.2 of [TLSALPN].
 
-   Due to implementation limitations, it might not be possible to fail
-   TLS negotiation based on all of these requirements.  An endpoint MUST
-   terminate an HTTP/2 connection that is opened on a TLS session that
-   does not meet these minimum requirements with a connection error
-   (Section 5.4.1) of type INADEQUATE_SECURITY.
+Belshe, et al.          Expires December 10, 2014              [Page 62]
+
+Internet-Draft                   HTTP/2                        June 2014
 
-9.3.  GZip Content-Encoding
 
-   Clients MUST support gzip compression for HTTP response bodies.
-   Regardless of the value of the accept-encoding header field, a server
-   MAY send responses with gzip encoding.  A compressed response MUST
-   still bear an appropriate content-encoding header field.
+   mode for AES [RFC5288] are acceptable.
 
-   This effectively changes the implicit value of the Accept-Encoding
-   header field ([HTTP-p2], Section 5.3.4) from "identity" to "identity,
-   gzip", however gzip encoding cannot be suppressed by including
-   ";q=0".  Intermediaries that perform translation from HTTP/2 to HTTP/
-   1.1 MUST decompress payloads unless the request includes an Accept-
-   Encoding value that includes "gzip".
+   Clients MAY advertise support of other cipher suites in order to
+   allow for connection to servers that do not support HTTP/2 to
+   complete without the additional latency imposed by using a separate
+   connection for fallback.
+
+   An implementation SHOULD NOT negotiate a TLS connection for HTTP/2
+   without also negotiating a cipher suite that meets these
+   requirements.  Due to implementation limitations, it might not be
+   possible to fail TLS negotiation.  An endpoint MUST immediately
+   terminate an HTTP/2 connection that does not meet these minimum
+   requirements with a connection error (Section 5.4.1) of type
+   INADEQUATE_SECURITY.
 
 10.  Security Considerations
 
@@ -3689,14 +3496,6 @@ Internet-Draft                   HTTP/2                         May 2014
    are authoritative for those resources.  This is particularly
    important for server push (Section 8.2), where the client validates
    the PUSH_PROMISE before accepting the response.
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 66]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    HTTP/2 relies on the HTTP/1.1 definition of authority for determining
    whether a server is authoritative in providing a given response, see
@@ -3722,6 +3521,14 @@ Internet-Draft                   HTTP/2                         May 2014
    other TLS-based protocols.
 
    The encryption in TLS makes it difficult for attackers to control the
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 63]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    data which could be used in a cross-protocol attack on a cleartext
    protocol.
 
@@ -3745,15 +3552,6 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Header field names or values that contain characters not permitted by
    HTTP/1.1, including carriage return (U+000D) or line feed (U+000A)
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 67]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    MUST NOT be translated verbatim by an intermediary, as stipulated in
    [HTTP-p1], Section 3.2.4.
 
@@ -3780,6 +3578,13 @@ Internet-Draft                   HTTP/2                         May 2014
    served out of cache, overriding the actual representation that the
    authoritative tenant provides.
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 64]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Pushed responses for which an origin server is not authoritative (see
    Section 10.1) are never cached or used.
 
@@ -3795,20 +3600,9 @@ Internet-Draft                   HTTP/2                         May 2014
    The SETTINGS frame can be abused to cause a peer to expend additional
    processing time.  This might be done by pointlessly changing SETTINGS
    parameters, setting multiple undefined parameters, or changing the
-   same setting multiple times in the same frame.  WINDOW_UPDATE,
-   PRIORITY, or BLOCKED frames can be abused to cause an unnecessary
-   waste of resources.  A server might erroneously issue ALTSVC frames
-   for origins on which it cannot be authoritative to generate excess
-   work for clients.
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 68]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   same setting multiple times in the same frame.  WINDOW_UPDATE or
+   PRIORITY frames can be abused to cause an unnecessary waste of
+   resources.
 
    Large numbers of small or empty frames can be abused to cause a peer
    to expend time processing frame headers.  Note however that some uses
@@ -3834,12 +3628,40 @@ Internet-Draft                   HTTP/2                         May 2014
    treat activity that is suspicious as a connection error
    (Section 5.4.1) of type ENHANCE_YOUR_CALM.
 
+10.5.1.  Limits on Header Block Size
+
+   A large header block (Section 4.3) can cause an implementation to
+   commit a large amount of state.  In servers and intermediaries,
+   header fields that are critical to routing, such as ":authority",
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 65]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   ":path", and ":scheme" are not guaranteed to be present early in the
+   header block.  In particular, values that are in the reference set
+   cannot be emitted until the header block ends.
+
+   This can prevent streaming of the header fields to their ultimate
+   destination, and forces the endpoint to buffer the entire header
+   block.  Since there is no hard limit to the size of a header block,
+   an endpoint could be forced to exhaust available memory.
+
+   A server that receives a larger header block than it is willing to
+   handle can send an HTTP 431 (Request Header Fields Too Large) status
+   code [RFC6585].  A client can discard responses that it cannot
+   process.  The header block MUST be processed to ensure a consistent
+   connection state, unless the connection is closed.
+
 10.6.  Use of Compression
 
    HTTP/2 enables greater use of compression for both header fields
-   (Section 4.3) and response bodies (Section 9.3).  Compression can
-   allow an attacker to recover secret data when it is compressed in the
-   same context as data under attacker control.
+   (Section 4.3) and entity bodies.  Compression can allow an attacker
+   to recover secret data when it is compressed in the same context as
+   data under attacker control.
 
    There are demonstrable attacks on compression that exploit the
    characteristics of the web (e.g., [BREACH]).  The attacker induces
@@ -3857,15 +3679,6 @@ Internet-Draft                   HTTP/2                         May 2014
    additional information is available that allows the intermediary to
    identify the source of data.  In particular, frames that are not
    compressed cannot be compressed, and frames that are separately
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 69]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    compressed cannot be merged into a single frame.  Compressed frames
    MAY be decompressed or split into multiple frames.
 
@@ -3876,6 +3689,14 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Padding within HTTP/2 is not intended as a replacement for general
    purpose padding, such as might be provided by TLS [TLS12].  Redundant
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 66]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    padding could even be counterproductive.  Correct application can
    depend on having specific knowledge of the data that is being padded.
 
@@ -3897,9 +3718,10 @@ Internet-Draft                   HTTP/2                         May 2014
    as payload sizes cross the fixed size boundary, which could be
    possible if an attacker can control plaintext.
 
-   Intermediaries SHOULD NOT remove padding, though an intermediary MAY
-   remove padding and add differing amounts if the intent is to improve
-   the protections padding affords.
+   Intermediaries SHOULD retain padding for DATA frames, but MAY drop
+   padding for HEADERS and PUSH_PROMISE frames.  A valid reason for an
+   intermediary to change the amount of padding of frames is to improve
+   the protections that padding provides.
 
 10.8.  Privacy Considerations
 
@@ -3912,15 +3734,7 @@ Internet-Draft                   HTTP/2                         May 2014
 
    As far as this creates observable differences in behavior, they could
    be used as a basis for fingerprinting a specific client, as defined
-   in [5].
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 70]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   in <http://www.w3.org/TR/html5/introduction.html#fingerprint>.
 
 11.  IANA Considerations
 
@@ -3928,9 +3742,16 @@ Internet-Draft                   HTTP/2                         May 2014
    Layer Protocol Negotiation (ALPN) Protocol IDs" registry established
    in [TLSALPN].
 
-   This document establishes a registry for error codes.  This new
-   registry is entered into a new "Hypertext Transfer Protocol (HTTP) 2
-   Parameters" section.
+   This document establishes a registry for frame types, settings, and
+   error codes.  These new registries are entered into a new "Hypertext
+   Transfer Protocol (HTTP) 2 Parameters" section.
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 67]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    This document registers the "HTTP2-Settings" header field for use in
    HTTP.
@@ -3960,7 +3781,72 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Specification:  This document (RFCXXXX)
 
-11.2.  Error Code Registry
+11.2.  Frame Type Registry
+
+   This document establishes a registry for HTTP/2 frame types codes.
+   The "HTTP/2 Frame Type" registry manages an 8-bit space.  The "HTTP/2
+   Frame Type" registry operates under either of the "IETF Review" or
+   "IESG Approval" policies [RFC5226] for values between 0x00 and 0xef,
+   with values between 0xf0 and 0xff being reserved for experimental
+   use.
+
+   New entries in this registry require the following information:
+
+   Frame Type:  A name or label for the frame type.
+
+   Code:  The 8-bit code assigned to the frame type.
+
+   Specification:  A reference to a specification that includes a
+      description of the frame layout, it's semantics and flags that the
+      frame type uses, including any parts of the frame that are
+      conditionally present based on the value of flags.
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 68]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
+   The entries in the following table are registered by this document.
+
+   +---------------+------+--------------+
+   | Frame Type    | Code | Section      |
+   +---------------+------+--------------+
+   | DATA          | 0x0  | Section 6.1  |
+   | HEADERS       | 0x1  | Section 6.2  |
+   | PRIORITY      | 0x2  | Section 6.3  |
+   | RST_STREAM    | 0x3  | Section 6.4  |
+   | SETTINGS      | 0x4  | Section 6.5  |
+   | PUSH_PROMISE  | 0x5  | Section 6.6  |
+   | PING          | 0x6  | Section 6.7  |
+   | GOAWAY        | 0x7  | Section 6.8  |
+   | WINDOW_UPDATE | 0x8  | Section 6.9  |
+   | CONTINUATION  | 0x9  | Section 6.10 |
+   +---------------+------+--------------+
+
+11.3.  Settings Registry
+
+   This document establishes a registry for HTTP/2 settings.  The
+   "HTTP/2 Settings" registry manages a 16-bit space.  The "HTTP/2
+   Settings" registry operates under the "Expert Review" policy
+   [RFC5226] for values in the range from 0x0000 to 0xefff, with values
+   between and 0xf000 and 0xffff being reserved for experimental use.
+
+   New registrations are advised to provide the following information:
+
+   Code:  The 16-bit code assigned to the setting.
+
+   Initial Value:  An initial value for the setting.
+
+   Specification:  A stable reference to a specification that describes
+      the use of the setting.
+
+   An initial set of setting registrations can be found in
+   Section 6.5.2.
+
+11.4.  Error Code Registry
 
    This document establishes a registry for HTTP/2 error codes.  The
    "HTTP/2 Error Code" registry manages a 32-bit space.  The "HTTP/2
@@ -3969,17 +3855,15 @@ Internet-Draft                   HTTP/2                         May 2014
 
    Registrations for error codes are required to include a description
    of the error code.  An expert reviewer is advised to examine new
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 71]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    registrations for possible duplication with existing error codes.
    Use of existing registrations is to be encouraged, but not mandated.
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 69]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    New registrations are advised to provide the following information:
 
@@ -3996,7 +3880,7 @@ Internet-Draft                   HTTP/2                         May 2014
 
    An initial set of error code registrations can be found in Section 7.
 
-11.3.  HTTP2-Settings Header Field Registration
+11.5.  HTTP2-Settings Header Field Registration
 
    This section registers the "HTTP2-Settings" header field in the
    Permanent Message Header Field Registry [BCP90].
@@ -4014,7 +3898,7 @@ Internet-Draft                   HTTP/2                         May 2014
    Related information:  This header field is only used by an HTTP/2
       client for Upgrade-based negotiation.
 
-11.4.  PRI Method Registration
+11.6.  PRI Method Registration
 
    This section registers the "PRI" method in the HTTP Method Registry
    [HTTP-p2].
@@ -4029,9 +3913,12 @@ Internet-Draft                   HTTP/2                         May 2014
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 72]
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 70]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
    Related information:  This method is never used by an actual client.
@@ -4053,6 +3940,8 @@ Internet-Draft                   HTTP/2                         May 2014
    o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
       Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
 
+   o  Mike Bishop (Extensibility).
+
    o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
       Bishop, Herve Ruellan (Substantial editorial contributions).
 
@@ -4065,204 +3954,168 @@ Internet-Draft                   HTTP/2                         May 2014
 
 13.1.  Normative References
 
-   [ALT-SVC]  Nottingham, M., McManus, P., and J. Reschke, "HTTP
-              Alternative Services", draft-ietf-httpbis-alt-svc-01 (work
-              in progress), April 2014.
+   [COMPRESSION]  Ruellan, H. and R. Peon, "HPACK - Header Compression
+                  for HTTP/2", draft-ietf-httpbis-header-compression-07
+                  (work in progress), April 2014.
 
-   [COMPRESSION]
-              Ruellan, H. and R. Peon, "HPACK - Header Compression for
-              HTTP/2", draft-ietf-httpbis-header-compression-07 (work in
-              progress), April 2014.
+   [COOKIE]       Barth, A., "HTTP State Management Mechanism",
+                  RFC 6265, April 2011.
 
-   [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
-              April 2011.
+   [HTTP-p1]      Fielding, R., Ed. and J. Reschke, Ed., "Hypertext
+                  Transfer Protocol (HTTP/1.1): Message Syntax and
+                  Routing", draft-ietf-httpbis-p1-messaging-26 (work in
+                  progress), February 2014.
 
-   [GZIP]     Deutsch, P., Gailly, J-L., Adler, M., Deutsch, L., and G.
-              Randers-Pehrson, "GZIP file format specification version
-              4.3", RFC 1952, May 1996.
-
-
+   [HTTP-p2]      Fielding, R., Ed. and J. Reschke, Ed., "Hypertext
+                  Transfer Protocol (HTTP/1.1): Semantics and Content",
+                  draft-ietf-httpbis-p2-semantics-26 (work in progress),
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 73]
+Belshe, et al.          Expires December 10, 2014              [Page 71]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
-   [HTTP-p1]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Message Syntax and Routing", draft-
-              ietf-httpbis-p1-messaging-26 (work in progress), February
-              2014.
+                  February 2014.
 
-   [HTTP-p2]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Semantics and Content", draft-ietf-
-              httpbis-p2-semantics-26 (work in progress), February 2014.
+   [HTTP-p4]      Fielding, R., Ed. and J. Reschke, Ed., "Hypertext
+                  Transfer Protocol (HTTP/1.1): Conditional Requests",
+                  draft-ietf-httpbis-p4-conditional-26 (work in
+                  progress), February 2014.
 
-   [HTTP-p4]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Conditional Requests", draft-ietf-
-              httpbis-p4-conditional-26 (work in progress), February
-              2014.
+   [HTTP-p5]      Fielding, R., Ed., Lafon, Y., Ed., and J. Reschke,
+                  Ed., "Hypertext Transfer Protocol (HTTP/1.1): Range
+                  Requests", draft-ietf-httpbis-p5-range-26 (work in
+                  progress), February 2014.
 
-   [HTTP-p5]  Fielding, R., Ed., Lafon, Y., Ed., and J. Reschke, Ed.,
-              "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
-              draft-ietf-httpbis-p5-range-26 (work in progress),
-              February 2014.
+   [HTTP-p6]      Fielding, R., Ed., Nottingham, M., Ed., and J.
+                  Reschke, Ed., "Hypertext Transfer Protocol (HTTP/1.1):
+                  Caching", draft-ietf-httpbis-p6-cache-26 (work in
+                  progress), February 2014.
 
-   [HTTP-p6]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
-              Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
-              draft-ietf-httpbis-p6-cache-26 (work in progress),
-              February 2014.
+   [HTTP-p7]      Fielding, R., Ed. and J. Reschke, Ed., "Hypertext
+                  Transfer Protocol (HTTP/1.1): Authentication",
+                  draft-ietf-httpbis-p7-auth-26 (work in progress),
+                  February 2014.
 
-   [HTTP-p7]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Authentication", draft-ietf-
-              httpbis-p7-auth-26 (work in progress), February 2014.
+   [RFC2119]      Bradner, S., "Key words for use in RFCs to Indicate
+                  Requirement Levels", BCP 14, RFC 2119, March 1997.
 
-   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, March 1997.
+   [RFC2818]      Rescorla, E., "HTTP Over TLS", RFC 2818, May 2000.
 
-   [RFC2818]  Rescorla, E., "HTTP Over TLS", RFC 2818, May 2000.
+   [RFC3986]      Berners-Lee, T., Fielding, R., and L. Masinter,
+                  "Uniform Resource Identifier (URI): Generic Syntax",
+                  STD 66, RFC 3986, January 2005.
 
-   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
-              Resource Identifier (URI): Generic Syntax", STD 66, RFC
-              3986, January 2005.
+   [RFC4648]      Josefsson, S., "The Base16, Base32, and Base64 Data
+                  Encodings", RFC 4648, October 2006.
 
-   [RFC4648]  Josefsson, S., "The Base16, Base32, and Base64 Data
-              Encodings", RFC 4648, October 2006.
+   [RFC5226]      Narten, T. and H. Alvestrand, "Guidelines for Writing
+                  an IANA Considerations Section in RFCs", BCP 26,
+                  RFC 5226, May 2008.
 
-   [RFC5226]  Narten, T. and H. Alvestrand, "Guidelines for Writing an
-              IANA Considerations Section in RFCs", BCP 26, RFC 5226,
-              May 2008.
+   [RFC5234]      Crocker, D. and P. Overell, "Augmented BNF for Syntax
+                  Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
-   [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
-              Specifications: ABNF", STD 68, RFC 5234, January 2008.
+   [TCP]          Postel, J., "Transmission Control Protocol", STD 7,
+                  RFC 793, September 1981.
 
-
-
+   [TLS-EXT]      Eastlake, D., "Transport Layer Security (TLS)
+                  Extensions: Extension Definitions", RFC 6066,
+                  January 2011.
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 74]
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 72]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
-   [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
-              2011.
+   [TLS12]        Dierks, T. and E. Rescorla, "The Transport Layer
+                  Security (TLS) Protocol Version 1.2", RFC 5246,
+                  August 2008.
 
-   [TCP]      Postel, J., "Transmission Control Protocol", STD 7, RFC
-              793, September 1981.
+   [TLSALPN]      Friedl, S., Popov, A., Langley, A., and E. Stephan,
+                  "Transport Layer Security (TLS) Application Layer
+                  Protocol Negotiation Extension",
+                  draft-ietf-tls-applayerprotoneg-05 (work in progress),
+                  March 2014.
 
-   [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
-              Extension Definitions", RFC 6066, January 2011.
-
-   [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
-              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
-
-   [TLSALPN]  Friedl, S., Popov, A., Langley, A., and E. Stephan,
-              "Transport Layer Security (TLS) Application Layer Protocol
-              Negotiation Extension", draft-ietf-tls-applayerprotoneg-05
-              (work in progress), March 2014.
-
-   [UTF-8]    Yergeau, F., "UTF-8, a transformation format of ISO
-              10646", STD 63, RFC 3629, November 2003.
+   [UTF-8]        Yergeau, F., "UTF-8, a transformation format of ISO
+                  10646", STD 63, RFC 3629, November 2003.
 
 13.2.  Informative References
 
-   [BCP90]    Klyne, G., Nottingham, M., and J. Mogul, "Registration
-              Procedures for Message Header Fields", BCP 90, RFC 3864,
-              September 2004.
+   [ALT-SVC]      Nottingham, M., McManus, P., and J. Reschke, "HTTP
+                  Alternative Services", draft-ietf-httpbis-alt-svc-01
+                  (work in progress), April 2014.
 
-   [BREACH]   Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving the
-              CRIME Attack", July 2013, <http://breachattack.com/
-              resources/
-              BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf>.
+   [BCP90]        Klyne, G., Nottingham, M., and J. Mogul, "Registration
+                  Procedures for Message Header Fields", BCP 90,
+                  RFC 3864, September 2004.
 
-   [IDNA]     Klensin, J., "Internationalized Domain Names for
-              Applications (IDNA): Definitions and Document Framework",
-              RFC 5890, August 2010.
+   [BREACH]       Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving
+                  the CRIME Attack", July 2013, <http://
+                  breachattack.com/resources/
+                  BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf>.
 
-   [RC4]      Rivest, R., "The RC4 encryption algorithm", RSA Data
-              Security, Inc. , March 1992.
+   [RFC1323]      Jacobson, V., Braden, B., and D. Borman, "TCP
+                  Extensions for High Performance", RFC 1323, May 1992.
 
-   [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
-              for High Performance", RFC 1323, May 1992.
+   [RFC3749]      Hollenbeck, S., "Transport Layer Security Protocol
+                  Compression Methods", RFC 3749, May 2004.
 
-   [RFC3749]  Hollenbeck, S., "Transport Layer Security Protocol
-              Compression Methods", RFC 3749, May 2004.
+   [RFC4492]      Blake-Wilson, S., Bolyard, N., Gupta, V., Hawk, C.,
+                  and B. Moeller, "Elliptic Curve Cryptography (ECC)
+                  Cipher Suites for Transport Layer Security (TLS)",
+                  RFC 4492, May 2006.
 
-   [TALKING]  Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C.
-              Jackson, "Talking to Yourself for Fun and Profit", 2011,
-              <http://w2spconf.com/2011/papers/websocket.pdf>.
+   [RFC5288]      Salowey, J., Choudhury, A., and D. McGrew, "AES Galois
+                  Counter Mode (GCM) Cipher Suites for TLS", RFC 5288,
+                  August 2008.
+
+   [RFC6585]      Nottingham, N. and R. Fielding, "Additional HTTP
+                  Status Codes", RFC 6585, April 2012.
+
+   [TALKING]      Huang, L-S., Chen, E., Barth, A., Rescorla, E., and C.
+                  Jackson, "Talking to Yourself for Fun and Profit",
 
 
 
-
-Belshe, et al.          Expires November 6, 2014               [Page 75]
+Belshe, et al.          Expires December 10, 2014              [Page 73]
 
-Internet-Draft                   HTTP/2                         May 2014
+Internet-Draft                   HTTP/2                        June 2014
 
 
-   [TLSBCP]   Sheffer, Y., Holz, R., and P. Saint-Andre,
-              "Recommendations for Secure Use of TLS and DTLS", draft-
-              sheffer-tls-bcp-02 (work in progress), February 2014.
+                  2011, <http://w2spconf.com/2011/papers/websocket.pdf>.
 
-13.3.  URIs
-
-   [1] http://www.iana.org/assignments/message-headers
-
-   [2] http://www.w3.org/TR/html5/introduction.html#fingerprint
-
-   [3] https://groups.google.com/forum/?fromgroups#!topic/spdy-dev/
-       cfUef2gL3iU
-
-   [4] http://tools.ietf.org/html/draft-montenegro-httpbis-http2-fc-
-       principles-01
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 76]
-
-Internet-Draft                   HTTP/2                         May 2014
-
+   [TLSBCP]       Sheffer, Y., Holz, R., and P. Saint-Andre,
+                  "Recommendations for Secure Use of TLS and DTLS",
+                  draft-sheffer-tls-bcp-02 (work in progress),
+                  February 2014.
 
 Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-http2-12
 
-   Removed reserved octet from ALTSVC.
+   Restored extensibility options.
+
+   Restricting TLS cipher suites to AEAD only.
+
+   Removing Content-Encoding requirements.
+
+   Permitting the use of PRIORITY after stream close.
+
+   Removed ALTSVC frame.
+
+   Removed BLOCKED frame.
+
+   Reducing the maximum padding size to 256 octets; removing padding
+   from CONTINUATION frames.
+
+   Removed per-frame GZIP compression.
 
 A.2.  Since draft-ietf-httpbis-http2-11
 
@@ -4270,7 +4123,7 @@ A.2.  Since draft-ietf-httpbis-http2-11
 
    Simplified priority scheme.
 
-   Added DATA per-frame GZip compression.
+   Added DATA per-frame GZIP compression.
 
 A.3.  Since draft-ietf-httpbis-http2-10
 
@@ -4283,6 +4136,14 @@ A.3.  Since draft-ietf-httpbis-http2-10
    HTTP/2.
 
    Adding missing padding to PUSH_PROMISE.
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 74]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    Integrate ALTSVC frame and supporting text.
 
@@ -4305,14 +4166,6 @@ A.4.  Since draft-ietf-httpbis-http2-09
    Changing setting identifier size.
 
    Removing the ability to disable flow control.
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 77]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    Changing the protocol identification token to "h2".
 
@@ -4340,6 +4193,14 @@ A.7.  Since draft-ietf-httpbis-http2-06
    Constraining the use of push to safe, cacheable methods with no
    request body.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 75]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Changing from :host to :authority to remove any potential confusion.
 
    Adding setting for header compression table size.
@@ -4358,17 +4219,6 @@ A.8.  Since draft-ietf-httpbis-http2-05
    Renumbering END_PUSH_PROMISE flag.
 
    Editorial clarifications and changes.
-
-
-
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 78]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
 A.9.  Since draft-ietf-httpbis-http2-04
 
@@ -4399,6 +4249,14 @@ A.10.  Since draft-ietf-httpbis-http2-03
 
    Committed major restructuring atrocities.
 
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 76]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Added reference to first header compression draft.
 
    Added more formal description of frame lifecycle.
@@ -4417,14 +4275,6 @@ A.11.  Since draft-ietf-httpbis-http2-02
    other HTTP stateful concepts, like cookies.
 
    Removed "message".
-
-
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 79]
-
-Internet-Draft                   HTTP/2                         May 2014
-
 
    Switched to TLS ALPN from NPN.
 
@@ -4456,6 +4306,13 @@ A.12.  Since draft-ietf-httpbis-http2-01
    Restructured frame header.  Removed distinction between data and
    control frames.
 
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 77]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Altered flow control properties to include session-level limits.
 
    Added note on cacheability of pushed resources and multiple tenant
@@ -4469,22 +4326,17 @@ A.13.  Since draft-ietf-httpbis-http2-00
 
    Removed section on Incompatibilities with SPDY draft#2.
 
-   Changed INTERNAL_ERROR on GOAWAY to have a value of 2 [6].
+   Changed INTERNAL_ERROR on GOAWAY to have a value of 2 <https://
+   groups.google.com/forum/?fromgroups#!topic/spdy-dev/cfUef2gL3iU>.
 
    Replaced abstract and introduction.
 
    Added section on starting HTTP/2.0, including upgrade mechanism.
 
-
-
-Belshe, et al.          Expires November 6, 2014               [Page 80]
-
-Internet-Draft                   HTTP/2                         May 2014
-
-
    Removed unused references.
 
-   Added flow control principles (Section 5.2.1) based on [7].
+   Added flow control principles (Section 5.2.1) based on <http://
+   tools.ietf.org/html/draft-montenegro-httpbis-http2-fc-principles-01>.
 
 A.14.  Since draft-mbelshe-httpbis-spdy-00
 
@@ -4508,9 +4360,17 @@ Authors' Addresses
    EMail: fenix@google.com
 
 
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 78]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    Martin Thomson (editor)
    Mozilla
-   Suite 300
    331 E Evelyn Street
    Mountain View, CA  94041
    US
@@ -4533,4 +4393,32 @@ Authors' Addresses
 
 
 
-Belshe, et al.          Expires November 6, 2014               [Page 81]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires December 10, 2014              [Page 79]
+
