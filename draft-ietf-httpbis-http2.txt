@@ -114,9 +114,9 @@ Belshe, et al.          Expires December 18, 2014               [Page 2]
 Internet-Draft                   HTTP/2                        June 2014
 
 
-       5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  27
+       5.4.1.  Connection Error Handling . . . . . . . . . . . . . .  26
        5.4.2.  Stream Error Handling . . . . . . . . . . . . . . . .  27
-       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  28
+       5.4.3.  Connection Termination  . . . . . . . . . . . . . . .  27
      5.5.  Extending HTTP/2  . . . . . . . . . . . . . . . . . . . .  28
    6.  Frame Definitions . . . . . . . . . . . . . . . . . . . . . .  28
      6.1.  DATA  . . . . . . . . . . . . . . . . . . . . . . . . . .  29
@@ -702,9 +702,9 @@ Internet-Draft                   HTTP/2                        June 2014
 
 4.3.  Header Compression and Decompression
 
-   A header field in HTTP/2 is a name-value pair with one or more
-   associated values.  They are used within HTTP request and response
-   messages as well as server push operations (see Section 8.2).
+   A header field in HTTP/2 is a name with one or more associated
+   values.  They are used within HTTP request and response messages as
+   well as server push operations (see Section 8.2).
 
    Header sets are collections of zero or more header fields.  When
    transmitted over a connection, a header set is serialized into a
@@ -1032,7 +1032,7 @@ Internet-Draft                   HTTP/2                        June 2014
       An endpoint might receive a PUSH_PROMISE frame after it sends
       RST_STREAM.  PUSH_PROMISE causes a stream to become "reserved"
       even if the associated stream has been reset.  Therefore, a
-      RST_STREAM is needed to close an unwanted promised streams.
+      RST_STREAM is needed to close an unwanted promised stream.
 
    In the absence of more specific guidance elsewhere in this document,
    implementations SHOULD treat the receipt of a message that is not
@@ -1079,7 +1079,10 @@ Internet-Draft                   HTTP/2                        June 2014
    Stream identifiers cannot be reused.  Long-lived connections can
    result in an endpoint exhausting the available range of stream
    identifiers.  A client that is unable to establish a new stream
-   identifier can establish a new connection for new streams.
+   identifier can establish a new connection for new streams.  A server
+   that is unable to establish a new stream identifier can send a GOAWAY
+   frame so that the client is forced to open a new connection for new
+   streams.
 
 5.1.2.  Stream Concurrency
 
@@ -1095,13 +1098,13 @@ Internet-Draft                   HTTP/2                        June 2014
    states count toward the maximum number of streams that an endpoint is
    permitted to open.  Streams in any of these three states count toward
    the limit advertised in the SETTINGS_MAX_CONCURRENT_STREAMS setting.
+   Streams in either of the "reserved" states do not count toward the
+   stream limit.
 
    Endpoints MUST NOT exceed the limit set by their peer.  An endpoint
    that receives a HEADERS frame that causes their advertised concurrent
    stream limit to be exceeded MUST treat this as a stream error
    (Section 5.4.2).
-
-   Streams in either of the "reserved" states do not count as open.
 
 5.2.  Flow Control
 
@@ -1111,9 +1114,6 @@ Internet-Draft                   HTTP/2                        June 2014
    interfere with each other.  Flow control is used for both individual
    streams and for the connection as a whole.
 
-   HTTP/2 provides for flow control through use of the WINDOW_UPDATE
-   frame (Section 6.9).
-
 
 
 
@@ -1121,6 +1121,9 @@ Belshe, et al.          Expires December 18, 2014              [Page 20]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   HTTP/2 provides for flow control through use of the WINDOW_UPDATE
+   frame (Section 6.9).
 
 5.2.1.  Flow Control Principles
 
@@ -1166,9 +1169,6 @@ Internet-Draft                   HTTP/2                        June 2014
    line blocking for requests; and managing the creation of new streams.
    Algorithm choices for these could interact with any flow control
    algorithm.
-
-
-
 
 
 
@@ -1346,9 +1346,9 @@ Belshe, et al.          Expires December 18, 2014              [Page 24]
 Internet-Draft                   HTTP/2                        June 2014
 
 
-   For example, for an original dependency tree where B and C depend on
-   A, D and E depend on C, and F depends on D.  If A is made dependent
-   on D, then D takes the place of A.  All other dependency
+   For example, consider an original dependency tree where B and C
+   depend on A, D and E depend on C, and F depends on D.  If A is made
+   dependent on D, then D takes the place of A.  All other dependency
    relationships stay the same, except for F, which becomes dependent on
    A if the reprioritization is exclusive.
 
@@ -1407,13 +1407,10 @@ Internet-Draft                   HTTP/2                        June 2014
    prioritization, since the stream could be given a priority that is
    higher than intended.
 
-   To avoid these problems, endpoints SHOULD maintain prioritization
-   state for closed streams for a period after streams close.
-
-   An endpoint SHOULD retain stream prioritization state for a period
-   after streams become closed.  The longer state is retained, the lower
-   the chance that streams are assigned incorrect or default priority
-   values.
+   To avoid these problems, an endpoint SHOULD retain stream
+   prioritization state for a period after streams become closed.  The
+   longer state is retained, the lower the chance that streams are
+   assigned incorrect or default priority values.
 
    This could create a large state burden for an endpoint, so this state
    MAY be limited.  An endpoint MAY apply a fixed upper limit on the
@@ -1448,7 +1445,10 @@ Internet-Draft                   HTTP/2                        June 2014
 
    A list of error codes is included in Section 7.
 
+5.4.1.  Connection Error Handling
 
+   A connection error is any error which prevents further processing of
+   the framing layer, or which corrupts any connection state.
 
 
 
@@ -1457,11 +1457,6 @@ Belshe, et al.          Expires December 18, 2014              [Page 26]
 
 Internet-Draft                   HTTP/2                        June 2014
 
-
-5.4.1.  Connection Error Handling
-
-   A connection error is any error which prevents further processing of
-   the framing layer, or which corrupts any connection state.
 
    An endpoint that encounters a connection error SHOULD first send a
    GOAWAY frame (Section 6.8) with the stream identifier of the last
@@ -1506,6 +1501,11 @@ Internet-Draft                   HTTP/2                        June 2014
    An endpoint MUST NOT send a RST_STREAM in response to an RST_STREAM
    frame, to avoid looping.
 
+5.4.3.  Connection Termination
+
+   If the TCP connection is torn down while streams remain in open or
+   half closed states, then the endpoint MUST assume that those streams
+   were abnormally interrupted and could be incomplete.
 
 
 
@@ -1513,12 +1513,6 @@ Belshe, et al.          Expires December 18, 2014              [Page 27]
 
 Internet-Draft                   HTTP/2                        June 2014
 
-
-5.4.3.  Connection Termination
-
-   If the TCP connection is torn down while streams remain in open or
-   half closed states, then the endpoint MUST assume that those streams
-   were abnormally interrupted and could be incomplete.
 
 5.5.  Extending HTTP/2
 
@@ -1563,6 +1557,12 @@ Internet-Draft                   HTTP/2                        June 2014
    purpose either in the establishment and management of the connection
    as a whole, or of individual streams.
 
+   The transmission of specific frame types can alter the state of a
+   connection.  If endpoints fail to maintain a synchronized view of the
+   connection state, successful communication within the connection will
+   no longer be possible.  Therefore, it is important that endpoints
+
+
 
 
 Belshe, et al.          Expires December 18, 2014              [Page 28]
@@ -1570,10 +1570,6 @@ Belshe, et al.          Expires December 18, 2014              [Page 28]
 Internet-Draft                   HTTP/2                        June 2014
 
 
-   The transmission of specific frame types can alter the state of a
-   connection.  If endpoints fail to maintain a synchronized view of the
-   connection state, successful communication within the connection will
-   no longer be possible.  Therefore, it is important that endpoints
    have a shared comprehension of how the state is affected by the use
    any given frame.
 
@@ -1619,6 +1615,10 @@ Internet-Draft                   HTTP/2                        June 2014
       Setting this flag causes the stream to enter one of the "half
       closed" states or the "closed" state (Section 5.1).
 
+   END_SEGMENT (0x2):  Bit 2 being set indicates that this frame is the
+      last for the current segment.  Intermediaries MUST NOT coalesce
+
+
 
 
 Belshe, et al.          Expires December 18, 2014              [Page 29]
@@ -1626,8 +1626,6 @@ Belshe, et al.          Expires December 18, 2014              [Page 29]
 Internet-Draft                   HTTP/2                        June 2014
 
 
-   END_SEGMENT (0x2):  Bit 2 being set indicates that this frame is the
-      last for the current segment.  Intermediaries MUST NOT coalesce
       frames across a segment boundary and MUST preserve segment
       boundaries when forwarding frames.
 
@@ -1664,6 +1662,8 @@ Internet-Draft                   HTTP/2                        June 2014
    The HEADERS frame (type=0x1) carries name-value pairs.  It is used to
    open a stream (Section 5.1).  HEADERS frames can be sent on a stream
    in the "open" or "half closed (remote)" states.
+
+
 
 
 
@@ -1977,10 +1977,11 @@ Internet-Draft                   HTTP/2                        June 2014
    The following parameters are defined:
 
    SETTINGS_HEADER_TABLE_SIZE (0x1):  Allows the sender to inform the
-      remote endpoint of the size of the header compression table used
-      to decode header blocks.  The encoder can reduce this size by
-      using signaling specific to the header compression format inside a
-      header block.  The initial value is 4,096 bytes.
+      remote endpoint of the maximum size of the header compression
+      table used to decode header blocks.  The encoder can select any
+      size equal to or less than this value by using signaling specific
+      to the header compression format inside a header block.  The
+      initial value is 4,096 bytes.
 
    SETTINGS_ENABLE_PUSH (0x2):  This setting can be use to disable
       server push (Section 8.2).  An endpoint MUST NOT send a
@@ -2007,9 +2008,8 @@ Internet-Draft                   HTTP/2                        June 2014
       set a zero value for short durations; if a server does not wish to
       accept requests, closing the connection could be preferable.
 
-   SETTINGS_INITIAL_WINDOW_SIZE (0x4):  Indicates the sender's initial
-      window size (in bytes) for stream level flow control.  The initial
-      value is 65,535.
+
+
 
 
 
@@ -2017,6 +2017,10 @@ Belshe, et al.          Expires December 18, 2014              [Page 36]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   SETTINGS_INITIAL_WINDOW_SIZE (0x4):  Indicates the sender's initial
+      window size (in bytes) for stream level flow control.  The initial
+      value is 65,535.
 
       This setting affects the window size of all streams, including
       existing streams, see Section 6.9.2.
@@ -2056,10 +2060,6 @@ Internet-Draft                   HTTP/2                        June 2014
    stream the endpoint plans to create along with a set of headers that
    provide additional context for the stream.  Section 8.2 contains a
    thorough description of the use of PUSH_PROMISE frames.
-
-
-
-
 
 
 
@@ -2329,8 +2329,8 @@ Internet-Draft                   HTTP/2                        June 2014
    requires immediate termination of the connection.  The last stream
    identifier from the last GOAWAY frame received indicates which
    streams could have been acted upon.  Endpoints MUST NOT increase the
-   value they send in the last stream identifier, since this could cause
-   their peers to erroneously retry streams if a GOAWAY frame is lost.
+   value they send in the last stream identifier, since the peers might
+   already have retried unprocessed requests on another connection.
 
    A client that is unable to retry requests loses all requests that are
    in flight when the server closes the connection.  This is especially
@@ -2388,9 +2388,9 @@ Internet-Draft                   HTTP/2                        June 2014
 
    Flow control only applies to frames that are identified as being
    subject to flow control.  Of the frame types defined in this
-   document, this includes only DATA frame.  Frames that are exempt from
-   flow control MUST be accepted and processed, unless the receiver is
-   unable to assign resources to handling the frame.  A receiver MAY
+   document, this includes only DATA frames.  Frames that are exempt
+   from flow control MUST be accepted and processed, unless the receiver
+   is unable to assign resources to handling the frame.  A receiver MAY
    respond with a stream error (Section 5.4.2) or connection error
    (Section 5.4.1) of type FLOW_CONTROL_ERROR if it is unable to accept
    a frame.
