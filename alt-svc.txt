@@ -90,13 +90,12 @@ Table of Contents
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  12
      7.1.  Header Field Registrations  . . . . . . . . . . . . . . .  12
      7.2.  The ALTSVC HTTP/2 Frame Type  . . . . . . . . . . . . . .  13
-     7.3.  The 421 Not Authoritative HTTP Status Code  . . . . . . .  13
    8.  Internationalization Considerations . . . . . . . . . . . . .  13
    9.  Security Considerations . . . . . . . . . . . . . . . . . . .  13
      9.1.  Changing Ports  . . . . . . . . . . . . . . . . . . . . .  13
-     9.2.  Changing Hosts  . . . . . . . . . . . . . . . . . . . . .  14
+     9.2.  Changing Hosts  . . . . . . . . . . . . . . . . . . . . .  13
      9.3.  Changing Protocols  . . . . . . . . . . . . . . . . . . .  14
-     9.4.  Tracking Clients Using Alternative Services . . . . . . .  15
+     9.4.  Tracking Clients Using Alternative Services . . . . . . .  14
    10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  15
    11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  15
      11.1.  Normative References . . . . . . . . . . . . . . . . . .  15
@@ -106,6 +105,7 @@ Table of Contents
                 publication) . . . . . . . . . . . . . . . . . . . .  17
      A.1.  Since draft-nottingham-httpbis-alt-svc-05 . . . . . . . .  17
      A.2.  Since draft-ietf-httpbis-alt-svc-00 . . . . . . . . . . .  17
+     A.3.  Since draft-ietf-httpbis-alt-svc-01 . . . . . . . . . . .  17
 
 
 
@@ -113,8 +113,6 @@ Nottingham, et al.      Expires December 18, 2014               [Page 2]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-     A.3.  Since draft-ietf-httpbis-alt-svc-01 . . . . . . . . . . .  17
 
 1.  Introduction
 
@@ -161,6 +159,8 @@ Internet-Draft            Alternative Services                 June 2014
 
    This document uses the Augmented BNF defined in [RFC5234] along with
    the "OWS", "delta-seconds", "parameter", "port", "quoted-string",
+   "token", and "uri-host" rules from [RFC7230], and uses the "#rule"
+   extension defined in Section 7 of that document.
 
 
 
@@ -169,9 +169,6 @@ Nottingham, et al.      Expires December 18, 2014               [Page 3]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-   "token", and "uri-host" rules from [RFC7230], and uses the "#rule"
-   extension defined in Section 7 of that document.
 
 2.  Alternative Services Concepts
 
@@ -218,6 +215,9 @@ Internet-Draft            Alternative Services                 June 2014
    This means that clients using an alternative service will change the
    host, port and protocol that they are using to fetch resources, but
    these changes MUST NOT be propagated to the application that is using
+   HTTP; from that standpoint, the URI being accessed and all
+   information derived from it (scheme, host, port) are the same as
+   before.
 
 
 
@@ -225,10 +225,6 @@ Nottingham, et al.      Expires December 18, 2014               [Page 4]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-   HTTP; from that standpoint, the URI being accessed and all
-   information derived from it (scheme, host, port) are the same as
-   before.
 
    Importantly, this includes its security context; in particular, when
    TLS [RFC5246] is in use, the alternative server will need to present
@@ -274,6 +270,10 @@ Internet-Draft            Alternative Services                 June 2014
    there is no mechanism in that protocol to establish strong server
    authentication.
 
+   Furthermore, this means that the HTTP Host header field and the SNI
+   information provided in TLS by the client will be that of the origin,
+   not the alternative.
+
 
 
 
@@ -281,10 +281,6 @@ Nottingham, et al.      Expires December 18, 2014               [Page 5]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-   Furthermore, this means that the HTTP Host header field and the SNI
-   information provided in TLS by the client will be that of the origin,
-   not the alternative.
 
 2.2.  Alternative Service Caching
 
@@ -329,6 +325,10 @@ Internet-Draft            Alternative Services                 June 2014
    security properties of the alternative service protocol are
    desirable, as compared to the existing connection.
 
+   When a client uses an alternate service, it MUST emit the Alt-Svc-
+   Used header field (Section 5) on every request using that alternate
+   service.
+
 
 
 
@@ -337,10 +337,6 @@ Nottingham, et al.      Expires December 18, 2014               [Page 6]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-   When a client uses an alternate service, it MUST emit the Alt-Svc-
-   Used header field (Section 5) on every request using that alternate
-   service.
 
    The client does not need to block requests; the origin's connection
    can be used until the alternative connection is established.
@@ -386,6 +382,10 @@ Internet-Draft            Alternative Services                 June 2014
    The "alt-authority" component consists of an OPTIONAL uri-host
    ("host" in Section 3.2.2 of [RFC3986]), a colon (":"), and a port
    number.
+
+
+
+
 
 
 
@@ -630,10 +630,11 @@ Internet-Draft            Alternative Services                 June 2014
 
 6.  The 421 Not Authoritative HTTP Status Code
 
-   The 421 (Not Authoritative) status code indicates that the current
-   origin server (usually, but not always an alternative service; see
-   Section 2) is not authoritative for the requested resource, in the
-   sense of [RFC7230], Section 9.1.
+   The 421 (Not Authoritative) status code is defined in [HTTP2],
+   Appendix to indicate that the current server instance is not
+   authoritative for the requested resource.  This can be used to
+   indicate that an alternative service is not authoritative; see
+   Section 2).
 
    Clients receiving 421 (Not Authoritative) from an alternative service
    MUST remove the corresponding entry from its alternative service
@@ -641,13 +642,7 @@ Internet-Draft            Alternative Services                 June 2014
    idempotency of the request method, they MAY retry the request, either
    at another alternative server, or at the origin.
 
-   421 (Not Authoritative) MAY carry an Alt-Svc header field.
-
-   This status code MUST NOT be generated by proxies.
-
-   A 421 response is cacheable by default; i.e., unless otherwise
-   indicated by the method definition or explicit cache controls (see
-   Section 4.2.2 of [RFC7234]).
+   A 421 (Not Authoritative) response MAY carry an Alt-Svc header field.
 
 7.  IANA Considerations
 
@@ -667,15 +662,17 @@ Internet-Draft            Alternative Services                 June 2014
    | Alt-Svc-Used      | http     | standard | Section 5  |
    +-------------------+----------+----------+------------+
 
+   The change controller is: "IETF (iesg@ietf.org) - Internet
+   Engineering Task Force".
+
+
+
 
 
 Nottingham, et al.      Expires December 18, 2014              [Page 12]
 
 Internet-Draft            Alternative Services                 June 2014
 
-
-   The change controller is: "IETF (iesg@ietf.org) - Internet
-   Engineering Task Force".
 
 7.2.  The ALTSVC HTTP/2 Frame Type
 
@@ -687,18 +684,6 @@ Internet-Draft            Alternative Services                 June 2014
       Code: 0xa
 
       Specification: Section 4 of this document
-
-7.3.  The 421 Not Authoritative HTTP Status Code
-
-   This document registers the 421 (Not Authoritative) HTTP Status code
-   in the Hypertext Transfer Protocol (HTTP) Status Code Registry
-   ([RFC7231], Section 8.2).
-
-      Status Code: 421
-
-      Short Description: Not Authoritative
-
-      Specification: Section 6 of this document
 
 8.  Internationalization Considerations
 
@@ -720,16 +705,6 @@ Internet-Draft            Alternative Services                 June 2014
    Svc header field; if that port is under the attacker's control, they
    can thus masquerade as the HTTP server.
 
-
-
-
-
-
-Nottingham, et al.      Expires December 18, 2014              [Page 13]
-
-Internet-Draft            Alternative Services                 June 2014
-
-
    This risk can be mitigated by restricting the ability to advertise
    alternative services, and restricting who can open a port for
    listening on that host.
@@ -746,6 +721,14 @@ Internet-Draft            Alternative Services                 June 2014
    masquerade as that origin.  This can be done locally (see mitigations
    above) or remotely (e.g., by an intermediary as a man-in-the-middle
    attack).
+
+
+
+
+Nottingham, et al.      Expires December 18, 2014              [Page 13]
+
+Internet-Draft            Alternative Services                 June 2014
+
 
    This is the reason for the requirement in Section 2.1 that any
    alternative service with a host different to the origin's be strongly
@@ -779,13 +762,6 @@ Internet-Draft            Alternative Services                 June 2014
    not use some form of end-to-end encryption (most likely, TLS), it
    violates the expectations for security that the URI scheme implies.
 
-
-
-Nottingham, et al.      Expires December 18, 2014              [Page 14]
-
-Internet-Draft            Alternative Services                 June 2014
-
-
    Therefore, clients cannot blindly use alternative services, but
    instead evaluate the option(s) presented to assure that security
    requirements and expectations (of specifications, implementations and
@@ -801,6 +777,14 @@ Internet-Draft            Alternative Services                 June 2014
 
    Clients that do not wish to be tracked MAY choose to ignore
    alternative service advertisements.
+
+
+
+
+Nottingham, et al.      Expires December 18, 2014              [Page 14]
+
+Internet-Draft            Alternative Services                 June 2014
+
 
    In a browser, any alternative service information MUST be removed
    when origin-specific data is cleared (for instance, when cookies are
@@ -835,13 +819,6 @@ Internet-Draft            Alternative Services                 June 2014
               Resource Identifier (URI): Generic Syntax", STD 66, RFC
               3986, January 2005.
 
-
-
-Nottingham, et al.      Expires December 18, 2014              [Page 15]
-
-Internet-Draft            Alternative Services                 June 2014
-
-
    [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
@@ -854,6 +831,16 @@ Internet-Draft            Alternative Services                 June 2014
 
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
+
+
+
+
+
+
+Nottingham, et al.      Expires December 18, 2014              [Page 15]
+
+Internet-Draft            Alternative Services                 June 2014
+
 
    [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
               Protocol (HTTP/1.1): Message Syntax and Routing", RFC
@@ -887,6 +874,19 @@ Internet-Draft            Alternative Services                 June 2014
    [4] https://github.com/http2/http2-spec/pull/503
 
    [5] https://github.com/http2/http2-spec/pull/507
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

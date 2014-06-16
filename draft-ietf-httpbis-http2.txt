@@ -82,10 +82,10 @@ Table of Contents
      2.1.  Document Organization . . . . . . . . . . . . . . . . . .   6
      2.2.  Conventions and Terminology . . . . . . . . . . . . . . .   6
    3.  Starting HTTP/2 . . . . . . . . . . . . . . . . . . . . . . .   7
-     3.1.  HTTP/2 Version Identification . . . . . . . . . . . . . .   7
-     3.2.  Starting HTTP/2 for "http" URIs . . . . . . . . . . . . .   8
+     3.1.  HTTP/2 Version Identification . . . . . . . . . . . . . .   8
+     3.2.  Starting HTTP/2 for "http" URIs . . . . . . . . . . . . .   9
        3.2.1.  HTTP2-Settings Header Field . . . . . . . . . . . . .  10
-     3.3.  Starting HTTP/2 for "https" URIs  . . . . . . . . . . . .  10
+     3.3.  Starting HTTP/2 for "https" URIs  . . . . . . . . . . . .  11
      3.4.  Starting HTTP/2 with Prior Knowledge  . . . . . . . . . .  11
      3.5.  HTTP/2 Connection Preface . . . . . . . . . . . . . . . .  11
    4.  HTTP Frames . . . . . . . . . . . . . . . . . . . . . . . . .  12
@@ -148,20 +148,20 @@ Internet-Draft                   HTTP/2                        June 2014
      8.3.  The CONNECT Method  . . . . . . . . . . . . . . . . . . .  60
    9.  Additional HTTP Requirements/Considerations . . . . . . . . .  62
      9.1.  Connection Management . . . . . . . . . . . . . . . . . .  62
-     9.2.  Use of TLS Features . . . . . . . . . . . . . . . . . . .  62
+       9.1.1.  Connection Reuse  . . . . . . . . . . . . . . . . . .  62
+       9.1.2.  The 421 (Not Authoritative) Status Code . . . . . . .  63
+     9.2.  Use of TLS Features . . . . . . . . . . . . . . . . . . .  63
        9.2.1.  TLS Features  . . . . . . . . . . . . . . . . . . . .  63
-       9.2.2.  TLS Cipher Suites . . . . . . . . . . . . . . . . . .  63
-   10. Security Considerations . . . . . . . . . . . . . . . . . . .  64
-     10.1.  Server Authority . . . . . . . . . . . . . . . . . . . .  64
-     10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  64
-     10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  65
-     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  65
+       9.2.2.  TLS Cipher Suites . . . . . . . . . . . . . . . . . .  64
+   10. Security Considerations . . . . . . . . . . . . . . . . . . .  65
+     10.1.  Server Authority . . . . . . . . . . . . . . . . . . . .  65
+     10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  65
+     10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  66
+     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  66
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  66
-       10.5.1.  Limits on Header Block Size  . . . . . . . . . . . .  67
-     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  67
-     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  67
-     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  68
-   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  68
+       10.5.1.  Limits on Header Block Size  . . . . . . . . . . . .  68
+     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  68
+     10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  68
 
 
 
@@ -170,33 +170,36 @@ Belshe, et al.          Expires December 18, 2014               [Page 3]
 Internet-Draft                   HTTP/2                        June 2014
 
 
-     11.1.  Registration of HTTP/2 Identification Strings  . . . . .  69
-     11.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  69
-     11.3.  Settings Registry  . . . . . . . . . . . . . . . . . . .  70
-     11.4.  Error Code Registry  . . . . . . . . . . . . . . . . . .  71
-     11.5.  HTTP2-Settings Header Field Registration . . . . . . . .  72
-     11.6.  PRI Method Registration  . . . . . . . . . . . . . . . .  73
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  73
-   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  73
-     13.1.  Normative References . . . . . . . . . . . . . . . . . .  74
-     13.2.  Informative References . . . . . . . . . . . . . . . . .  75
-     13.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  76
+     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  69
+   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  69
+     11.1.  Registration of HTTP/2 Identification Strings  . . . . .  70
+     11.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  70
+     11.3.  Settings Registry  . . . . . . . . . . . . . . . . . . .  71
+     11.4.  Error Code Registry  . . . . . . . . . . . . . . . . . .  72
+     11.5.  HTTP2-Settings Header Field Registration . . . . . . . .  73
+     11.6.  PRI Method Registration  . . . . . . . . . . . . . . . .  74
+     11.7.  The 421 Not Authoritative HTTP Status Code . . . . . . .  74
+   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  74
+   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  75
+     13.1.  Normative References . . . . . . . . . . . . . . . . . .  75
+     13.2.  Informative References . . . . . . . . . . . . . . . . .  76
+     13.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  77
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  77
-     A.1.  Since draft-ietf-httpbis-http2-12 . . . . . . . . . . . .  77
-     A.2.  Since draft-ietf-httpbis-http2-11 . . . . . . . . . . . .  77
-     A.3.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  77
-     A.4.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  78
-     A.5.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  78
-     A.6.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  78
-     A.7.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  78
-     A.8.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  79
-     A.9.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  79
-     A.10. Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  79
-     A.11. Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  80
-     A.12. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  80
-     A.13. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  81
-     A.14. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  81
+                publication) . . . . . . . . . . . . . . . . . . . .  78
+     A.1.  Since draft-ietf-httpbis-http2-12 . . . . . . . . . . . .  78
+     A.2.  Since draft-ietf-httpbis-http2-11 . . . . . . . . . . . .  78
+     A.3.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  78
+     A.4.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  79
+     A.5.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  79
+     A.6.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  79
+     A.7.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  79
+     A.8.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  80
+     A.9.  Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  80
+     A.10. Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  80
+     A.11. Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  81
+     A.12. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  81
+     A.13. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  82
+     A.14. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  82
 
 1.  Introduction
 
@@ -215,9 +218,6 @@ Internet-Draft                   HTTP/2                        June 2014
 
    Furthermore, HTTP/1.1 header fields are often repetitive and verbose,
    which, in addition to generating more or larger network packets, can
-   cause the small initial TCP [TCP] congestion window to quickly fill.
-   This can result in excessive latency when multiple requests are made
-   on a single new TCP connection.
 
 
 
@@ -225,6 +225,10 @@ Belshe, et al.          Expires December 18, 2014               [Page 4]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   cause the small initial TCP [TCP] congestion window to quickly fill.
+   This can result in excessive latency when multiple requests are made
+   on a single new TCP connection.
 
    This specification addresses these issues by defining an optimized
    mapping of HTTP's semantics to an underlying connection.
@@ -270,10 +274,6 @@ Internet-Draft                   HTTP/2                        June 2014
    responses to a client (Section 8.2).  Server push allows a server to
    speculatively send a client data that the server anticipates the
    client will need, trading off some network usage against a potential
-   latency gain.  The server does this by synthesizing a request, which
-   it sends as a PUSH_PROMISE frame.  The server is then able to send a
-   response to the synthetic request on a separate stream.
-
 
 
 
@@ -281,6 +281,10 @@ Belshe, et al.          Expires December 18, 2014               [Page 5]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   latency gain.  The server does this by synthesizing a request, which
+   it sends as a PUSH_PROMISE frame.  The server is then able to send a
+   response to the synthetic request on a separate stream.
 
    Frames that contain HTTP header fields are compressed (Section 4.3).
    HTTP requests can be highly redundant, so compression can reduce the
@@ -326,10 +330,6 @@ Internet-Draft                   HTTP/2                        June 2014
 
    connection:  A transport-level connection between two endpoints.
 
-   connection error:  An error that affects the entire HTTP/2
-      connection.
-
-   endpoint:  Either the client or server of the connection.
 
 
 
@@ -337,6 +337,11 @@ Belshe, et al.          Expires December 18, 2014               [Page 6]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   connection error:  An error that affects the entire HTTP/2
+      connection.
+
+   endpoint:  Either the client or server of the connection.
 
    frame:  The smallest unit of communication within an HTTP/2
       connection, consisting of a header and a variable-length sequence
@@ -378,6 +383,17 @@ Internet-Draft                   HTTP/2                        June 2014
    "http" and "https" URIs.  Discovery for "http" URIs is described in
    Section 3.2.  Discovery for "https" URIs is described in Section 3.3.
 
+
+
+
+
+
+
+Belshe, et al.          Expires December 18, 2014               [Page 7]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 3.1.  HTTP/2 Version Identification
 
    The protocol defined in this document has two identifiers.
@@ -386,13 +402,6 @@ Internet-Draft                   HTTP/2                        June 2014
       [TLS12].  This identifier is used in the TLS application layer
       protocol negotiation extension (ALPN) [TLSALPN] field and any
       place that HTTP/2 over TLS is identified.
-
-
-
-Belshe, et al.          Expires December 18, 2014               [Page 7]
-
-Internet-Draft                   HTTP/2                        June 2014
-
 
       The "h2" string is serialized into an ALPN protocol identifier as
       the two octet sequence: 0x68, 0x32.
@@ -430,15 +439,6 @@ Internet-Draft                   HTTP/2                        June 2014
    encouraged to coordinate their experiments on the ietf-http-wg@w3.org
    mailing list.
 
-3.2.  Starting HTTP/2 for "http" URIs
-
-   A client that makes a request to an "http" URI without prior
-   knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
-   (Section 6.7 of [RFC7230]).  The client makes an HTTP/1.1 request
-   that includes an Upgrade header field identifying HTTP/2 with the
-   "h2c" token.  The HTTP/1.1 request MUST include exactly one
-   HTTP2-Settings (Section 3.2.1) header field.
-
 
 
 
@@ -449,6 +449,15 @@ Belshe, et al.          Expires December 18, 2014               [Page 8]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+3.2.  Starting HTTP/2 for "http" URIs
+
+   A client that makes a request to an "http" URI without prior
+   knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
+   (Section 6.7 of [RFC7230]).  The client makes an HTTP/1.1 request
+   that includes an Upgrade header field identifying HTTP/2 with the
+   "h2c" token.  The HTTP/1.1 request MUST include exactly one
+   HTTP2-Settings (Section 3.2.1) header field.
 
    For example:
 
@@ -487,15 +496,6 @@ Internet-Draft                   HTTP/2                        June 2014
    frames MUST include a response to the request that initiated the
    Upgrade.
 
-     HTTP/1.1 101 Switching Protocols
-     Connection: Upgrade
-     Upgrade: h2c
-
-     [ HTTP/2 connection ...
-
-   The first HTTP/2 frame sent by the server is a SETTINGS frame
-   (Section 6.5).  Upon receiving the 101 response, the client sends a
-   connection preface (Section 3.5), which includes a SETTINGS frame.
 
 
 
@@ -505,6 +505,16 @@ Belshe, et al.          Expires December 18, 2014               [Page 9]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+     HTTP/1.1 101 Switching Protocols
+     Connection: Upgrade
+     Upgrade: h2c
+
+     [ HTTP/2 connection ...
+
+   The first HTTP/2 frame sent by the server is a SETTINGS frame
+   (Section 6.5).  Upon receiving the 101 response, the client sends a
+   connection preface (Section 3.5), which includes a SETTINGS frame.
 
    The HTTP/1.1 request that is sent prior to upgrade is assigned stream
    identifier 1 and is assigned default priority values (Section 5.3.5).
@@ -545,6 +555,13 @@ Internet-Draft                   HTTP/2                        June 2014
    provide other parameters prior to receiving any frames from the
    server.
 
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 10]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
 3.3.  Starting HTTP/2 for "https" URIs
 
    A client that makes a request to an "https" URI without prior
@@ -553,14 +570,6 @@ Internet-Draft                   HTTP/2                        June 2014
 
    HTTP/2 over TLS uses the "h2" application token.  The "h2c" token
    MUST NOT be sent by a client or selected by a server.
-
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 10]
-
-Internet-Draft                   HTTP/2                        June 2014
-
 
    Once TLS negotiation is complete, both the client and the server send
    a connection preface (Section 3.5).
@@ -601,15 +610,6 @@ Internet-Draft                   HTTP/2                        June 2014
    upon receipt of a 101 Switching Protocols response (indicating a
    successful upgrade), or as the first application data octets of a TLS
    connection.  If starting an HTTP/2 connection with prior knowledge of
-   server support for the protocol, the client connection preface is
-   sent upon connection establishment.
-
-      The client connection preface is selected so that a large
-      proportion of HTTP/1.1 or HTTP/1.0 servers and intermediaries do
-      not attempt to process further frames.  Note that this does not
-      address the concerns raised in [TALKING].
-
-
 
 
 
@@ -617,6 +617,14 @@ Belshe, et al.          Expires December 18, 2014              [Page 11]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   server support for the protocol, the client connection preface is
+   sent upon connection establishment.
+
+      The client connection preface is selected so that a large
+      proportion of HTTP/1.1 or HTTP/1.0 servers and intermediaries do
+      not attempt to process further frames.  Note that this does not
+      address the concerns raised in [TALKING].
 
    The server connection preface consists of a potentially empty
    SETTINGS frame (Section 6.5) that MUST be the first frame the server
@@ -658,14 +666,6 @@ Internet-Draft                   HTTP/2                        June 2014
 
                                Frame Layout
 
-   The fields of the frame header are defined as:
-
-   R: A reserved 2-bit field.  The semantics of these bits are undefined
-      and the bits MUST remain unset (0) when sending and MUST be
-      ignored when receiving.
-
-
-
 
 
 
@@ -673,6 +673,12 @@ Belshe, et al.          Expires December 18, 2014              [Page 12]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   The fields of the frame header are defined as:
+
+   R: A reserved 2-bit field.  The semantics of these bits are undefined
+      and the bits MUST remain unset (0) when sending and MUST be
+      ignored when receiving.
 
    Length:  The length of the frame payload expressed as an unsigned
       14-bit integer.  The 8 octets of the frame header are not included
@@ -716,12 +722,6 @@ Internet-Draft                   HTTP/2                        June 2014
    error.  A frame size error in a frame that could alter the state of
    the entire connection MUST be treated as a connection error
    (Section 5.4.1); this includes any frame carrying a header block
-   (Section 4.3) (that is, HEADERS, PUSH_PROMISE, and CONTINUATION),
-   SETTINGS, and any WINDOW_UPDATE frame with a stream identifier of 0.
-
-
-
-
 
 
 
@@ -729,6 +729,9 @@ Belshe, et al.          Expires December 18, 2014              [Page 13]
 
 Internet-Draft                   HTTP/2                        June 2014
 
+
+   (Section 4.3) (that is, HEADERS, PUSH_PROMISE, and CONTINUATION),
+   SETTINGS, and any WINDOW_UPDATE frame with a stream identifier of 0.
 
 4.3.  Header Compression and Decompression
 
@@ -775,9 +778,6 @@ Internet-Draft                   HTTP/2                        June 2014
    the END_HEADERS flag set.  This allows a header block to be logically
    equivalent to a single frame.
 
-   Header block fragments can only be sent as the payload of HEADERS,
-   PUSH_PROMISE or CONTINUATION frames, because these frames carry data
-   that can modify the compression context maintained by a receiver.  An
 
 
 
@@ -786,6 +786,9 @@ Belshe, et al.          Expires December 18, 2014              [Page 14]
 Internet-Draft                   HTTP/2                        June 2014
 
 
+   Header block fragments can only be sent as the payload of HEADERS,
+   PUSH_PROMISE or CONTINUATION frames, because these frames carry data
+   that can modify the compression context maintained by a receiver.  An
    endpoint receiving HEADERS, PUSH_PROMISE or CONTINUATION frames MUST
    reassemble header blocks and perform decompression even if the frames
    are to be discarded.  A receiver MUST terminate the connection with a
@@ -818,9 +821,6 @@ Internet-Draft                   HTTP/2                        June 2014
 5.1.  Stream States
 
    The lifecycle of a stream is shown in Figure 1.
-
-
-
 
 
 
@@ -3433,21 +3433,19 @@ Internet-Draft                   HTTP/2                        June 2014
    until the server closes the connection.
 
    Clients SHOULD NOT open more than one HTTP/2 connection to a given
-   destination, where a destination is the IP address and port that is
-   derived from a URI, a selected alternative service [ALT-SVC], or a
-   configured proxy.  A client can create additional connections as
-   replacements, either to replace connections that are near to
-   exhausting the available stream identifier space (Section 5.1.1), or
-   to replace connections that have encountered errors (Section 5.4.1).
+   host and port pair, where host is derived from a URI, a selected
+   alternative service [ALT-SVC], or a configured proxy.
+
+   A client can create additional connections as replacements, either to
+   replace connections that are near to exhausting the available stream
+   identifier space (Section 5.1.1), to refresh the keying material for
+   a TLS connection, or to replace connections that have encountered
+   errors (Section 5.4.1).
 
    A client MAY open multiple connections to the same IP address and TCP
    port using different Server Name Indication [TLS-EXT] values or to
    provide different TLS client certificates, but SHOULD avoid creating
    multiple connections with the same configuration.
-
-   Clients MAY use a single server connection to send requests for URIs
-   with multiple different authority components as long as the server is
-   authoritative (Section 10.1).
 
    Servers are encouraged to maintain open connections for as long as
    possible, but are permitted to terminate idle connections if
@@ -3457,15 +3455,17 @@ Internet-Draft                   HTTP/2                        June 2014
    whether previously sent frames have been processed and gracefully
    complete or terminate any necessary remaining tasks.
 
-9.2.  Use of TLS Features
+9.1.1.  Connection Reuse
 
-   Implementations of HTTP/2 MUST support TLS 1.2 [TLS12] for HTTP/2
-   over TLS.  The general TLS usage guidance in [TLSBCP] SHOULD be
-   followed, with some additional restrictions that are specific to
-   HTTP/2.
+   Clients MAY use a single server connection to send requests for URIs
+   with multiple different authority components as long as the server is
+   authoritative (Section 10.1).  For "http" resources, this depends on
+   the host having resolved to the same IP address.
 
-
-
+   For "https" resources, connection reuse additionally depends on
+   having a certificate that is valid for the host in the URI.  That is
+   the use of server certificate with multiple "subjectAltName"
+   attributes, or names with wildcards.  For example, a certificate with
 
 
 
@@ -3474,11 +3474,61 @@ Belshe, et al.          Expires December 18, 2014              [Page 62]
 Internet-Draft                   HTTP/2                        June 2014
 
 
+   a "subjectAltName" of "*.example.com" might permit the use of the
+   same connection for "a.example.com" and "b.example.com".
+
+   In some deployments, reusing a connection for multiple origins can
+   result in requests being directed to the wrong origin server.  For
+   example, TLS termination might be performed by a middlebox that uses
+   the TLS Server Name Indication (SNI) [TLS-EXT] extension to select
+   the an origin server.  This means that it is possible for clients to
+   send confidential information to servers that might not be the
+   intended target for the request, even though the server has valid
+   authentication credentials.
+
+   A server that does not wish clients to reuse connections can indicate
+   that it is not authoritative for a request by sending a 421 (Not
+   Authoritative) status code in response to request (see
+   Section 9.1.2).
+
+9.1.2.  The 421 (Not Authoritative) Status Code
+
+   The 421 (Not Authoritative) status code indicates that the current
+   origin server is not authoritative for the requested resource, in the
+   sense of [RFC7230], Section 9.1 (see also Section 10.1).
+
+   Clients receiving a 421 (Not Authoritative) response from a server
+   MAY retry the request - whether the request method is idempotent or
+   not - over a different connection.  This is possible if a connection
+   is reused (Section 9.1.1) or if an alternative service is selected
+   ([ALT-SVC]).
+
+   This status code MUST NOT be generated by proxies.
+
+   A 421 response is cacheable by default; i.e., unless otherwise
+   indicated by the method definition or explicit cache controls (see
+   Section 4.2.2 of [RFC7234]).
+
+9.2.  Use of TLS Features
+
+   Implementations of HTTP/2 MUST support TLS 1.2 [TLS12] for HTTP/2
+   over TLS.  The general TLS usage guidance in [TLSBCP] SHOULD be
+   followed, with some additional restrictions that are specific to
+   HTTP/2.
+
 9.2.1.  TLS Features
 
    The TLS implementation MUST support the Server Name Indication (SNI)
    [TLS-EXT] extension to TLS.  HTTP/2 clients MUST indicate the target
    domain name when negotiating TLS.
+
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 63]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
    The TLS implementation MUST disable compression.  TLS compression can
    lead to the exposure of information that would not otherwise be
@@ -3521,15 +3571,6 @@ Internet-Draft                   HTTP/2                        June 2014
    complete without the additional latency imposed by using a separate
    connection for fallback.
 
-
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 63]
-
-Internet-Draft                   HTTP/2                        June 2014
-
-
    An implementation SHOULD NOT negotiate a TLS connection for HTTP/2
    without also negotiating a cipher suite that meets these
    requirements.  Due to implementation limitations, it might not be
@@ -3537,6 +3578,13 @@ Internet-Draft                   HTTP/2                        June 2014
    terminate an HTTP/2 connection that does not meet these minimum
    requirements with a connection error (Section 5.4.1) of type
    INADEQUATE_SECURITY.
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 64]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
 10.  Security Considerations
 
@@ -3578,18 +3626,21 @@ Internet-Draft                   HTTP/2                        June 2014
    The cleartext version of HTTP/2 has minimal protection against cross-
    protocol attacks.  The connection preface (Section 3.5) contains a
    string that is designed to confuse HTTP/1.1 servers, but no special
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 64]
-
-Internet-Draft                   HTTP/2                        June 2014
-
-
    protection is offered for other protocols.  A server that is willing
    to ignore parts of an HTTP/1.1 request containing an Upgrade header
    field in addition to the client connection preface could be exposed
    to a cross-protocol attack.
+
+
+
+
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 65]
+
+Internet-Draft                   HTTP/2                        June 2014
+
 
 10.3.  Intermediary Encapsulation Attacks
 
@@ -3633,20 +3684,20 @@ Internet-Draft                   HTTP/2                        June 2014
    Pushed responses for which an origin server is not authoritative (see
    Section 10.1) are never cached or used.
 
-
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 65]
-
-Internet-Draft                   HTTP/2                        June 2014
-
-
 10.5.  Denial of Service Considerations
 
    An HTTP/2 connection can demand a greater commitment of resources to
    operate than a HTTP/1.1 connection.  The use of header compression
    and flow control depend on a commitment of resources for storing a
+
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 66]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    greater amount of state.  Settings for these features ensure that
    memory commitments for these features are strictly bounded.
 
@@ -3672,7 +3723,7 @@ Internet-Draft                   HTTP/2                        June 2014
    to end a stream.
 
    Header compression also offers some opportunities to waste processing
-   resources; see Appendix of [COMPRESSION] for more details on
+   resources; see Section 8 of [COMPRESSION] for more details on
    potential abuses.
 
    Limits in SETTINGS parameters cannot be reduced instantaneously,
@@ -3693,7 +3744,12 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 66]
+
+
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 67]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -3749,7 +3805,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 67]
+Belshe, et al.          Expires December 18, 2014              [Page 68]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -3801,11 +3857,11 @@ Internet-Draft                   HTTP/2                        June 2014
    Transfer Protocol (HTTP) 2 Parameters" section.
 
    This document registers the "HTTP2-Settings" header field for use in
-   HTTP.
+   HTTP; and the 421 (Not Authoritative) status code.
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 68]
+Belshe, et al.          Expires December 18, 2014              [Page 69]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -3861,7 +3917,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 69]
+Belshe, et al.          Expires December 18, 2014              [Page 70]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -3917,7 +3973,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 70]
+Belshe, et al.          Expires December 18, 2014              [Page 71]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -3973,7 +4029,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 71]
+Belshe, et al.          Expires December 18, 2014              [Page 72]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4029,7 +4085,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 72]
+Belshe, et al.          Expires December 18, 2014              [Page 73]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4051,6 +4107,18 @@ Internet-Draft                   HTTP/2                        June 2014
       This method will appear to be used when an HTTP/1.1 server or
       intermediary attempts to parse an HTTP/2 connection preface.
 
+11.7.  The 421 Not Authoritative HTTP Status Code
+
+   This document registers the 421 (Not Authoritative) HTTP Status code
+   in the Hypertext Transfer Protocol (HTTP) Status Code Registry
+   ([RFC7231], Section 8.2).
+
+   Status Code:  421
+
+   Short Description:  Not Authoritative
+
+   Specification:  Section 9.1.2 of this document
+
 12.  Acknowledgements
 
    This document includes substantial input from the following
@@ -4071,6 +4139,13 @@ Internet-Draft                   HTTP/2                        June 2014
    o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
       Bishop, Herve Ruellan (Substantial editorial contributions).
 
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 74]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    o  Alexey Melnikov was an editor of this document during 2013.
 
    o  A substantial proportion of Martin's contribution was supported by
@@ -4078,23 +4153,11 @@ Internet-Draft                   HTTP/2                        June 2014
 
 13.  References
 
-
-
-
-
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 73]
-
-Internet-Draft                   HTTP/2                        June 2014
-
-
 13.1.  Normative References
 
    [COMPRESSION]
               Ruellan, H. and R. Peon, "HPACK - Header Compression for
-              HTTP/2", draft-ietf-httpbis-header-compression-07 (work in
+              HTTP/2", draft-ietf-httpbis-header-compression-08 (work in
               progress), June 2014.
 
    [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
@@ -4131,6 +4194,14 @@ Internet-Draft                   HTTP/2                        June 2014
               Protocol (HTTP/1.1): Conditional Requests", RFC 7232, June
               2014.
 
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 75]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    [RFC7233]  Fielding, R., Ed., Lafon, Y., Ed., and J. Reschke, Ed.,
               "Hypertext Transfer Protocol (HTTP/1.1): Range Requests",
               RFC 7233, June 2014.
@@ -4138,13 +4209,6 @@ Internet-Draft                   HTTP/2                        June 2014
    [RFC7234]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
               Ed., "Hypertext Transfer Protocol (HTTP/1.1): Caching",
               RFC 7234, June 2014.
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 74]
-
-Internet-Draft                   HTTP/2                        June 2014
-
 
    [RFC7235]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
               Protocol (HTTP/1.1): Authentication", RFC 7235, June 2014.
@@ -4185,6 +4249,15 @@ Internet-Draft                   HTTP/2                        June 2014
 
               Latest version available at [5].
 
+
+
+
+
+Belshe, et al.          Expires December 18, 2014              [Page 76]
+
+Internet-Draft                   HTTP/2                        June 2014
+
+
    [RFC1323]  Jacobson, V., Braden, B., and D. Borman, "TCP Extensions
               for High Performance", RFC 1323, May 1992.
 
@@ -4194,13 +4267,6 @@ Internet-Draft                   HTTP/2                        June 2014
 
    [RFC3749]  Hollenbeck, S., "Transport Layer Security Protocol
               Compression Methods", RFC 3749, May 2004.
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 75]
-
-Internet-Draft                   HTTP/2                        June 2014
-
 
    [RFC4492]  Blake-Wilson, S., Bolyard, N., Gupta, V., Hawk, C., and B.
               Moeller, "Elliptic Curve Cryptography (ECC) Cipher Suites
@@ -4243,17 +4309,7 @@ Internet-Draft                   HTTP/2                        June 2014
 
 
 
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires December 18, 2014              [Page 76]
+Belshe, et al.          Expires December 18, 2014              [Page 77]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4309,7 +4365,7 @@ A.3.  Since draft-ietf-httpbis-http2-10
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 77]
+Belshe, et al.          Expires December 18, 2014              [Page 78]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4365,7 +4421,7 @@ A.7.  Since draft-ietf-httpbis-http2-06
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 78]
+Belshe, et al.          Expires December 18, 2014              [Page 79]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4421,7 +4477,7 @@ A.10.  Since draft-ietf-httpbis-http2-03
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 79]
+Belshe, et al.          Expires December 18, 2014              [Page 80]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4477,7 +4533,7 @@ A.12.  Since draft-ietf-httpbis-http2-01
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 80]
+Belshe, et al.          Expires December 18, 2014              [Page 81]
 
 Internet-Draft                   HTTP/2                        June 2014
 
@@ -4533,4 +4589,4 @@ Authors' Addresses
 
 
 
-Belshe, et al.          Expires December 18, 2014              [Page 81]
+Belshe, et al.          Expires December 18, 2014              [Page 82]
