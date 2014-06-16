@@ -75,8 +75,8 @@ Table of Contents
      2.1.  Outline . . . . . . . . . . . . . . . . . . . . . . . . .   4
      2.2.  Conventions . . . . . . . . . . . . . . . . . . . . . . .   5
      2.3.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   5
-   3.  Decoding Overview . . . . . . . . . . . . . . . . . . . . . .   6
-     3.1.  Encoding Context  . . . . . . . . . . . . . . . . . . . .   6
+   3.  Decoding Process Overview . . . . . . . . . . . . . . . . . .   6
+     3.1.  Encoding and Decoding Contexts  . . . . . . . . . . . . .   6
      3.2.  Header Table  . . . . . . . . . . . . . . . . . . . . . .   6
      3.3.  Reference Set . . . . . . . . . . . . . . . . . . . . . .   7
      3.4.  Header Field Representation . . . . . . . . . . . . . . .   7
@@ -88,10 +88,10 @@ Table of Contents
      5.1.  Maximum Table Size  . . . . . . . . . . . . . . . . . . .  10
      5.2.  Entry Eviction When Header Table Size Changes . . . . . .  11
      5.3.  Entry Eviction when Adding New Entries  . . . . . . . . .  12
-   6.  Low-level Representations . . . . . . . . . . . . . . . . . .  12
+   6.  Primitive Type Representations  . . . . . . . . . . . . . . .  12
      6.1.  Integer representation  . . . . . . . . . . . . . . . . .  12
      6.2.  String Literal Representation . . . . . . . . . . . . . .  13
-   7.  Processing Instructions . . . . . . . . . . . . . . . . . . .  15
+   7.  Binary Format . . . . . . . . . . . . . . . . . . . . . . . .  15
      7.1.  Indexed Header Field Representation . . . . . . . . . . .  15
      7.2.  Literal Header Field Representation . . . . . . . . . . .  15
        7.2.1.  Literal Header Field with Incremental Indexing  . . .  15
@@ -182,7 +182,7 @@ Internet-Draft                    HPACK                        June 2014
    form of compression.  As web pages have grown to include dozens to
    hundreds of requests, the redundant header fields in these requests
    now measurably increase latency and unnecessarily consume bandwidth
-   (see [PERF1] and [PERF2]).
+   (see [SPDY-DESC-1] and [SPDY-DESC-2]).
 
    SPDY [SPDY] initially addressed this redundancy by compressing header
    fields using the DEFLATE format [DEFLATE], which proved very
@@ -296,14 +296,14 @@ Internet-Draft                    HPACK                        June 2014
       Section 3.5).  Emitted header fields are added to the output
       header set and cannot be removed.
 
-3.  Decoding Overview
+3.  Decoding Process Overview
 
    This specification does not describe a specific algorithm for an
    encoder.  Instead, it defines precisely how a decoder is expected to
    operate, allowing encoders to produce any encoding that this
    definition permits.
 
-3.1.  Encoding Context
+3.1.  Encoding and Decoding Contexts
 
    HPACK requires that a decoder maintains both a header table and a
    reference set.  No other state information is needed to decode
@@ -635,7 +635,7 @@ Internet-Draft                    HPACK                        June 2014
    attempt to add an entry larger than the entire table causes the table
    to be emptied of all existing entries.
 
-6.  Low-level Representations
+6.  Primitive Type Representations
 
    HPACK encoding uses two primitive types: unsigned variable length
    integers, and strings of octets.
@@ -786,7 +786,7 @@ Peon & Ruellan          Expires December 18, 2014              [Page 14]
 Internet-Draft                    HPACK                        June 2014
 
 
-7.  Processing Instructions
+7.  Binary Format
 
    This section describes the detailed format of each of the different
    header field representations, plus the encoding context update
@@ -1330,22 +1330,6 @@ Internet-Draft                    HPACK                        June 2014
    [ORIGIN]   Barth, A., "The Web Origin Concept", RFC 6454, December
               2011.
 
-   [PERF1]    Belshe, M., "IETF83: SPDY and What to Consider for
-              HTTP/2.0", March 2012,
-              <https://www.ietf.org/proceedings/83/slides/slides-83-
-              httpbis-3>.
-
-   [PERF2]    McManus, P., "SPDY: What I Like About You", September
-              2011, <https://bitsup.blogspot.com/2011/09/spdy-what-i-
-              like-about-you.html>.
-
-
-
-Peon & Ruellan          Expires December 18, 2014              [Page 24]
-
-Internet-Draft                    HPACK                        June 2014
-
-
    [PETAL]    Tan, J. and J. Nahata, "PETAL: Preset Encoding
               Table Information Leakage", April 2013,
               <http://www.pdl.cmu.edu/PDL-FTP/associated/
@@ -1354,12 +1338,28 @@ Internet-Draft                    HPACK                        June 2014
    [SPDY]     Belshe, M. and R. Peon, "SPDY Protocol", draft-mbelshe-
               httpbis-spdy-00 (work in progress), February 2012.
 
+
+
+
+Peon & Ruellan          Expires December 18, 2014              [Page 24]
+
+Internet-Draft                    HPACK                        June 2014
+
+
+   [SPDY-DESC-1]
+              Belshe, M., "IETF83: SPDY and What to Consider for
+              HTTP/2.0", March 2012,
+              <https://www.ietf.org/proceedings/83/slides/slides-83-
+              httpbis-3>.
+
+   [SPDY-DESC-2]
+              McManus, P., "SPDY: What I Like About You", September
+              2011, <https://bitsup.blogspot.com/2011/09/spdy-what-i-
+              like-about-you.html>.
+
 10.3.  URIs
 
    [1] http://en.wikipedia.org/wiki/Variable-length_quantity
-
-
-
 
 
 
