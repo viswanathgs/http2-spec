@@ -728,7 +728,11 @@ ul.toc a:first-child {
          </li>
          <li><a href="#rfc.section.9">9.</a>&nbsp;&nbsp;&nbsp;<a href="#HttpExtra">Additional HTTP Requirements/Considerations</a><ul>
                <li><a href="#rfc.section.9.1">9.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.1">Connection Management</a></li>
-               <li><a href="#rfc.section.9.2">9.2</a>&nbsp;&nbsp;&nbsp;<a href="#TLSUsage">Use of TLS Features</a></li>
+               <li><a href="#rfc.section.9.2">9.2</a>&nbsp;&nbsp;&nbsp;<a href="#TLSUsage">Use of TLS Features</a><ul>
+                     <li><a href="#rfc.section.9.2.1">9.2.1</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.2.1">TLS Features</a></li>
+                     <li><a href="#rfc.section.9.2.2">9.2.2</a>&nbsp;&nbsp;&nbsp;<a href="#rfc.section.9.2.2">TLS Cipher Suites</a></li>
+                  </ul>
+               </li>
             </ul>
          </li>
          <li><a href="#rfc.section.10">10.</a>&nbsp;&nbsp;&nbsp;<a href="#security">Security Considerations</a><ul>
@@ -952,7 +956,7 @@ ul.toc a:first-child {
                HTTP/1.1 request MUST include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a>) header field.
             </p>
             <div id="rfc.figure.u.1"></div>
-            <p>For example:</p><pre class="text2">GET /default.htm HTTP/1.1
+            <p>For example:</p><pre class="text2">GET / HTTP/1.1
 Host: server.example.com
 Connection: Upgrade, HTTP2-Settings
 Upgrade: h2c
@@ -2702,7 +2706,7 @@ Upgrade: h2c
                port that is derived from a URI, a selected <a href="#ALT-SVC">alternative service</a> <cite title="HTTP Alternative Services">[ALT-SVC]</cite>, or a configured proxy. A client can create additional connections as replacements, either to replace connections that are
                near to exhausting the available stream identifier space (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>), or to replace connections that have encountered errors (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
             </p>
-            <p id="rfc.section.9.1.p.3">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration. <span class="comment" id="rfc.comment.3">[<a href="#rfc.comment.3" class="smpl">rfc.comment.3</a>: Need more text on how client certificates relate here, see issue #363.]</span> 
+            <p id="rfc.section.9.1.p.3">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration.
             </p>
             <p id="rfc.section.9.1.p.4">Clients MAY use a single server connection to send requests for URIs with multiple different authority components as long
                as the server is authoritative (<a href="#authority" title="Server Authority">Section&nbsp;10.1</a>).
@@ -2717,24 +2721,42 @@ Upgrade: h2c
             <h2 id="rfc.section.9.2"><a href="#rfc.section.9.2">9.2</a>&nbsp;<a href="#TLSUsage">Use of TLS Features</a></h2>
             <p id="rfc.section.9.2.p.1">Implementations of HTTP/2 MUST support <a href="#TLS12">TLS 1.2</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> for HTTP/2 over TLS. The general TLS usage guidance in <a href="#TLSBCP"><cite title="Recommendations for Secure Use of TLS and DTLS">[TLSBCP]</cite></a> SHOULD be followed, with some additional restrictions that are specific to HTTP/2.
             </p>
-            <p id="rfc.section.9.2.p.2">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2 clients MUST indicate the target domain name when negotiating TLS.
-            </p>
-            <p id="rfc.section.9.2.p.3">The TLS implementation MUST disable compression. TLS compression can lead to the exposure of information that would not otherwise
-               be revealed <a href="#RFC3749"><cite title="Transport Layer Security Protocol Compression Methods">[RFC3749]</cite></a>. Generic compression is unnecessary since HTTP/2 provides compression features that are more aware of context and therefore
-               likely to be more appropriate for use for performance, security or other reasons.
-            </p>
-            <p id="rfc.section.9.2.p.4">The set of TLS cipher suites that are permitted in HTTP/2 is restricted. HTTP/2 MUST only be used with cipher suites that
-               have ephemeral key exchange, such as the <a href="#TLS12">ephemeral Diffie-Hellman (DHE)</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> or the <a href="#RFC4492">elliptic curve variant (ECDHE)</a> <cite title="Elliptic Curve Cryptography (ECC) Cipher Suites for Transport Layer Security (TLS)">[RFC4492]</cite>. Ephemeral key exchange MUST have a minimum size of 2048 bits for DHE or security level of 128 bits for ECDHE. Clients MUST
-               accept DHE sizes of up to 4096 bits. HTTP MUST NOT be used with cipher suites that use stream or block ciphers. Authenticated
-               Encryption with Additional Data (AEAD) modes, such as the <a href="#RFC5288">Galois Counter Model (GCM) mode for AES</a> <cite title="AES Galois Counter Mode (GCM) Cipher Suites for TLS">[RFC5288]</cite> are acceptable.
-            </p>
-            <p id="rfc.section.9.2.p.5">Clients MAY advertise support of other cipher suites in order to allow for connection to servers that do not support HTTP/2
-               to complete without the additional latency imposed by using a separate connection for fallback.
-            </p>
-            <p id="rfc.section.9.2.p.6">An implementation SHOULD NOT negotiate a TLS connection for HTTP/2 without also negotiating a cipher suite that meets these
-               requirements. Due to implementation limitations, it might not be possible to fail TLS negotiation. An endpoint MUST immediately
-               terminate an HTTP/2 connection that does not meet these minimum requirements with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#INADEQUATE_SECURITY" class="smpl">INADEQUATE_SECURITY</a>.
-            </p>
+            <div>
+               <h3 id="rfc.section.9.2.1"><a href="#rfc.section.9.2.1">9.2.1</a>&nbsp;TLS Features
+               </h3>
+               <p id="rfc.section.9.2.1.p.1">The TLS implementation MUST support the <a href="#TLS-EXT">Server Name Indication (SNI)</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> extension to TLS. HTTP/2 clients MUST indicate the target domain name when negotiating TLS.
+               </p>
+               <p id="rfc.section.9.2.1.p.2">The TLS implementation MUST disable compression. TLS compression can lead to the exposure of information that would not otherwise
+                  be revealed <a href="#RFC3749"><cite title="Transport Layer Security Protocol Compression Methods">[RFC3749]</cite></a>. Generic compression is unnecessary since HTTP/2 provides compression features that are more aware of context and therefore
+                  likely to be more appropriate for use for performance, security or other reasons.
+               </p>
+               <p id="rfc.section.9.2.1.p.3">The TLS implementation MUST disable renegotiation. An endpoint MUST treat a TLS renegotiation as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. Note that disabling renegotiation can result in long-lived connections becoming unusable due to limits on the number of
+                  messages the underlying cipher suite can encipher.
+               </p>
+               <p id="rfc.section.9.2.1.p.4">A client MAY use renegotiation to provide confidentiality protection for client credentials offered in the handshake, but
+                  any renegotiation MUST occur prior to sending the connection preface. A server SHOULD request a client certificate if it sees
+                  a renegotiation request immediately after establishing a connection.
+               </p>
+               <p id="rfc.section.9.2.1.p.5">This effectively prevents the use of renegotiation in response to a request for a specific protected resource. A future specification
+                  might provide a way to support this use case.  
+               </p>
+            </div>
+            <div>
+               <h3 id="rfc.section.9.2.2"><a href="#rfc.section.9.2.2">9.2.2</a>&nbsp;TLS Cipher Suites
+               </h3>
+               <p id="rfc.section.9.2.2.p.1">The set of TLS cipher suites that are permitted in HTTP/2 is restricted. HTTP/2 MUST only be used with cipher suites that
+                  have ephemeral key exchange, such as the <a href="#TLS12">ephemeral Diffie-Hellman (DHE)</a> <cite title="The Transport Layer Security (TLS) Protocol Version 1.2">[TLS12]</cite> or the <a href="#RFC4492">elliptic curve variant (ECDHE)</a> <cite title="Elliptic Curve Cryptography (ECC) Cipher Suites for Transport Layer Security (TLS)">[RFC4492]</cite>. Ephemeral key exchange MUST have a minimum size of 2048 bits for DHE or security level of 128 bits for ECDHE. Clients MUST
+                  accept DHE sizes of up to 4096 bits. HTTP MUST NOT be used with cipher suites that use stream or block ciphers. Authenticated
+                  Encryption with Additional Data (AEAD) modes, such as the <a href="#RFC5288">Galois Counter Model (GCM) mode for AES</a> <cite title="AES Galois Counter Mode (GCM) Cipher Suites for TLS">[RFC5288]</cite> are acceptable.
+               </p>
+               <p id="rfc.section.9.2.2.p.2">Clients MAY advertise support of other cipher suites in order to allow for connection to servers that do not support HTTP/2
+                  to complete without the additional latency imposed by using a separate connection for fallback.
+               </p>
+               <p id="rfc.section.9.2.2.p.3">An implementation SHOULD NOT negotiate a TLS connection for HTTP/2 without also negotiating a cipher suite that meets these
+                  requirements. Due to implementation limitations, it might not be possible to fail TLS negotiation. An endpoint MUST immediately
+                  terminate an HTTP/2 connection that does not meet these minimum requirements with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#INADEQUATE_SECURITY" class="smpl">INADEQUATE_SECURITY</a>.
+               </p>
+            </div>
          </div>
       </div>
       <div id="security">
@@ -2818,7 +2840,7 @@ Upgrade: h2c
             <p id="rfc.section.10.5.p.5">Large numbers of small or empty frames can be abused to cause a peer to expend time processing frame headers. Note however
                that some uses are entirely legitimate, such as the sending of an empty <a href="#DATA" class="smpl">DATA</a> frame to end a stream.
             </p>
-            <p id="rfc.section.10.5.p.6">Header compression also offers some opportunities to waste processing resources; see <a href="https://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07#section-5" title="Security Considerations">Section 5</a> of <a href="#COMPRESSION"><cite title="HPACK - Header Compression for HTTP/2">[COMPRESSION]</cite></a> for more details on potential abuses.
+            <p id="rfc.section.10.5.p.6">Header compression also offers some opportunities to waste processing resources; see <a href="https://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07#section-ERROR: Anchor 'Security' in COMPRESSION not found in source file 'refs/draft-ietf-httpbis-header-compression-08.xml'." title="ERROR: Anchor 'Security' not found in refs/draft-ietf-httpbis-header-compression-08.xml.">Appendix ERROR: Anchor 'Security' in COMPRESSION not found in source file 'refs/draft-ietf-httpbis-header-compression-08.xml'.</a> of <a href="#COMPRESSION"><cite title="HPACK - Header Compression for HTTP/2">[COMPRESSION]</cite></a> for more details on potential abuses.
             </p>
             <p id="rfc.section.10.5.p.7">Limits in <a href="#SETTINGS" class="smpl">SETTINGS</a> parameters cannot be reduced instantaneously, which leaves an endpoint exposed to behavior from a peer that could exceed the
                new limits. In particular, immediately after establishing a connection, limits set by a server are not known to clients and
@@ -3248,7 +3270,7 @@ Upgrade: h2c
       <table>
          <tr>
             <td class="reference"><b id="COMPRESSION">[COMPRESSION]</b></td>
-            <td class="top">Ruellan, H. and R. Peon, “<a href="https://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07">HPACK - Header Compression for HTTP/2</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-header-compression-07 (work in progress), April&nbsp;2014.
+            <td class="top">Ruellan, H. and R. Peon, “<a href="https://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07">HPACK - Header Compression for HTTP/2</a>”, Internet-Draft&nbsp;draft-ietf-httpbis-header-compression-07 (work in progress), June&nbsp;2014.
             </td>
          </tr>
          <tr>
