@@ -1361,7 +1361,8 @@ Upgrade: h2c
                <p id="rfc.section.5.1.2.p.2">Streams that are in the "open" state, or either of the "half closed" states count toward the maximum number of streams that
                   an endpoint is permitted to open. Streams in any of these three states count toward the limit advertised in the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> setting. Streams in either of the "reserved" states do not count toward the stream limit.
                </p>
-               <p id="rfc.section.5.1.2.p.3">Endpoints MUST NOT exceed the limit set by their peer. An endpoint that receives a <a href="#HEADERS" class="smpl">HEADERS</a> frame that causes their advertised concurrent stream limit to be exceeded MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>).
+               <p id="rfc.section.5.1.2.p.3">Endpoints MUST NOT exceed the limit set by their peer. An endpoint that receives a <a href="#HEADERS" class="smpl">HEADERS</a> frame that causes their advertised concurrent stream limit to be exceeded MUST treat this as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>). An endpoint that wishes to reduce the value of <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> to a value that is below the current number of open streams can either close streams that exceed the new value or allow streams
+                  to complete.
                </p>
             </div>
          </div>
@@ -2193,17 +2194,19 @@ Upgrade: h2c
                   flow control window is set to the default initial window size until a WINDOW_UPDATE frame is received.
                </p>
                <p id="rfc.section.6.9.2.p.3">A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame can alter the initial flow control window size for all current streams. When the value of <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> changes, a receiver MUST adjust the size of all stream flow control windows that it maintains by the difference between the
-                  new value and the old value. A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame cannot alter the connection flow control window.
+                  new value and the old value.
                </p>
-               <p id="rfc.section.6.9.2.p.4">An endpoint MUST treat a change to <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> that causes any flow control window to exceed the maximum size as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a>.
-               </p>
-               <p id="rfc.section.6.9.2.p.5">A change to <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> can cause the available space in a flow control window to become negative. A sender MUST track the negative flow control window,
+               <p id="rfc.section.6.9.2.p.4">A change to <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> can cause the available space in a flow control window to become negative. A sender MUST track the negative flow control window,
                   and MUST NOT send new flow controlled frames until it receives WINDOW_UPDATE frames that cause the flow control window to
                   become positive.
                </p>
-               <p id="rfc.section.6.9.2.p.6">For example, if the client sends 60KB immediately on connection establishment, and the server sets the initial window size
+               <p id="rfc.section.6.9.2.p.5">For example, if the client sends 60KB immediately on connection establishment, and the server sets the initial window size
                   to be 16KB, the client will recalculate the available flow control window to be -44KB on receipt of the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame. The client retains a negative flow control window until WINDOW_UPDATE frames restore the window to being positive,
                   after which the client can resume sending.
+               </p>
+               <p id="rfc.section.6.9.2.p.6">A <a href="#SETTINGS" class="smpl">SETTINGS</a> frame cannot alter the connection flow control window.
+               </p>
+               <p id="rfc.section.6.9.2.p.7">An endpoint MUST treat a change to <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> that causes any flow control window to exceed the maximum size as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a>.
                </p>
             </div>
             <div>
@@ -2488,7 +2491,17 @@ Upgrade: h2c
                   </p>
                   <p id="rfc.section.8.1.2.4.p.4">The Cookie header field MAY be split using a zero octet (0x0), as defined in <a href="#HeaderOrdering" title="Header Field Ordering">Section&nbsp;8.1.2.3</a>. When decoding, zero octets MUST be replaced with the cookie delimiter ("; ").
                   </p>
-               </div>
+                  <div id="rfc.figure.u.22"></div>
+                  <p>Therefore, the following sets of Cookie header fields are semantically equivalent, though the final form might appear in a
+                     different order after compression and decompression.
+                  </p><pre class="inline">  cookie: a=b; c=d; e=f
+
+  cookie: a=b\0c=d; e=f
+
+  cookie: a=b
+  cookie: c=d
+  cookie: e=f
+</pre></div>
                <div id="malformed">
                   <h4 id="rfc.section.8.1.2.5"><a href="#rfc.section.8.1.2.5">8.1.2.5</a>&nbsp;<a href="#malformed">Malformed Messages</a></h4>
                   <p id="rfc.section.8.1.2.5.p.1">A malformed request or response is one that uses a valid sequence of HTTP/2 frames, but is otherwise invalid due to the presence
@@ -2512,7 +2525,7 @@ Upgrade: h2c
                <p id="rfc.section.8.1.3.p.1">This section shows HTTP/1.1 requests and responses, with illustrations of equivalent HTTP/2 requests and responses.</p>
                <p id="rfc.section.8.1.3.p.2">An HTTP GET request includes request header fields and no body and is therefore transmitted as a single <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the serialized block of request header fields. The <a href="#HEADERS" class="smpl">HEADERS</a> frame in the following has both the END_HEADERS and END_STREAM flags set; no <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames are sent:
                </p>
-               <div id="rfc.figure.u.22"></div><pre class="inline">  GET /resource HTTP/1.1           HEADERS
+               <div id="rfc.figure.u.23"></div><pre class="inline">  GET /resource HTTP/1.1           HEADERS
   Host: example.org          ==&gt;     + END_STREAM
   Accept: image/jpeg                 + END_HEADERS
                                        :method = GET
@@ -2522,7 +2535,7 @@ Upgrade: h2c
                                        accept = image/jpeg
 </pre><p id="rfc.section.8.1.3.p.4">Similarly, a response that includes only response header fields is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame (again, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the serialized block of response header fields.
                </p>
-               <div id="rfc.figure.u.23"></div><pre class="inline">  HTTP/1.1 304 Not Modified        HEADERS
+               <div id="rfc.figure.u.24"></div><pre class="inline">  HTTP/1.1 304 Not Modified        HEADERS
   ETag: "xyzzy"              ==&gt;     + END_STREAM
   Expires: Thu, 23 Jan ...           + END_HEADERS
                                        :status = 304
@@ -2530,7 +2543,7 @@ Upgrade: h2c
                                        expires = Thu, 23 Jan ...
 </pre><p id="rfc.section.8.1.3.p.6">An HTTP POST request that includes request header fields and payload data is transmitted as one <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames containing the request header fields, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> (or <a href="#HEADERS" class="smpl">HEADERS</a>) frame having the END_HEADERS flag set and the final <a href="#DATA" class="smpl">DATA</a> frame having the END_STREAM flag set:
                </p>
-               <div id="rfc.figure.u.24"></div><pre class="inline">  POST /resource HTTP/1.1          HEADERS
+               <div id="rfc.figure.u.25"></div><pre class="inline">  POST /resource HTTP/1.1          HEADERS
   Host: example.org          ==&gt;     - END_STREAM
   Content-Type: image/jpeg           - END_HEADERS
   Content-Length: 123                  :method = POST
@@ -2551,7 +2564,7 @@ Upgrade: h2c
                </p>
                <p id="rfc.section.8.1.3.p.8">A response that includes header fields and payload data is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, followed by one or more <a href="#DATA" class="smpl">DATA</a> frames, with the last <a href="#DATA" class="smpl">DATA</a> frame in the sequence having the END_STREAM flag set:
                </p>
-               <div id="rfc.figure.u.25"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
+               <div id="rfc.figure.u.26"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
   Content-Type: image/jpeg   ==&gt;     - END_STREAM
   Content-Length: 123                + END_HEADERS
                                        :status = 200
@@ -2563,7 +2576,7 @@ Upgrade: h2c
                                    {binary data}
 </pre><p id="rfc.section.8.1.3.p.10">Trailing header fields are sent as a header block after both the request or response header block and all the <a href="#DATA" class="smpl">DATA</a> frames have been sent. The <a href="#HEADERS" class="smpl">HEADERS</a> frame starting the trailers header block has the END_STREAM flag set.
                </p>
-               <div id="rfc.figure.u.26"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
+               <div id="rfc.figure.u.27"></div><pre class="inline">  HTTP/1.1 200 OK                  HEADERS
   Content-Type: image/jpeg   ==&gt;     - END_STREAM
   Transfer-Encoding: chunked         + END_HEADERS
   Trailer: Foo                         :status = 200
