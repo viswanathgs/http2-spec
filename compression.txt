@@ -80,7 +80,7 @@ Table of Contents
      3.2.  Header Table  . . . . . . . . . . . . . . . . . . . . . .   6
      3.3.  Reference Set . . . . . . . . . . . . . . . . . . . . . .   7
      3.4.  Header Field Representation . . . . . . . . . . . . . . .   7
-     3.5.  Header Field Emission . . . . . . . . . . . . . . . . . .   8
+     3.5.  Header Field Emission . . . . . . . . . . . . . . . . . .   9
    4.  Header Block Decoding . . . . . . . . . . . . . . . . . . . .   9
      4.1.  Header Field Representation Processing  . . . . . . . . .   9
      4.2.  Reference Set Emission  . . . . . . . . . . . . . . . . .  10
@@ -136,7 +136,7 @@ Internet-Draft                    HPACK                        June 2014
      D.1.  Integer Representation Examples . . . . . . . . . . . . .  36
        D.1.1.  Example 1: Encoding 10 Using a 5-bit Prefix . . . . .  36
        D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix . . . .  37
-       D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary   37
+       D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary   38
      D.2.  Header Field Representation Examples  . . . . . . . . . .  38
        D.2.1.  Literal Header Field with Indexing  . . . . . . . . .  38
        D.2.2.  Literal Header Field without Indexing . . . . . . . .  39
@@ -420,6 +420,12 @@ Internet-Draft                    HPACK                        June 2014
    Indices that are greater than the sum of the lengths of both tables
    MUST be treated as a decoding error.
 
+   An indexed representation using an entry of the static table induces
+   a copy of this entry into the header table (see Section 4.1) for
+   bounding memory requirements on the decoder side (see Section 5.1).
+   For this reason, the header table is accessed more frequently than
+   the static table and has the lower indices.
+
    For a header table size of k and a static table size of s, the
    following diagram shows the entire valid index address space.
 
@@ -434,12 +440,6 @@ Internet-Draft                    HPACK                        June 2014
 
                             Index Address Space
 
-3.5.  Header Field Emission
-
-   A decoder processes an encoded header block sequentially.  As
-   different instructions are processed, some might specify that a
-   header field is emitted.
-
 
 
 
@@ -449,6 +449,12 @@ Peon & Ruellan          Expires December 19, 2014               [Page 8]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+3.5.  Header Field Emission
+
+   A decoder processes an encoded header block sequentially.  As
+   different instructions are processed, some might specify that a
+   header field is emitted.
 
    The emission of a header field is the process of marking a header
    field as belonging to the output header set.  Once a header has been
@@ -491,12 +497,6 @@ Internet-Draft                    HPACK                        June 2014
       *  The header field corresponding to the referenced entry is
          emitted.
 
-      *  The referenced static entry is inserted at the beginning of the
-         header table.
-
-      *  A reference to this new header table entry is added to the
-         reference set, unless this new entry didn't fit in the header
-         table.
 
 
 
@@ -505,6 +505,13 @@ Peon & Ruellan          Expires December 19, 2014               [Page 9]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+      *  The referenced static entry is inserted at the beginning of the
+         header table.
+
+      *  A reference to this new header table entry is added to the
+         reference set, unless this new entry didn't fit in the header
+         table.
 
    o  If referencing an element of the header table:
 
@@ -547,13 +554,6 @@ Internet-Draft                    HPACK                        June 2014
    structures used in an encoding context are constrained in size.
    These mutable structures are the header table and the reference set.
 
-   The size of the header table is bounded by a maximum size defined by
-   the decoder.  The size of the header table MUST always be lower than
-   or equal to this maximum size.
-
-   The reference set can only contain references to entries of the
-   header table, and can't contain references to entries of the static
-   table.  In addition, it can't contain duplicate references.
 
 
 
@@ -562,6 +562,13 @@ Peon & Ruellan          Expires December 19, 2014              [Page 10]
 Internet-Draft                    HPACK                        June 2014
 
 
+   The size of the header table is bounded by a maximum size defined by
+   the decoder.  The size of the header table MUST always be lower than
+   or equal to this maximum size.
+
+   The reference set can only contain references to entries of the
+   header table, and can't contain references to entries of the static
+   table.  In addition, it can't contain duplicate references.
    Therefore, its maximum size is bounded by the size of the header
    table.
 
@@ -603,13 +610,6 @@ Internet-Draft                    HPACK                        June 2014
    Whenever an entry is evicted from the header table, any reference to
    that entry from the reference set is removed.
 
-   The eviction of an entry from the header table causes the index of
-   the entries in the static table to be reduced by one.
-
-
-
-
-
 
 
 
@@ -617,6 +617,9 @@ Peon & Ruellan          Expires December 19, 2014              [Page 11]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+   The eviction of an entry from the header table causes the index of
+   the entries in the static table to be reduced by one.
 
 5.3.  Entry Eviction when Adding New Entries
 
@@ -657,9 +660,6 @@ Internet-Draft                    HPACK                        June 2014
    the value is encoded using an unsigned variable length integer
    representation (see [4]).  N is always between 1 and 8 bits.  An
    integer starting at an octet-boundary will have an 8-bit prefix.
-
-
-
 
 
 
@@ -1553,15 +1553,15 @@ Appendix B.  Static Table
    the index len(header table) + 1, and the last entry in the table is
    represented by the index len(header table) + len(static table).
 
+   The static table was created by listing the most common header fields
+   that are valid for messages exchanged inside a HTTP/2 connection.
+   For header fields with a few frequent values, an entry was added for
+   each of these frequent values.  For other header fields, an entry was
+   added with an empty value.
+
    The following table lists the pre-defined header fields that make-up
    the static table.
 
-          +-------+-----------------------------+---------------+
-          | Index | Header Name                 | Header Value  |
-          +-------+-----------------------------+---------------+
-          | 1     | :authority                  |               |
-          | 2     | :method                     | GET           |
-          | 3     | :method                     | POST          |
 
 
 
@@ -1570,6 +1570,12 @@ Peon & Ruellan          Expires December 19, 2014              [Page 28]
 Internet-Draft                    HPACK                        June 2014
 
 
+          +-------+-----------------------------+---------------+
+          | Index | Header Name                 | Header Value  |
+          +-------+-----------------------------+---------------+
+          | 1     | :authority                  |               |
+          | 2     | :method                     | GET           |
+          | 3     | :method                     | POST          |
           | 4     | :path                       | /             |
           | 5     | :path                       | /index.html   |
           | 6     | :scheme                     | http          |
@@ -1612,12 +1618,6 @@ Internet-Draft                    HPACK                        June 2014
           | 43    | if-unmodified-since         |               |
           | 44    | last-modified               |               |
           | 45    | link                        |               |
-          | 46    | location                    |               |
-          | 47    | max-forwards                |               |
-          | 48    | proxy-authenticate          |               |
-          | 49    | proxy-authorization         |               |
-          | 50    | range                       |               |
-          | 51    | referer                     |               |
 
 
 
@@ -1626,6 +1626,12 @@ Peon & Ruellan          Expires December 19, 2014              [Page 29]
 Internet-Draft                    HPACK                        June 2014
 
 
+          | 46    | location                    |               |
+          | 47    | max-forwards                |               |
+          | 48    | proxy-authenticate          |               |
+          | 49    | proxy-authorization         |               |
+          | 50    | range                       |               |
+          | 51    | referer                     |               |
           | 52    | refresh                     |               |
           | 53    | retry-after                 |               |
           | 54    | server                      |               |
@@ -1669,18 +1675,17 @@ Appendix C.  Huffman Code
 
    len:  The number of bits for the code representing the symbol.
 
-   As an example, the code for the symbol 47 (corresponding to the ASCII
-   character "/") consists in the 6 bits "0", "1", "1", "0", "0", "0".
-   This corresponds to the value 0x18 (in hexadecimal) encoded on 6
-   bits.
-
-
 
 
 Peon & Ruellan          Expires December 19, 2014              [Page 30]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+   As an example, the code for the symbol 47 (corresponding to the ASCII
+   character "/") consists in the 6 bits "0", "1", "1", "0", "0", "0".
+   This corresponds to the value 0x18 (in hexadecimal) encoded on 6
+   bits.
 
                                                        code
                           code as bits                as hex    len
@@ -1725,11 +1730,6 @@ Internet-Draft                    HPACK                        June 2014
    '$' ( 36)  |11111111|11001                             1ff9  [13]
    '%' ( 37)  |010101                                       15  [ 6]
    '&' ( 38)  |11111000                                     f8  [ 8]
-   ''' ( 39)  |11111111|010                                7fa  [11]
-   '(' ( 40)  |11111110|10                                 3fa  [10]
-   ')' ( 41)  |11111110|11                                 3fb  [10]
-   '*' ( 42)  |11111001                                     f9  [ 8]
-   '+' ( 43)  |11111111|011                                7fb  [11]
 
 
 
@@ -1738,6 +1738,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 31]
 Internet-Draft                    HPACK                        June 2014
 
 
+   ''' ( 39)  |11111111|010                                7fa  [11]
+   '(' ( 40)  |11111110|10                                 3fa  [10]
+   ')' ( 41)  |11111110|11                                 3fb  [10]
+   '*' ( 42)  |11111001                                     f9  [ 8]
+   '+' ( 43)  |11111111|011                                7fb  [11]
    ',' ( 44)  |11111010                                     fa  [ 8]
    '-' ( 45)  |010110                                       16  [ 6]
    '.' ( 46)  |010111                                       17  [ 6]
@@ -1781,11 +1786,6 @@ Internet-Draft                    HPACK                        June 2014
    'T' ( 84)  |1101111                                      6f  [ 7]
    'U' ( 85)  |1110000                                      70  [ 7]
    'V' ( 86)  |1110001                                      71  [ 7]
-   'W' ( 87)  |1110010                                      72  [ 7]
-   'X' ( 88)  |11111100                                     fc  [ 8]
-   'Y' ( 89)  |1110011                                      73  [ 7]
-   'Z' ( 90)  |11111101                                     fd  [ 8]
-   '[' ( 91)  |11111111|11011                             1ffb  [13]
 
 
 
@@ -1794,6 +1794,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 32]
 Internet-Draft                    HPACK                        June 2014
 
 
+   'W' ( 87)  |1110010                                      72  [ 7]
+   'X' ( 88)  |11111100                                     fc  [ 8]
+   'Y' ( 89)  |1110011                                      73  [ 7]
+   'Z' ( 90)  |11111101                                     fd  [ 8]
+   '[' ( 91)  |11111111|11011                             1ffb  [13]
    '\' ( 92)  |11111111|11111110|000                     7fff0  [19]
    ']' ( 93)  |11111111|11100                             1ffc  [13]
    '^' ( 94)  |11111111|111100                            3ffc  [14]
@@ -1837,11 +1842,6 @@ Internet-Draft                    HPACK                        June 2014
        (132)  |11111111|11111111|010011                 3fffd3  [22]
        (133)  |11111111|11111111|010100                 3fffd4  [22]
        (134)  |11111111|11111111|010101                 3fffd5  [22]
-       (135)  |11111111|11111111|1011001                7fffd9  [23]
-       (136)  |11111111|11111111|010110                 3fffd6  [22]
-       (137)  |11111111|11111111|1011010                7fffda  [23]
-       (138)  |11111111|11111111|1011011                7fffdb  [23]
-       (139)  |11111111|11111111|1011100                7fffdc  [23]
 
 
 
@@ -1850,6 +1850,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 33]
 Internet-Draft                    HPACK                        June 2014
 
 
+       (135)  |11111111|11111111|1011001                7fffd9  [23]
+       (136)  |11111111|11111111|010110                 3fffd6  [22]
+       (137)  |11111111|11111111|1011010                7fffda  [23]
+       (138)  |11111111|11111111|1011011                7fffdb  [23]
+       (139)  |11111111|11111111|1011100                7fffdc  [23]
        (140)  |11111111|11111111|1011101                7fffdd  [23]
        (141)  |11111111|11111111|1011110                7fffde  [23]
        (142)  |11111111|11111111|11101011               ffffeb  [24]
@@ -1893,11 +1898,6 @@ Internet-Draft                    HPACK                        June 2014
        (180)  |11111111|11111111|1101101                7fffed  [23]
        (181)  |11111111|11111111|100001                 3fffe1  [22]
        (182)  |11111111|11111111|1101110                7fffee  [23]
-       (183)  |11111111|11111111|1101111                7fffef  [23]
-       (184)  |11111111|11111110|1010                    fffea  [20]
-       (185)  |11111111|11111111|100010                 3fffe2  [22]
-       (186)  |11111111|11111111|100011                 3fffe3  [22]
-       (187)  |11111111|11111111|100100                 3fffe4  [22]
 
 
 
@@ -1906,6 +1906,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 34]
 Internet-Draft                    HPACK                        June 2014
 
 
+       (183)  |11111111|11111111|1101111                7fffef  [23]
+       (184)  |11111111|11111110|1010                    fffea  [20]
+       (185)  |11111111|11111111|100010                 3fffe2  [22]
+       (186)  |11111111|11111111|100011                 3fffe3  [22]
+       (187)  |11111111|11111111|100100                 3fffe4  [22]
        (188)  |11111111|11111111|1110000                7ffff0  [23]
        (189)  |11111111|11111111|100101                 3fffe5  [22]
        (190)  |11111111|11111111|100110                 3fffe6  [22]
@@ -1949,11 +1954,6 @@ Internet-Draft                    HPACK                        June 2014
        (228)  |11111111|11111111|101001                 3fffe9  [22]
        (229)  |11111111|11111111|00111                  1fffe7  [21]
        (230)  |11111111|11111111|01000                  1fffe8  [21]
-       (231)  |11111111|11111111|1110011                7ffff3  [23]
-       (232)  |11111111|11111111|101010                 3fffea  [22]
-       (233)  |11111111|11111111|101011                 3fffeb  [22]
-       (234)  |11111111|11111111|11110111|0            1ffffee  [25]
-       (235)  |11111111|11111111|11110111|1            1ffffef  [25]
 
 
 
@@ -1962,6 +1962,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 35]
 Internet-Draft                    HPACK                        June 2014
 
 
+       (231)  |11111111|11111111|1110011                7ffff3  [23]
+       (232)  |11111111|11111111|101010                 3fffea  [22]
+       (233)  |11111111|11111111|101011                 3fffeb  [22]
+       (234)  |11111111|11111111|11110111|0            1ffffee  [25]
+       (235)  |11111111|11111111|11110111|1            1ffffef  [25]
        (236)  |11111111|11111111|11110100               fffff4  [24]
        (237)  |11111111|11111111|11110101               fffff5  [24]
        (238)  |11111111|11111111|11111010|10           3ffffea  [26]
@@ -2003,11 +2008,6 @@ D.1.1.  Example 1: Encoding 10 Using a 5-bit Prefix
    o  10 is less than 31 (2^5 - 1) and is represented using the 5-bit
       prefix.
 
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | X | X | X | 0 | 1 | 0 | 1 | 0 |   10 stored on 5 bits
-   +---+---+---+---+---+---+---+---+
-
 
 
 
@@ -2017,6 +2017,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 36]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | X | X | X | 0 | 1 | 0 | 1 | 0 |   10 stored on 5 bits
+   +---+---+---+---+---+---+---+---+
 
 D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix
 
@@ -2059,13 +2064,8 @@ D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix
    | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 |  10<128, encode(10), done
    +---+---+---+---+---+---+---+---+
 
-D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary
 
-   The value 42 is to be encoded starting at an octet-boundary.  This
-   implies that a 8-bit prefix is used.
 
-   o  42 is less than 255 (2^8 - 1) and is represented using the 8-bit
-      prefix.
 
 
 
@@ -2073,6 +2073,14 @@ Peon & Ruellan          Expires December 19, 2014              [Page 37]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary
+
+   The value 42 is to be encoded starting at an octet-boundary.  This
+   implies that a 8-bit prefix is used.
+
+   o  42 is less than 255 (2^8 - 1) and is represented using the 8-bit
+      prefix.
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
@@ -2114,14 +2122,6 @@ D.2.1.  Literal Header Field with Indexing
    [  1] (s =  55) custom-key: custom-header
          Table size:  55
 
-   Decoded header set:
-
-   custom-key: custom-header
-
-
-
-
-
 
 
 
@@ -2129,6 +2129,10 @@ Peon & Ruellan          Expires December 19, 2014              [Page 38]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+   Decoded header set:
+
+   custom-key: custom-header
 
 D.2.2.  Literal Header Field without Indexing
 
@@ -2172,10 +2176,6 @@ D.2.3.  Literal Header Field never Indexed
 
    Reference set: empty.
 
-   Hex dump of encoded data:
-
-   1008 7061 7373 776f 7264 0673 6563 7265 | ..password.secre
-   74                                      | t
 
 
 
@@ -2185,6 +2185,11 @@ Peon & Ruellan          Expires December 19, 2014              [Page 39]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+   Hex dump of encoded data:
+
+   1008 7061 7373 776f 7264 0673 6563 7265 | ..password.secre
+   74                                      | t
 
    Decoding process:
 
@@ -2228,11 +2233,6 @@ D.2.4.  Indexed Header Field
    [  1] (s =  42) :method: GET
          Table size:  42
 
-   Decoded header set:
-
-   :method: GET
-
-
 
 
 
@@ -2241,6 +2241,10 @@ Peon & Ruellan          Expires December 19, 2014              [Page 40]
 
 Internet-Draft                    HPACK                        June 2014
 
+
+   Decoded header set:
+
+   :method: GET
 
 D.2.5.  Indexed Header Field from Static Table
 
@@ -2286,10 +2290,6 @@ D.3.1.  First Request
    :authority: www.example.com
 
    Reference set: empty.
-
-
-
-
 
 
 
