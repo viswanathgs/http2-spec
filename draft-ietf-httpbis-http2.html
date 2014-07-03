@@ -427,7 +427,7 @@ samp, tt, code, pre {
        content: "Internet-Draft";
   }
   @top-right {
-       content: "June 2014";
+       content: "July 2014";
   }
   @top-center {
        content: "HTTP/2";
@@ -436,7 +436,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires December 29, 2014";
+       content: "Expires January 4, 2015";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -557,7 +557,7 @@ ul.toc a:first-child {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-06-27">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-07-03">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -577,7 +577,7 @@ ul.toc a:first-child {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: December 29, 2014</td>
+               <td class="left">Expires: January 4, 2015</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -590,7 +590,7 @@ ul.toc a:first-child {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">June 27, 2014</td>
+               <td class="right">July 3, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -621,7 +621,7 @@ ul.toc a:first-child {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on December 29, 2014.</p>
+         <p>This Internet-Draft will expire on January 4, 2015.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -1753,7 +1753,8 @@ Upgrade: h2c
                <dt>END_SEGMENT (0x2):</dt>
                <dd>
                   <p>Bit 2 being set indicates that this frame is the last for the current segment. Intermediaries MUST NOT coalesce frames across
-                     a segment boundary and MUST preserve segment boundaries when forwarding frames.
+                     a segment boundary and MUST preserve segment boundaries when forwarding frames. END_SEGMENT, like END_STREAM, applies to a
+                     complete sequence of HEADERS and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames.
                   </p>
                </dd>
                <dt>END_HEADERS (0x4):</dt>
@@ -2158,10 +2159,12 @@ Upgrade: h2c
             <p id="rfc.section.6.9.p.8">The WINDOW_UPDATE frame can be specific to a stream or to the entire connection. In the former case, the frame's stream identifier
                indicates the affected stream; in the latter, the value "0" indicates that the entire connection is the subject of the frame.
             </p>
-            <p id="rfc.section.6.9.p.9">WINDOW_UPDATE can be sent by a peer that has sent a frame bearing the END_STREAM flag. This means that a receiver could receive
+            <p id="rfc.section.6.9.p.9">A receiver MUST treat the recipt of a WINDOW_UPDATE frame with an flow control window increment of 0 as a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>; errors on the connection flow control window MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>).
+            </p>
+            <p id="rfc.section.6.9.p.10">WINDOW_UPDATE can be sent by a peer that has sent a frame bearing the END_STREAM flag. This means that a receiver could receive
                a WINDOW_UPDATE frame on a "half closed (remote)" or "closed" stream. A receiver MUST NOT treat this as an error, see <a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>.
             </p>
-            <p id="rfc.section.6.9.p.10">A receiver that receives a flow controlled frame MUST always account for its contribution against the connection flow control
+            <p id="rfc.section.6.9.p.11">A receiver that receives a flow controlled frame MUST always account for its contribution against the connection flow control
                window, unless the receiver treats this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>). This is necessary even if the frame is in error. Since the sender counts the frame toward the flow control window, if the
                receiver does not, the flow control window at sender and receiver can become different.
             </p>
