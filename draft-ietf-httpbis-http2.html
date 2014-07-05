@@ -436,7 +436,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires January 4, 2015";
+       content: "Expires January 6, 2015";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -557,7 +557,7 @@ ul.toc a:first-child {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-07-03">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-07-05">
       <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
       <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
@@ -577,7 +577,7 @@ ul.toc a:first-child {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: January 4, 2015</td>
+               <td class="left">Expires: January 6, 2015</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -590,7 +590,7 @@ ul.toc a:first-child {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">July 3, 2014</td>
+               <td class="right">July 5, 2014</td>
             </tr>
          </tbody>
       </table>
@@ -621,7 +621,7 @@ ul.toc a:first-child {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on January 4, 2015.</p>
+         <p>This Internet-Draft will expire on January 6, 2015.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -2067,17 +2067,20 @@ Upgrade: h2c
                of previously established streams. This enables administrative actions, like server maintainence.
             </p>
             <p id="rfc.section.6.8.p.3">There is an inherent race condition between an endpoint starting new streams and the remote sending a GOAWAY frame. To deal
-               with this case, the GOAWAY contains the stream identifier of the last stream which was or might be processed on the sending
-               endpoint in this connection. If the receiver of the GOAWAY has sent data on streams with a higher stream identifier than what
-               is indicated in the GOAWAY frame, those streams are not or will not be processed. The receiver of the GOAWAY frame can treat
-               the streams as though they had never been created at all, thereby allowing those streams to be retried later on a new connection.
+               with this case, the GOAWAY contains the stream identifier of the last peer-initiated stream which was or might be processed
+               on the sending endpoint in this connection. For instance, if the server sends a GOAWAY frame, the identifed stream is the
+               highest numbered stream initiated by the client.
             </p>
-            <p id="rfc.section.6.8.p.4">Endpoints SHOULD always send a GOAWAY frame before closing a connection so that the remote can know whether a stream has been
+            <p id="rfc.section.6.8.p.4">If the receiver of the GOAWAY has sent data on streams with a higher stream identifier than what is indicated in the GOAWAY
+               frame, those streams are not or will not be processed. The receiver of the GOAWAY frame can treat the streams as though they
+               had never been created at all, thereby allowing those streams to be retried later on a new connection.
+            </p>
+            <p id="rfc.section.6.8.p.5">Endpoints SHOULD always send a GOAWAY frame before closing a connection so that the remote can know whether a stream has been
                partially processed or not. For example, if an HTTP client sends a POST at the same time that a server closes a connection,
                the client cannot know if the server started to process that POST request if the server does not send a GOAWAY frame to indicate
                what streams it might have acted on.
             </p>
-            <p id="rfc.section.6.8.p.5">An endpoint might choose to close a connection without sending GOAWAY for misbehaving peers.</p>
+            <p id="rfc.section.6.8.p.6">An endpoint might choose to close a connection without sending GOAWAY for misbehaving peers.</p>
             <div id="rfc.figure.u.17"></div><pre class="inline">  0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -2088,10 +2091,10 @@ Upgrade: h2c
  |                  Additional Debug Data (*)                    |
  +---------------------------------------------------------------+
 </pre><p class="figure">GOAWAY Payload Format</p>
-            <p id="rfc.section.6.8.p.7">The GOAWAY frame does not define any flags.</p>
-            <p id="rfc.section.6.8.p.8">The GOAWAY frame applies to the connection, not a specific stream. An endpoint MUST treat a <a href="#GOAWAY" class="smpl">GOAWAY</a> frame with a stream identifier other than 0x0 as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            <p id="rfc.section.6.8.p.8">The GOAWAY frame does not define any flags.</p>
+            <p id="rfc.section.6.8.p.9">The GOAWAY frame applies to the connection, not a specific stream. An endpoint MUST treat a <a href="#GOAWAY" class="smpl">GOAWAY</a> frame with a stream identifier other than 0x0 as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
-            <p id="rfc.section.6.8.p.9">The last stream identifier in the GOAWAY frame contains the highest numbered stream identifier for which the sender of the
+            <p id="rfc.section.6.8.p.10">The last stream identifier in the GOAWAY frame contains the highest numbered stream identifier for which the sender of the
                GOAWAY frame might have taken some action on, or might yet take action on. All streams up to and including the identified
                stream might have been processed in some way. The last stream identifier can be set to 0 if no streams were processed. 
             </p>
@@ -2102,32 +2105,32 @@ Upgrade: h2c
                </dd>
             </dl>
             <p> If a connection terminates without a GOAWAY frame, the last stream identifier is effectively the highest possible stream identifier.</p>
-            <p id="rfc.section.6.8.p.10">On streams with lower or equal numbered identifiers that were not closed completely prior to the connection being closed,
+            <p id="rfc.section.6.8.p.11">On streams with lower or equal numbered identifiers that were not closed completely prior to the connection being closed,
                re-attempting requests, transactions, or any protocol activity is not possible, with the exception of idempotent actions like
                HTTP GET, PUT, or DELETE. Any protocol activity that uses higher numbered streams can be safely retried using a new connection.
             </p>
-            <p id="rfc.section.6.8.p.11">Activity on streams numbered lower or equal to the last stream identifier might still complete successfully. The sender of
+            <p id="rfc.section.6.8.p.12">Activity on streams numbered lower or equal to the last stream identifier might still complete successfully. The sender of
                a GOAWAY frame might gracefully shut down a connection by sending a GOAWAY frame, maintaining the connection in an open state
                until all in-progress streams complete.
             </p>
-            <p id="rfc.section.6.8.p.12">An endpoint MAY send multiple GOAWAY frames if circumstances change. For instance, an endpoint that sends GOAWAY with <a href="#NO_ERROR" class="smpl">NO_ERROR</a> during graceful shutdown could subsequently encounter an condition that requires immediate termination of the connection.
+            <p id="rfc.section.6.8.p.13">An endpoint MAY send multiple GOAWAY frames if circumstances change. For instance, an endpoint that sends GOAWAY with <a href="#NO_ERROR" class="smpl">NO_ERROR</a> during graceful shutdown could subsequently encounter an condition that requires immediate termination of the connection.
                The last stream identifier from the last GOAWAY frame received indicates which streams could have been acted upon. Endpoints
                MUST NOT increase the value they send in the last stream identifier, since the peers might already have retried unprocessed
                requests on another connection.
             </p>
-            <p id="rfc.section.6.8.p.13">A client that is unable to retry requests loses all requests that are in flight when the server closes the connection. This
+            <p id="rfc.section.6.8.p.14">A client that is unable to retry requests loses all requests that are in flight when the server closes the connection. This
                is especially true for intermediaries that might not be serving clients using HTTP/2. A server that is attempting to gracefully
                shut down a connection SHOULD send an initial GOAWAY frame with the last stream identifier set to 2<sup>31</sup>-1 and a <a href="#NO_ERROR" class="smpl">NO_ERROR</a> code. This signals to the client that a shutdown is imminent and that no further requests can be initiated. After waiting
                at least one round trip time, the server can send another GOAWAY frame with an updated last stream identifier. This ensures
                that a connection can be cleanly shut down without losing requests.
             </p>
-            <p id="rfc.section.6.8.p.14">After sending a GOAWAY frame, the sender can discard frames for streams with identifiers higher than the identified last stream.
+            <p id="rfc.section.6.8.p.15">After sending a GOAWAY frame, the sender can discard frames for streams with identifiers higher than the identified last stream.
                However, any frames that alter connection state cannot be completely ignored. For instance, <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be minimally processed to ensure the state maintained for header compression is consistent (see <a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>); similarly DATA frames MUST be counted toward the connection flow control window. Failure to process these frames can cause
                flow control or header compression state to become unsynchronized.
             </p>
-            <p id="rfc.section.6.8.p.15">The GOAWAY frame also contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) that contains the reason for closing the connection.
+            <p id="rfc.section.6.8.p.16">The GOAWAY frame also contains a 32-bit error code (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) that contains the reason for closing the connection.
             </p>
-            <p id="rfc.section.6.8.p.16">Endpoints MAY append opaque data to the payload of any GOAWAY frame. Additional debug data is intended for diagnostic purposes
+            <p id="rfc.section.6.8.p.17">Endpoints MAY append opaque data to the payload of any GOAWAY frame. Additional debug data is intended for diagnostic purposes
                only and carries no semantic value. Debug information could contain security- or privacy-sensitive data. Logged or otherwise
                persistently stored debug data MUST have adequate safeguards to prevent unauthorized access.
             </p>
