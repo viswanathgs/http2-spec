@@ -686,7 +686,7 @@ ul.toc a:first-child {
                <li><a href="#rfc.section.5.5">5.5</a>&nbsp;&nbsp;&nbsp;<a href="#extensibility">Extending HTTP/2</a></li>
             </ul>
          </li>
-         <li><a href="#rfc.section.6">6.</a>&nbsp;&nbsp;&nbsp;<a href="#frame-types">Frame Definitions</a><ul>
+         <li><a href="#rfc.section.6">6.</a>&nbsp;&nbsp;&nbsp;<a href="#FrameTypes">Frame Definitions</a><ul>
                <li><a href="#rfc.section.6.1">6.1</a>&nbsp;&nbsp;&nbsp;<a href="#DATA">DATA</a></li>
                <li><a href="#rfc.section.6.2">6.2</a>&nbsp;&nbsp;&nbsp;<a href="#HEADERS">HEADERS</a></li>
                <li><a href="#rfc.section.6.3">6.3</a>&nbsp;&nbsp;&nbsp;<a href="#PRIORITY">PRIORITY</a></li>
@@ -861,7 +861,7 @@ ul.toc a:first-child {
                </li>
                <li>The framing (<a href="#FramingLayer" title="HTTP Frames">Section&nbsp;4</a>) and streams (<a href="#StreamsLayer" title="Streams and Multiplexing">Section&nbsp;5</a>) layers describe the way HTTP/2 frames are structured and formed into multiplexed streams.
                </li>
-               <li>Frame (<a href="#frame-types" title="Frame Definitions">Section&nbsp;6</a>) and error (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) definitions include details of the frame and error types used in HTTP/2.
+               <li>Frame (<a href="#FrameTypes" title="Frame Definitions">Section&nbsp;6</a>) and error (<a href="#ErrorCodes" title="Error Codes">Section&nbsp;7</a>) definitions include details of the frame and error types used in HTTP/2.
                </li>
                <li>HTTP mappings (<a href="#HTTPLayer" title="HTTP Message Exchanges">Section&nbsp;8</a>) and additional requirements (<a href="#HttpExtra" title="Additional HTTP Requirements/Considerations">Section&nbsp;9</a>) describe how HTTP semantics are expressed using frames and streams.
                </li>
@@ -1067,11 +1067,13 @@ Upgrade: h2c
          <p id="rfc.section.4.p.1">Once the HTTP/2 connection is established, endpoints can begin exchanging frames.</p>
          <div id="FrameHeader">
             <h2 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1</a>&nbsp;<a href="#FrameHeader">Frame Format</a></h2>
-            <p id="rfc.section.4.1.p.1">All frames begin with a fixed 8-octet header followed by a payload of between 0 and 16,383 octets.</p>
+            <p id="rfc.section.4.1.p.1">All frames begin with a fixed 9-octet header followed by a variable-length payload.</p>
             <div id="rfc.figure.u.6"></div><pre class="inline">  0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- | R |     Length (14)           |   Type (8)    |   Flags (8)   |
+ |                 Length (24)                   |
+ +---------------+---------------+---------------+
+ |   Type (8)    |   Flags (8)   |
  +-+-+-----------+---------------+-------------------------------+
  |R|                 Stream Identifier (31)                      |
  +=+=============================================================+
@@ -1080,17 +1082,11 @@ Upgrade: h2c
 </pre><p class="figure">Frame Layout</p>
             <p id="rfc.section.4.1.p.3">The fields of the frame header are defined as: </p>
             <dl>
-               <dt>R:</dt>
-               <dd>
-                  <p>A reserved 2-bit field. The semantics of these bits are undefined and the bits MUST remain unset (0) when sending and MUST
-                     be ignored when receiving.
-                  </p>
-               </dd>
                <dt>Length:</dt>
                <dd>
-                  <p>The length of the frame payload expressed as an unsigned 14-bit integer. The 8 octets of the frame header are not included
-                     in this value.
+                  <p>The length of the frame payload expressed as an unsigned 24-bit integer. Values greater than 2<sup>16</sup> (16,384) MUST NOT be sent unless the receiver has set a larger value for <a href="#SETTINGS_MAX_FRAME_SIZE" class="smpl">SETTINGS_MAX_FRAME_SIZE</a>.
                   </p>
+                  <p>The 9 octets of the frame header are not included in this value.</p>
                </dd>
                <dt>Type:</dt>
                <dd>
@@ -1121,12 +1117,19 @@ Upgrade: h2c
          </div>
          <div id="FrameSize">
             <h2 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2</a>&nbsp;<a href="#FrameSize">Frame Size</a></h2>
-            <p id="rfc.section.4.2.p.1">The maximum size of a frame payload varies by frame type. The absolute maximum size of a frame payload is 2<sup>14</sup>-1 (16,383) octets, meaning that the maximum frame size is 16,391 octets. All implementations MUST be capable of receiving
-               and minimally processing frames up to this maximum size.
+            <p id="rfc.section.4.2.p.1">The maximum size of a frame payload varies by frame type (<a href="#FrameTypes" title="Frame Definitions">Section&nbsp;6</a>) and the maximum size that a receiver advertises in the <a href="#SETTINGS_MAX_FRAME_SIZE" class="smpl">SETTINGS_MAX_FRAME_SIZE</a> setting. This setting can have any value between 2<sup>14</sup> (16,384) and 2<sup>24</sup>-1 (16,777,215) octets.
             </p>
-            <p id="rfc.section.4.2.p.2">Certain frame types, such as PING (<a href="#PING" title="PING">Section&nbsp;6.7</a>), impose additional limits on the amount of payload data allowed.
+            <p id="rfc.section.4.2.p.2">All implementations MUST be capable of receiving and minimally processing frames up to 2<sup>14</sup> octets in length, plus the 9 octet frame header (<a href="#FrameHeader" title="Frame Format">Section&nbsp;4.1</a>). The size of the frame header is not included when describing frame sizes. 
             </p>
+            <dl>
+               <dt>Note:</dt>
+               <dd>Certain frame types, such as PING (<a href="#PING" title="PING">Section&nbsp;6.7</a>), impose additional limits on the amount of payload data allowed.
+               </dd>
+            </dl>
             <p id="rfc.section.4.2.p.3">If a frame size exceeds any defined limit, or is too small to contain mandatory frame data, the endpoint MUST send a <a href="#FRAME_SIZE_ERROR" class="smpl">FRAME_SIZE_ERROR</a> error. A frame size error in a frame that could alter the state of the entire connection MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>); this includes any frame carrying a header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) (that is, <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a>, and <a href="#CONTINUATION" class="smpl">CONTINUATION</a>), <a href="#SETTINGS" class="smpl">SETTINGS</a>, and any <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> frame with a stream identifier of 0.
+            </p>
+            <p id="rfc.section.4.2.p.4">Endpoints are not obligated to use all available space in a frame. Responsiveness can be improved by using frames that are
+               smaller than the permitted maximum size. Sending large frames can result in delays in sending maintenance frames, such <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, or <a href="#PRIORITY" class="smpl">PRIORITY</a>, which if blocked by the transmission of a large frame, could affect performance.
             </p>
          </div>
          <div id="HeaderBlock">
@@ -1631,8 +1634,8 @@ Upgrade: h2c
             </p>
          </div>
       </div>
-      <div id="frame-types">
-         <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a>&nbsp;<a href="#frame-types">Frame Definitions</a></h1>
+      <div id="FrameTypes">
+         <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a>&nbsp;<a href="#FrameTypes">Frame Definitions</a></h1>
          <p id="rfc.section.6.p.1">This specification defines a number of frame types, each identified by a unique 8-bit type code. Each frame type serves a
             distinct purpose either in the establishment and management of the connection as a whole, or of individual streams.
          </p>
@@ -1917,10 +1920,18 @@ Upgrade: h2c
                   </dd>
                   <dt id="SETTINGS_INITIAL_WINDOW_SIZE">SETTINGS_INITIAL_WINDOW_SIZE (0x4):</dt>
                   <dd>
-                     <p>Indicates the sender's initial window size (in bytes) for stream level flow control. The initial value is 65,535.</p>
+                     <p>Indicates the sender's initial window size (in bytes) for stream level flow control. The initial value is 2<sup>16</sup>-1 (65,535) octets.
+                     </p>
                      <p>This setting affects the window size of all streams, including existing streams, see <a href="#InitialWindowSize" title="Initial Flow Control Window Size">Section&nbsp;6.9.2</a>.
                      </p>
-                     <p>Values above the maximum flow control window size of 2<sup>31</sup> - 1 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a>.
+                     <p>Values above the maximum flow control window size of 2<sup>31</sup>-1 MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a>.
+                     </p>
+                  </dd>
+                  <dt id="SETTINGS_MAX_FRAME_SIZE">SETTINGS_MAX_FRAME_SIZE (0x5):</dt>
+                  <dd>
+                     <p>Indicates the size of the largest frame that a receiver is willing to accept.</p>
+                     <p>The initial value is 2<sup>14</sup> (16,384) octets. Endpoints MUST NOT reduce this value, but they MAY increase it to any value up to the maximum allowed frame
+                        size (2<sup>24</sup>-1 or 16,777,215 octets). Values outside this range MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                      </p>
                   </dd>
                </dl>
@@ -2145,7 +2156,7 @@ Upgrade: h2c
 </pre><p class="figure">WINDOW_UPDATE Payload Format</p>
             <p id="rfc.section.6.9.p.6">The payload of a WINDOW_UPDATE frame is one reserved bit, plus an unsigned 31-bit integer indicating the number of bytes that
                the sender can transmit in addition to the existing flow control window. The legal range for the increment to the flow control
-               window is 1 to 2<sup>31</sup> - 1 (0x7fffffff) bytes.
+               window is 1 to 2<sup>31</sup>-1 (0x7fffffff) bytes.
             </p>
             <p id="rfc.section.6.9.p.7">The WINDOW_UPDATE frame does not define any flags.</p>
             <p id="rfc.section.6.9.p.8">The WINDOW_UPDATE frame can be specific to a stream or to the entire connection. In the former case, the frame's stream identifier
@@ -2179,7 +2190,7 @@ Upgrade: h2c
                   WINDOW_UPDATE frames are sent for the stream and connection level flow control windows.
                </p>
                <p id="rfc.section.6.9.1.p.6">A sender that receives a WINDOW_UPDATE frame updates the corresponding window by the amount specified in the frame.</p>
-               <p id="rfc.section.6.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup> - 1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
+               <p id="rfc.section.6.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup>-1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
                   either the stream or the connection, as appropriate. For streams, the sender sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> with the error code of <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> code; for the connection, a <a href="#GOAWAY" class="smpl">GOAWAY</a> frame with a <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> code.
                </p>
                <p id="rfc.section.6.9.1.p.8">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
@@ -3506,8 +3517,9 @@ Upgrade: h2c
          <h1 id="rfc.section.A" class="np"><a href="#rfc.section.A">A.</a>&nbsp;<a href="#change.log">Change Log (to be removed by RFC Editor before publication)</a></h1>
          <div id="changes.since.draft-ietf-httpbis-http2-13">
             <h2 id="rfc.section.A.1"><a href="#rfc.section.A.1">A.1</a>&nbsp;<a href="#changes.since.draft-ietf-httpbis-http2-13">Since draft-ietf-httpbis-http2-13</a></h2>
-            <p id="rfc.section.A.1.p.1">Removed segments.</p>
-            <p id="rfc.section.A.1.p.2">Made non-semantic-bearing <a href="#HEADERS" class="smpl">HEADERS</a> frames illegal in HTTP mapping.
+            <p id="rfc.section.A.1.p.1">Changed frame length field 24-bits. Expanded frame header to 9 octets. Added a setting to limit the damage.</p>
+            <p id="rfc.section.A.1.p.2">Removed segments.</p>
+            <p id="rfc.section.A.1.p.3">Made non-semantic-bearing <a href="#HEADERS" class="smpl">HEADERS</a> frames illegal in HTTP mapping.
             </p>
          </div>
          <div id="changes.since.draft-ietf-httpbis-http2-12">
