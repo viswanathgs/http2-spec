@@ -732,10 +732,10 @@ Internet-Draft                   HTTP/2                        July 2014
 
 4.2.  Frame Size
 
-   The maximum size of a frame payload varies by frame type (Section 6)
-   and the maximum size that a receiver advertises in the
-   SETTINGS_MAX_FRAME_SIZE setting.  This setting can have any value
-   between 2^14 (16,384) and 2^24-1 (16,777,215) octets.
+   The size of a frame payload is limited by the maximum size that a
+   receiver advertises in the SETTINGS_MAX_FRAME_SIZE setting.  This
+   setting can have any value between 2^14 (16,384) and 2^24-1
+   (16,777,215) octets, inclusive.
 
    All implementations MUST be capable of receiving and minimally
    processing frames up to 2^14 octets in length, plus the 9 octet frame
@@ -2075,12 +2075,12 @@ Internet-Draft                   HTTP/2                        July 2014
 
 
    SETTINGS_MAX_FRAME_SIZE (0x5):  Indicates the size of the largest
-      frame that a receiver is willing to accept.
+      frame payload that a receiver is willing to accept.
 
-      The initial value is 2^14 (16,384) octets.  Endpoints MUST NOT
-      reduce this value, but they MAY increase it to any value up to the
-      maximum allowed frame size (2^24-1 or 16,777,215 octets).  Values
-      outside this range MUST be treated as a connection error
+      The initial value is 2^14 (16,384) octets.  The value advertised
+      by an endpoint MUST be between this initial value and the maximum
+      allowed frame size (2^24-1 or 16,777,215 octets), inclusive.
+      Values outside this range MUST be treated as a connection error
       (Section 5.4.1) of type PROTOCOL_ERROR.
 
 
@@ -2096,12 +2096,13 @@ Internet-Draft                   HTTP/2                        July 2014
    a SETTINGS frame in which the ACK flag is not set MUST apply the
    updated parameters as soon as possible upon receipt.
 
-   The values in the SETTINGS frame MUST be applied in the order they
-   appear, with no other frame processing between values.  Once all
-   values have been applied, the recipient MUST immediately emit a
-   SETTINGS frame with the ACK flag set.  Upon receiving a SETTINGS
-   frame with the ACK flag set, the sender of the altered parameters can
-   rely upon their application.
+   The values in the SETTINGS frame MUST be processed in the order they
+   appear, with no other frame processing between values.  Unsupported
+   parameters MUST be ignored.  Once all values have been processed, the
+   recipient MUST immediately emit a SETTINGS frame with the ACK flag
+   set.  Upon receiving a SETTINGS frame with the ACK flag set, the
+   sender of the altered parameters can rely on the setting having been
+   applied.
 
    If the sender of a SETTINGS frame does not receive an acknowledgement
    within a reasonable amount of time, it MAY issue a connection error
@@ -2115,7 +2116,6 @@ Internet-Draft                   HTTP/2                        July 2014
    stream the endpoint plans to create along with a set of headers that
    provide additional context for the stream.  Section 8.2 contains a
    thorough description of the use of PUSH_PROMISE frames.
-
 
 
 

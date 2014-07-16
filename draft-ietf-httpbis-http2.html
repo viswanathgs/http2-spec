@@ -1117,7 +1117,7 @@ Upgrade: h2c
          </div>
          <div id="FrameSize">
             <h2 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2</a>&nbsp;<a href="#FrameSize">Frame Size</a></h2>
-            <p id="rfc.section.4.2.p.1">The maximum size of a frame payload varies by frame type (<a href="#FrameTypes" title="Frame Definitions">Section&nbsp;6</a>) and the maximum size that a receiver advertises in the <a href="#SETTINGS_MAX_FRAME_SIZE" class="smpl">SETTINGS_MAX_FRAME_SIZE</a> setting. This setting can have any value between 2<sup>14</sup> (16,384) and 2<sup>24</sup>-1 (16,777,215) octets.
+            <p id="rfc.section.4.2.p.1">The size of a frame payload is limited by the maximum size that a receiver advertises in the <a href="#SETTINGS_MAX_FRAME_SIZE" class="smpl">SETTINGS_MAX_FRAME_SIZE</a> setting. This setting can have any value between 2<sup>14</sup> (16,384) and 2<sup>24</sup>-1 (16,777,215) octets, inclusive.
             </p>
             <p id="rfc.section.4.2.p.2">All implementations MUST be capable of receiving and minimally processing frames up to 2<sup>14</sup> octets in length, plus the 9 octet frame header (<a href="#FrameHeader" title="Frame Format">Section&nbsp;4.1</a>). The size of the frame header is not included when describing frame sizes. 
             </p>
@@ -1929,9 +1929,9 @@ Upgrade: h2c
                   </dd>
                   <dt id="SETTINGS_MAX_FRAME_SIZE">SETTINGS_MAX_FRAME_SIZE (0x5):</dt>
                   <dd>
-                     <p>Indicates the size of the largest frame that a receiver is willing to accept.</p>
-                     <p>The initial value is 2<sup>14</sup> (16,384) octets. Endpoints MUST NOT reduce this value, but they MAY increase it to any value up to the maximum allowed frame
-                        size (2<sup>24</sup>-1 or 16,777,215 octets). Values outside this range MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                     <p>Indicates the size of the largest frame payload that a receiver is willing to accept.</p>
+                     <p>The initial value is 2<sup>14</sup> (16,384) octets. The value advertised by an endpoint MUST be between this initial value and the maximum allowed frame size
+                        (2<sup>24</sup>-1 or 16,777,215 octets), inclusive. Values outside this range MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                      </p>
                   </dd>
                </dl>
@@ -1943,9 +1943,10 @@ Upgrade: h2c
                   values. In order to provide such synchronization timepoints, the recipient of a SETTINGS frame in which the ACK flag is not
                   set MUST apply the updated parameters as soon as possible upon receipt.
                </p>
-               <p id="rfc.section.6.5.3.p.2">The values in the SETTINGS frame MUST be applied in the order they appear, with no other frame processing between values.
-                  Once all values have been applied, the recipient MUST immediately emit a SETTINGS frame with the ACK flag set. Upon receiving
-                  a SETTINGS frame with the ACK flag set, the sender of the altered parameters can rely upon their application.
+               <p id="rfc.section.6.5.3.p.2">The values in the SETTINGS frame MUST be processed in the order they appear, with no other frame processing between values.
+                  Unsupported parameters MUST be ignored. Once all values have been processed, the recipient MUST immediately emit a SETTINGS
+                  frame with the ACK flag set. Upon receiving a SETTINGS frame with the ACK flag set, the sender of the altered parameters can
+                  rely on the setting having been applied.
                </p>
                <p id="rfc.section.6.5.3.p.3">If the sender of a SETTINGS frame does not receive an acknowledgement within a reasonable amount of time, it MAY issue a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#SETTINGS_TIMEOUT" class="smpl">SETTINGS_TIMEOUT</a>.
                </p>
