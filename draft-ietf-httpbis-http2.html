@@ -2378,6 +2378,8 @@ Upgrade: h2c
             </p>
             <p id="rfc.section.8.1.p.2">An HTTP message (request or response) consists of: </p>
             <ol>
+               <li>zero or more <a href="#HEADERS" class="smpl">HEADERS</a> frames (followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the message headers of non-final (1xx) HTTP responses (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#header.fields" title="Header Fields">Section 3.2</a> and <a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.1xx" title="Informational 1xx">Section 6.2</a>), and
+               </li>
                <li>one <a href="#HEADERS" class="smpl">HEADERS</a> frame (followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames) containing the message headers (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#header.fields" title="Header Fields">Section 3.2</a>), and
                </li>
                <li>zero or more <a href="#DATA" class="smpl">DATA</a> frames containing the message payload (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#message.body" title="Message Body">Section 3.3</a>), and
@@ -2399,9 +2401,9 @@ Upgrade: h2c
             </p>
             <div id="informational-responses">
                <h3 id="rfc.section.8.1.1"><a href="#rfc.section.8.1.1">8.1.1</a>&nbsp;<a href="#informational-responses">Informational Responses</a></h3>
-               <p id="rfc.section.8.1.1.p.1">The 1xx series of HTTP response status codes (<a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.1xx" title="Informational 1xx">Section 6.2</a>) are not supported in HTTP/2.
+               <p id="rfc.section.8.1.1.p.1">HTTP/2 removes support for the two 1xx series status codes defined in <a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.1xx" title="Informational 1xx">Section 6.2</a>): 100 (Continue), and 101 (Switching Protocols).
                </p>
-               <p id="rfc.section.8.1.1.p.2">The most common use case for 1xx is using an Expect header field with a <samp>100-continue</samp> token (colloquially, "Expect/continue") to indicate that the client expects a 100 (Continue) non-final response status code,
+               <p id="rfc.section.8.1.1.p.2">The 100 (Continue) information status code was used with the <samp>100-continue</samp> token (colloquially, "Expect/continue") to indicate that the client expects a 100 (Continue) non-final response status code,
                   receipt of which indicates that the client should continue sending the request body if it has not already done so.
                </p>
                <p id="rfc.section.8.1.1.p.3">Typically, Expect/continue is used by clients wishing to avoid sending a large amount of data in a request body, only to have
@@ -2414,9 +2416,8 @@ Upgrade: h2c
                   is rejected. This can be mitigated by restricting the amount of data sent for the first round trip by bandwidth-constrained
                   clients, in anticipation of a final status code.
                </p>
-               <p id="rfc.section.8.1.1.p.6">Other defined 1xx status codes are not applicable to HTTP/2. For example, the semantics of 101 (Switching Protocols) aren't
-                  suitable to a multiplexed protocol. Likewise, <a href="#RFC2518">102 (Processing)</a> <cite title="HTTP Extensions for Distributed Authoring -- WEBDAV">[RFC2518]</cite> is no longer necessary to ensure connection liveness, because HTTP/2 has a separate means of keeping the connection alive.
-                  The use of the 102 (Processing) status code for progress reporting has since been deprecated and is not retained.
+               <p id="rfc.section.8.1.1.p.6">The semantics of 101 (Switching Protocols) aren't applicable to a multiplexed protocol. Alternative protocols are able to
+                  use the same mechanisms that HTTP/2 uses to negotiate their use (see <a href="#starting" title="Starting HTTP/2">Section&nbsp;3</a>).
                </p>
                <p id="rfc.section.8.1.1.p.7">This difference between protocol versions necessitates special handling by intermediaries that translate between them: </p>
                <ul>
@@ -2425,7 +2426,6 @@ Upgrade: h2c
                   </li>
                   <li>An intermediary that translates HTTP/2 to HTTP/1.1 MAY add an Expect header field with a <samp>100-continue</samp> expectation when forwarding a request that has a body; see <a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#header.expect" title="Expect">Section 5.1.1</a> for specific requirements.
                   </li>
-                  <li>An intermediary that gateways HTTP/2 to HTTP/1.1 MUST discard all other 1xx informational responses.</li>
                </ul>
             </div>
             <div id="HttpHeaders">
@@ -2658,6 +2658,14 @@ Upgrade: h2c
                                      + END_STREAM
                                      + END_HEADERS
                                        foo = bar
+</pre></div>
+               <div id="rfc.figure.u.28">
+                  <p>A non-final response using a 1xx status code other than 100 or 101 is transmitted as a <a href="#HEADERS" class="smpl">HEADERS</a> frame, followed by zero or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames:
+                  </p><pre class="inline">  HTTP/1.1 103 BAR                 HEADERS
+  Extension-Field: bar       ==&gt;     - END_STREAM
+                                     + END_HEADERS
+                                       :status = 103
+                                       extension-field = bar
 </pre></div>
             </div>
             <div id="Reliability">
@@ -3527,11 +3535,6 @@ Upgrade: h2c
          <tr>
             <td class="reference"><b id="RFC1323">[RFC1323]</b></td>
             <td class="top">Jacobson, V., Braden, B., and D. Borman, “<a href="https://tools.ietf.org/html/rfc1323">TCP Extensions for High Performance</a>”, RFC&nbsp;1323, May&nbsp;1992.
-            </td>
-         </tr>
-         <tr>
-            <td class="reference"><b id="RFC2518">[RFC2518]</b></td>
-            <td class="top">Goland, Y., Whitehead, E., Faizi, A., Carter, S., and D. Jensen, “<a href="https://tools.ietf.org/html/rfc2518">HTTP Extensions for Distributed Authoring -- WEBDAV</a>”, RFC&nbsp;2518, February&nbsp;1999.
             </td>
          </tr>
          <tr>
