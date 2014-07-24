@@ -152,15 +152,15 @@ Internet-Draft                   HTTP/2                        July 2014
        9.1.2.  The 421 (Not Authoritative) Status Code . . . . . . .  64
      9.2.  Use of TLS Features . . . . . . . . . . . . . . . . . . .  65
        9.2.1.  TLS Features  . . . . . . . . . . . . . . . . . . . .  65
-       9.2.2.  TLS Cipher Suites . . . . . . . . . . . . . . . . . .  65
+       9.2.2.  TLS Cipher Suites . . . . . . . . . . . . . . . . . .  66
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  66
      10.1.  Server Authority . . . . . . . . . . . . . . . . . . . .  66
-     10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  66
+     10.2.  Cross-Protocol Attacks . . . . . . . . . . . . . . . . .  67
      10.3.  Intermediary Encapsulation Attacks . . . . . . . . . . .  67
-     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  67
+     10.4.  Cacheability of Pushed Responses . . . . . . . . . . . .  68
      10.5.  Denial of Service Considerations . . . . . . . . . . . .  68
        10.5.1.  Limits on Header Block Size  . . . . . . . . . . . .  69
-     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  69
+     10.6.  Use of Compression . . . . . . . . . . . . . . . . . . .  70
      10.7.  Use of Padding . . . . . . . . . . . . . . . . . . . . .  70
 
 
@@ -170,11 +170,11 @@ Belshe, et al.          Expires January 25, 2015                [Page 3]
 Internet-Draft                   HTTP/2                        July 2014
 
 
-     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  70
+     10.8.  Privacy Considerations . . . . . . . . . . . . . . . . .  71
    11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  71
      11.1.  Registration of HTTP/2 Identification Strings  . . . . .  71
-     11.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  71
-     11.3.  Settings Registry  . . . . . . . . . . . . . . . . . . .  72
+     11.2.  Frame Type Registry  . . . . . . . . . . . . . . . . . .  72
+     11.3.  Settings Registry  . . . . . . . . . . . . . . . . . . .  73
      11.4.  Error Code Registry  . . . . . . . . . . . . . . . . . .  73
      11.5.  HTTP2-Settings Header Field Registration . . . . . . . .  74
      11.6.  PRI Method Registration  . . . . . . . . . . . . . . . .  75
@@ -2936,14 +2936,15 @@ Internet-Draft                   HTTP/2                        July 2014
    o  The ":path" header field includes the path and query parts of the
       target URI (the "path-absolute" production from [RFC3986] and
       optionally a '?' character followed by the "query" production, see
-      [RFC3986], Section 3.3 and [RFC3986], Section 3.4).
+      [RFC3986], Section 3.3 and [RFC3986], Section 3.4).  A request in
+      asterisk form includes the value '*' for the ":path" header field.
 
       This field MUST NOT be empty for "http" or "https" URIs; "http" or
       "https" URIs that do not contain a path component MUST include a
-      value of '/'.  The exception to this rule is an OPTIONS request in
-      asterisk form or for an entire "http" or "https" URI that does not
-      include a path component, where the ":path" header field MUST
-      include '*' (see [RFC7230], Section 5.3.4).
+      value of '/'.  The exception to this rule is an OPTIONS request
+      for an "http" or "https" URI that does not include a path
+      component; these MUST include a ":path" header field with a value
+      of '*' (see [RFC7230], Section 5.3.4).
 
    All HTTP/2 requests MUST include exactly one valid value for the
    ":method", ":scheme", and ":path" header fields, unless this is a
@@ -2960,8 +2961,7 @@ Internet-Draft                   HTTP/2                        July 2014
    be included in all responses, otherwise the response is malformed
    (Section 8.1.2.5).
 
-   HTTP/2 does not define a way to carry the version or reason phrase
-   that is included in an HTTP/1.1 status line.
+
 
 
 
@@ -2969,6 +2969,9 @@ Belshe, et al.          Expires January 25, 2015               [Page 53]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   HTTP/2 does not define a way to carry the version or reason phrase
+   that is included in an HTTP/1.1 status line.
 
 8.1.2.3.  Header Field Ordering
 
@@ -3015,9 +3018,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    The special case of "set-cookie" - which does not form a comma-
    separated list, but can have multiple values - does not depend on
-   ordering.  The "set-cookie" header field MAY be encoded as multiple
-   header field values, or as a single concatenated value.
-
 
 
 
@@ -3025,6 +3025,9 @@ Belshe, et al.          Expires January 25, 2015               [Page 54]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   ordering.  The "set-cookie" header field MAY be encoded as multiple
+   header field values, or as a single concatenated value.
 
 8.1.2.4.  Compressing the Cookie Header Field
 
@@ -3071,9 +3074,6 @@ Internet-Draft                   HTTP/2                        July 2014
    A request or response that includes an entity body can include a
    "content-length" header field.  A request or response is also
    malformed if the value of a "content-length" header field does not
-   equal the sum of the DATA frame payload lengths that form the body,
-   with the exception of responses to HEAD requests, which always
-   contain no DATA frames.
 
 
 
@@ -3081,6 +3081,10 @@ Belshe, et al.          Expires January 25, 2015               [Page 55]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   equal the sum of the DATA frame payload lengths that form the body,
+   with the exception of responses to HEAD requests, which always
+   contain no DATA frames.
 
    Intermediaries that process HTTP requests or responses (i.e., any
    intermediary not acting as a tunnel) MUST NOT forward a malformed
@@ -3121,6 +3125,19 @@ Internet-Draft                   HTTP/2                        July 2014
    CONTINUATION frames) containing the serialized block of response
    header fields.
 
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 56]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
      HTTP/1.1 304 Not Modified        HEADERS
      ETag: "xyzzy"              ==>     + END_STREAM
      Expires: Thu, 23 Jan ...           + END_HEADERS
@@ -3130,14 +3147,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    An HTTP POST request that includes request header fields and payload
    data is transmitted as one HEADERS frame, followed by zero or more
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 56]
-
-Internet-Draft                   HTTP/2                        July 2014
-
-
    CONTINUATION frames containing the request header fields, followed by
    one or more DATA frames, with the last CONTINUATION (or HEADERS)
    frame having the END_HEADERS flag set and the final DATA frame having
@@ -3169,6 +3178,22 @@ Internet-Draft                   HTTP/2                        July 2014
    frames, followed by one or more DATA frames, with the last DATA frame
    in the sequence having the END_STREAM flag set:
 
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 57]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
      HTTP/1.1 200 OK                  HEADERS
      Content-Type: image/jpeg   ==>     - END_STREAM
      Content-Length: 123                + END_HEADERS
@@ -3184,15 +3209,6 @@ Internet-Draft                   HTTP/2                        July 2014
    request or response header block and all the DATA frames have been
    sent.  The HEADERS frame starting the trailers header block has the
    END_STREAM flag set.
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 57]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
      HTTP/1.1 200 OK                  HEADERS
      Content-Type: image/jpeg   ==>     - END_STREAM
@@ -3226,6 +3242,14 @@ Internet-Draft                   HTTP/2                        July 2014
    In HTTP/1.1, an HTTP client is unable to retry a non-idempotent
    request when an error occurs, because there is no means to determine
    the nature of the error.  It is possible that some server processing
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 58]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    occurred prior to the error, which could result in undesirable
    effects if the request were reattempted.
 
@@ -3240,15 +3264,6 @@ Internet-Draft                   HTTP/2                        July 2014
       frame to indicate that the stream is being closed prior to any
       processing having occurred.  Any request that was sent on the
       reset stream can be safely retried.
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 58]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    Requests that have not been processed have not failed; clients MAY
    automatically retry them, even those with non-idempotent methods.
@@ -3283,6 +3298,14 @@ Internet-Draft                   HTTP/2                        July 2014
    could receive pushed responses from the server and choose not to
    forward those on to the client.  In other words, how to make use of
    the pushed responses is up to that intermediary.  Equally, the
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 59]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    intermediary might choose to push additional responses to the client,
    without any action taken by the server.
 
@@ -3295,16 +3318,6 @@ Internet-Draft                   HTTP/2                        July 2014
    A server can only push responses that are cacheable (see [RFC7234],
    Section 3); promised requests MUST be safe (see [RFC7231],
    Section 4.2.1) and MUST NOT include a request body.
-
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 59]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
 8.2.1.  Push Requests
 
@@ -3341,6 +3354,14 @@ Internet-Draft                   HTTP/2                        July 2014
    containing embedded links to multiple image files, and the server
    chooses to push those additional images to the client, sending push
    promises before the DATA frames that contain the image links ensures
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 60]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    that the client is able to see the promises before discovering
    embedded links.  Similarly, if the server pushes responses referenced
    by the header block (for instance, in Link header fields), sending
@@ -3353,15 +3374,6 @@ Internet-Draft                   HTTP/2                        July 2014
    client-initiated stream, but the stream MUST be in either the "open"
    or "half closed (remote)" state with respect to the server.
    PUSH_PROMISE frames are interspersed with the frames that comprise a
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 60]
-
-Internet-Draft                   HTTP/2                        July 2014
-
-
    response, though they cannot be interspersed with HEADERS and
    CONTINUATION frames that comprise a single header block.
 
@@ -3397,6 +3409,15 @@ Internet-Draft                   HTTP/2                        July 2014
    frames; clients need to reset any promised streams that are not
    wanted.
 
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 61]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    Clients receiving a pushed response MUST validate that the server is
    authorized to provide the response, see Section 10.1.  For example, a
    server that offers a certificate for only the "example.com" DNS-ID or
@@ -3408,15 +3429,6 @@ Internet-Draft                   HTTP/2                        July 2014
    state for the server and "half closed (local)" state for the client,
    and ends with a frame bearing END_STREAM, which places the stream in
    the "closed" state.
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 61]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    Note:  The client never sends a frame with the END_STREAM flag for a
       server push.
@@ -3454,6 +3466,14 @@ Internet-Draft                   HTTP/2                        July 2014
    payload of any DATA frames sent by the client are transmitted by the
    proxy to the TCP server; data received from the TCP server is
    assembled into DATA frames by the proxy.  Frame types other than DATA
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 62]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    or stream management frames (RST_STREAM, WINDOW_UPDATE, and PRIORITY)
    MUST NOT be sent on a connected stream, and MUST be treated as a
    stream error (Section 5.4.2) if received.
@@ -3465,15 +3485,6 @@ Internet-Draft                   HTTP/2                        July 2014
    receives a DATA frame with the END_STREAM flag set sends the attached
    data with the FIN bit set on the last TCP segment.  A proxy that
    receives a TCP segment with the FIN bit set sends a DATA frame with
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 62]
-
-Internet-Draft                   HTTP/2                        July 2014
-
-
    the END_STREAM flag set.  Note that the final TCP segment or DATA
    frame could be empty.
 
@@ -3510,6 +3521,15 @@ Internet-Draft                   HTTP/2                        July 2014
 
    A client MAY open multiple connections to the same IP address and TCP
    port using different Server Name Indication [TLS-EXT] values or to
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 63]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    provide different TLS client certificates, but SHOULD avoid creating
    multiple connections with the same configuration.
 
@@ -3520,15 +3540,6 @@ Internet-Draft                   HTTP/2                        July 2014
    (Section 6.8) frame so that both endpoints can reliably determine
    whether previously sent frames have been processed and gracefully
    complete or terminate any necessary remaining tasks.
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 63]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
 9.1.1.  Connection Reuse
 
@@ -3567,6 +3578,14 @@ Internet-Draft                   HTTP/2                        July 2014
    Clients receiving a 421 (Not Authoritative) response from a server
    MAY retry the request - whether the request method is idempotent or
    not - over a different connection.  This is possible if a connection
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 64]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    is reused (Section 9.1.1) or if an alternative service is selected
    ([ALT-SVC]).
 
@@ -3575,16 +3594,6 @@ Internet-Draft                   HTTP/2                        July 2014
    A 421 response is cacheable by default; i.e., unless otherwise
    indicated by the method definition or explicit cache controls (see
    Section 4.2.2 of [RFC7234]).
-
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 64]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
 9.2.  Use of TLS Features
 
@@ -3622,6 +3631,17 @@ Internet-Draft                   HTTP/2                        July 2014
    request for a specific protected resource.  A future specification
    might provide a way to support this use case.
 
+
+
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 65]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
 9.2.2.  TLS Cipher Suites
 
    The set of TLS cipher suites that are permitted in HTTP/2 is
@@ -3634,13 +3654,6 @@ Internet-Draft                   HTTP/2                        July 2014
    use stream or block ciphers.  Authenticated Encryption with
    Additional Data (AEAD) modes, such as the Galois Counter Model (GCM)
    mode for AES [RFC5288] are acceptable.
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 65]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    Clients MAY advertise support of other cipher suites in order to
    allow for connection to servers that do not support HTTP/2 to
@@ -3673,6 +3686,18 @@ Internet-Draft                   HTTP/2                        July 2014
    A client MUST discard responses provided by a server that is not
    authoritative for those resources.
 
+
+
+
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 66]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
 10.2.  Cross-Protocol Attacks
 
    In a cross-protocol attack, an attacker causes a client to initiate a
@@ -3687,16 +3712,6 @@ Internet-Draft                   HTTP/2                        July 2014
    ALPN provides a positive indication that a server is willing to
    proceed with HTTP/2, which prevents attacks on other TLS-based
    protocols.
-
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 66]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    The encryption in TLS makes it difficult for attackers to control the
    data which could be used in a cross-protocol attack on a cleartext
@@ -3731,6 +3746,14 @@ Internet-Draft                   HTTP/2                        July 2014
    to HTTP/2 MUST remove any instances of the "obs-fold" production from
    header field values.
 
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 67]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
 10.4.  Cacheability of Pushed Responses
 
    Pushed responses do not have an explicit request from the client; the
@@ -3746,14 +3769,6 @@ Internet-Draft                   HTTP/2                        July 2014
    MUST ensure that tenants are not able to push representations of
    resources that they do not have authority over.  Failure to enforce
    this would allow a tenant to provide a representation that would be
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 67]
-
-Internet-Draft                   HTTP/2                        July 2014
-
-
    served out of cache, overriding the actual representation that the
    authoritative tenant provides.
 
@@ -3786,6 +3801,15 @@ Internet-Draft                   HTTP/2                        July 2014
 
    Large numbers of small or empty frames can be abused to cause a peer
    to expend time processing frame headers.  Note however that some uses
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 68]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    are entirely legitimate, such as the sending of an empty DATA frame
    to end a stream.
 
@@ -3802,13 +3826,6 @@ Internet-Draft                   HTTP/2                        July 2014
    All these features - i.e., SETTINGS changes, small frames, header
    compression - have legitimate uses.  These features become a burden
    only when they are used unnecessarily or to excess.
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 68]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    An endpoint that doesn't monitor this behavior exposes itself to a
    risk of denial of service attack.  Implementations SHOULD track the
@@ -3840,6 +3857,15 @@ Internet-Draft                   HTTP/2                        July 2014
    passing on values presented by different peers, but they are not
    obligated to do so.
 
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 69]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    A server that receives a larger header block than it is willing to
    handle can send an HTTP 431 (Request Header Fields Too Large) status
    code [RFC6585].  A client can discard responses that it cannot
@@ -3858,13 +3884,6 @@ Internet-Draft                   HTTP/2                        July 2014
    multiple requests containing varying plaintext, observing the length
    of the resulting ciphertext in each, which reveals a shorter length
    when a guess about the secret is correct.
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 69]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    Implementations communicating on a secure channel MUST NOT compress
    content that includes both confidential and attacker-controlled data
@@ -3895,6 +3914,14 @@ Internet-Draft                   HTTP/2                        July 2014
    for an attacker to infer length information by increasing the number
    of frames an attacker has to observe.  Incorrectly implemented
    padding schemes can be easily defeated.  In particular, randomized
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 70]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    padding with a predictable distribution provides very little
    protection; similarly, padding payloads to a fixed size exposes
    information as payload sizes cross the fixed size boundary, which
@@ -3913,14 +3940,6 @@ Internet-Draft                   HTTP/2                        July 2014
    windows are managed, the way priorities are allocated to streams,
    timing of reactions to stimulus, and handling of any optional
    features.
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 70]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    As far as this creates observable differences in behavior, they could
    be used as a basis for fingerprinting a specific client, as defined
@@ -3952,6 +3971,13 @@ Internet-Draft                   HTTP/2                        July 2014
 
    Protocol:  HTTP/2 over TLS
 
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 71]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    Identification Sequence:  0x68 0x32 ("h2")
 
    Specification:  This document
@@ -3970,14 +3996,6 @@ Internet-Draft                   HTTP/2                        July 2014
    The "HTTP/2 Frame Type" registry manages an 8-bit space.  The "HTTP/2
    Frame Type" registry operates under either of the "IETF Review" or
    "IESG Approval" policies [RFC5226] for values between 0x00 and 0xef,
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 71]
-
-Internet-Draft                   HTTP/2                        July 2014
-
-
    with values between 0xf0 and 0xff being reserved for experimental
    use.
 
@@ -4009,6 +4027,13 @@ Internet-Draft                   HTTP/2                        July 2014
    | CONTINUATION  | 0x9  | Section 6.10 |
    +---------------+------+--------------+
 
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 72]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
 11.3.  Settings Registry
 
    This document establishes a registry for HTTP/2 settings.  The
@@ -4025,14 +4050,6 @@ Internet-Draft                   HTTP/2                        July 2014
    Code:  The 16-bit code assigned to the setting.
 
    Initial Value:  An initial value for the setting.
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 72]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    Specification:  A stable reference to a specification that describes
       the use of the setting.
@@ -4066,6 +4083,13 @@ Internet-Draft                   HTTP/2                        July 2014
    Name:  A name for the error code.  Specifying an error code name is
       optional.
 
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 73]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    Code:  The 32-bit error code value.
 
    Description:  A brief description of the error code semantics, longer
@@ -4075,20 +4099,6 @@ Internet-Draft                   HTTP/2                        July 2014
       defines the error code.
 
    The entries in the following table are registered by this document.
-
-
-
-
-
-
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 73]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
    +---------------------+------+----------------------+---------------+
    | Name                | Code | Description          | Specification |
@@ -4128,16 +4138,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    Status:  standard
 
-   Author/Change controller:  IETF
-
-   Specification document(s):  Section 3.2.1 of this document
-
-   Related information:  This header field is only used by an HTTP/2
-      client for Upgrade-based negotiation.
-
-
-
-
 
 
 
@@ -4145,6 +4145,13 @@ Belshe, et al.          Expires January 25, 2015               [Page 74]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   Author/Change controller:  IETF
+
+   Specification document(s):  Section 3.2.1 of this document
+
+   Related information:  This header field is only used by an HTTP/2
+      client for Upgrade-based negotiation.
 
 11.6.  PRI Method Registration
 
@@ -4187,13 +4194,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    o  Gabriel Montenegro and Willy Tarreau (Upgrade mechanism).
 
-   o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
-      Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
-
-   o  Mike Bishop (Extensibility).
-
-   o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
-      Bishop, Herve Ruellan (Substantial editorial contributions).
 
 
 
@@ -4201,6 +4201,14 @@ Belshe, et al.          Expires January 25, 2015               [Page 75]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   o  William Chan, Salvatore Loreto, Osama Mazahir, Gabriel Montenegro,
+      Jitu Padhye, Roberto Peon, Rob Trace (Flow control).
+
+   o  Mike Bishop (Extensibility).
+
+   o  Mark Nottingham, Julian Reschke, James Snell, Jeff Pinner, Mike
+      Bishop, Herve Ruellan (Substantial editorial contributions).
 
    o  Kari Hurtta, Tatsuhiro Tsujikawa, Greg Wilkins, Poul-Henning Kamp.
 
@@ -4240,14 +4248,6 @@ Internet-Draft                   HTTP/2                        July 2014
    [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
-   [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Message Syntax and Routing", RFC
-              7230, June 2014.
-
-   [RFC7231]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
-              Protocol (HTTP/1.1): Semantics and Content", RFC 7231,
-              June 2014.
-
 
 
 
@@ -4257,6 +4257,14 @@ Belshe, et al.          Expires January 25, 2015               [Page 76]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   [RFC7230]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
+              Protocol (HTTP/1.1): Message Syntax and Routing", RFC
+              7230, June 2014.
+
+   [RFC7231]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
+              Protocol (HTTP/1.1): Semantics and Content", RFC 7231,
+              June 2014.
 
    [RFC7232]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
               Protocol (HTTP/1.1): Conditional Requests", RFC 7232, June
@@ -4296,6 +4304,16 @@ Internet-Draft                   HTTP/2                        July 2014
               Procedures for Message Header Fields", BCP 90, RFC 3864,
               September 2004.
 
+
+
+
+
+
+Belshe, et al.          Expires January 25, 2015               [Page 77]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    [BREACH]   Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving the
               CRIME Attack", July 2013,
               <http://breachattack.com/resources/
@@ -4305,14 +4323,6 @@ Internet-Draft                   HTTP/2                        July 2014
               O'Connor, E., and S. Pfeiffer, "HTML5", W3C Candidate
               Recommendation CR-html5-20140204, Febuary 2014,
               <http://www.w3.org/TR/2014/CR-html5-20140204/>.
-
-
-
-
-Belshe, et al.          Expires January 25, 2015               [Page 77]
-
-Internet-Draft                   HTTP/2                        July 2014
-
 
               Latest version available at [5].
 
@@ -4350,16 +4360,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    [3] https://tools.ietf.org/html/draft-montenegro-httpbis-http2-fc-
        principles-01
-
-
-
-
-
-
-
-
-
-
 
 
 
