@@ -5,8 +5,8 @@
 HTTPbis Working Group                                            R. Peon
 Internet-Draft                                               Google, Inc
 Intended status: Standards Track                              H. Ruellan
-Expires: January 25, 2015                                      Canon CRF
-                                                           July 24, 2014
+Expires: January 29, 2015                                      Canon CRF
+                                                           July 28, 2014
 
 
                  HPACK - Header Compression for HTTP/2
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 25, 2015.
+   This Internet-Draft will expire on January 29, 2015.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Peon & Ruellan          Expires January 25, 2015                [Page 1]
+Peon & Ruellan          Expires January 29, 2015                [Page 1]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -75,97 +75,97 @@ Table of Contents
      2.1.  Outline . . . . . . . . . . . . . . . . . . . . . . . . .   4
      2.2.  Conventions . . . . . . . . . . . . . . . . . . . . . . .   5
      2.3.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   5
-   3.  Decoding Process Overview . . . . . . . . . . . . . . . . . .   6
+   3.  Decoding Process Overview . . . . . . . . . . . . . . . . . .   5
      3.1.  Encoding and Decoding Contexts  . . . . . . . . . . . . .   6
      3.2.  Header Table  . . . . . . . . . . . . . . . . . . . . . .   6
-     3.3.  Reference Set . . . . . . . . . . . . . . . . . . . . . .   7
-     3.4.  Header Field Representation . . . . . . . . . . . . . . .   7
-     3.5.  Header Field Emission . . . . . . . . . . . . . . . . . .   9
-   4.  Header Block Decoding . . . . . . . . . . . . . . . . . . . .   9
-     4.1.  Header Field Representation Processing  . . . . . . . . .   9
-     4.2.  Reference Set Emission  . . . . . . . . . . . . . . . . .  10
-   5.  Header Table Management . . . . . . . . . . . . . . . . . . .  10
-     5.1.  Maximum Table Size  . . . . . . . . . . . . . . . . . . .  10
-     5.2.  Entry Eviction When Header Table Size Changes . . . . . .  11
-     5.3.  Entry Eviction when Adding New Entries  . . . . . . . . .  12
-   6.  Primitive Type Representations  . . . . . . . . . . . . . . .  12
-     6.1.  Integer representation  . . . . . . . . . . . . . . . . .  12
-     6.2.  String Literal Representation . . . . . . . . . . . . . .  13
-   7.  Binary Format . . . . . . . . . . . . . . . . . . . . . . . .  15
-     7.1.  Indexed Header Field Representation . . . . . . . . . . .  15
-     7.2.  Literal Header Field Representation . . . . . . . . . . .  15
-       7.2.1.  Literal Header Field with Incremental Indexing  . . .  15
-       7.2.2.  Literal Header Field without Indexing . . . . . . . .  16
-       7.2.3.  Literal Header Field Never Indexed  . . . . . . . . .  17
-     7.3.  Encoding Context Update . . . . . . . . . . . . . . . . .  19
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  20
-     8.1.  Probing Header Table State  . . . . . . . . . . . . . . .  20
-       8.1.1.  Applicability to HPACK and HTTP . . . . . . . . . . .  21
-       8.1.2.  Mitigation  . . . . . . . . . . . . . . . . . . . . .  21
-       8.1.3.  Never Indexed Literals  . . . . . . . . . . . . . . .  22
-     8.2.  Static Huffman Encoding . . . . . . . . . . . . . . . . .  22
-     8.3.  Memory Consumption  . . . . . . . . . . . . . . . . . . .  23
-     8.4.  Implementation Limits . . . . . . . . . . . . . . . . . .  23
+     3.3.  Header Field Representation . . . . . . . . . . . . . . .   6
+     3.4.  Header Field Emission . . . . . . . . . . . . . . . . . .   8
+   4.  Header Block Decoding . . . . . . . . . . . . . . . . . . . .   8
+     4.1.  Header Field Representation Processing  . . . . . . . . .   8
+   5.  Header Table Management . . . . . . . . . . . . . . . . . . .   9
+     5.1.  Maximum Table Size  . . . . . . . . . . . . . . . . . . .   9
+     5.2.  Entry Eviction When Header Table Size Changes . . . . . .   9
+     5.3.  Entry Eviction when Adding New Entries  . . . . . . . . .  10
+   6.  Primitive Type Representations  . . . . . . . . . . . . . . .  10
+     6.1.  Integer representation  . . . . . . . . . . . . . . . . .  10
+     6.2.  String Literal Representation . . . . . . . . . . . . . .  11
+   7.  Binary Format . . . . . . . . . . . . . . . . . . . . . . . .  13
+     7.1.  Indexed Header Field Representation . . . . . . . . . . .  13
+     7.2.  Literal Header Field Representation . . . . . . . . . . .  13
+       7.2.1.  Literal Header Field with Incremental Indexing  . . .  13
+       7.2.2.  Literal Header Field without Indexing . . . . . . . .  14
+       7.2.3.  Literal Header Field Never Indexed  . . . . . . . . .  15
+     7.3.  Header Table Size Update  . . . . . . . . . . . . . . . .  17
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  17
+     8.1.  Probing Header Table State  . . . . . . . . . . . . . . .  17
+       8.1.1.  Applicability to HPACK and HTTP . . . . . . . . . . .  18
+       8.1.2.  Mitigation  . . . . . . . . . . . . . . . . . . . . .  19
+       8.1.3.  Never Indexed Literals  . . . . . . . . . . . . . . .  20
+     8.2.  Static Huffman Encoding . . . . . . . . . . . . . . . . .  20
+     8.3.  Memory Consumption  . . . . . . . . . . . . . . . . . . .  20
+     8.4.  Implementation Limits . . . . . . . . . . . . . . . . . .  20
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  21
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  21
 
 
 
-Peon & Ruellan          Expires January 25, 2015                [Page 2]
+Peon & Ruellan          Expires January 29, 2015                [Page 2]
 
 Internet-Draft                    HPACK                        July 2014
 
 
-   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  23
-   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     10.1.  Normative References . . . . . . . . . . . . . . . . . .  24
-     10.2.  Informative References . . . . . . . . . . . . . . . . .  24
-     10.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  25
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .  21
+     10.2.  Informative References . . . . . . . . . . . . . . . . .  21
+     10.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  22
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  26
-     A.1.  Since draft-ietf-httpbis-header-compression-08  . . . . .  26
-     A.2.  Since draft-ietf-httpbis-header-compression-07  . . . . .  26
-     A.3.  Since draft-ietf-httpbis-header-compression-06  . . . . .  26
-     A.4.  Since draft-ietf-httpbis-header-compression-05  . . . . .  26
-     A.5.  Since draft-ietf-httpbis-header-compression-04  . . . . .  27
-     A.6.  Since draft-ietf-httpbis-header-compression-03  . . . . .  27
-     A.7.  Since draft-ietf-httpbis-header-compression-02  . . . . .  27
-     A.8.  Since draft-ietf-httpbis-header-compression-01  . . . . .  27
-     A.9.  Since draft-ietf-httpbis-header-compression-00  . . . . .  28
-   Appendix B.  Static Table . . . . . . . . . . . . . . . . . . . .  28
-   Appendix C.  Huffman Code . . . . . . . . . . . . . . . . . . . .  30
-   Appendix D.  Examples . . . . . . . . . . . . . . . . . . . . . .  36
-     D.1.  Integer Representation Examples . . . . . . . . . . . . .  36
-       D.1.1.  Example 1: Encoding 10 Using a 5-bit Prefix . . . . .  37
-       D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix . . . .  37
-       D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary   38
-     D.2.  Header Field Representation Examples  . . . . . . . . . .  38
-       D.2.1.  Literal Header Field with Indexing  . . . . . . . . .  38
-       D.2.2.  Literal Header Field without Indexing . . . . . . . .  39
-       D.2.3.  Literal Header Field never Indexed  . . . . . . . . .  40
-       D.2.4.  Indexed Header Field  . . . . . . . . . . . . . . . .  40
-       D.2.5.  Indexed Header Field from Static Table  . . . . . . .  41
-     D.3.  Request Examples without Huffman Coding . . . . . . . . .  42
-       D.3.1.  First Request . . . . . . . . . . . . . . . . . . . .  42
-       D.3.2.  Second Request  . . . . . . . . . . . . . . . . . . .  43
-       D.3.3.  Third Request . . . . . . . . . . . . . . . . . . . .  44
-     D.4.  Request Examples with Huffman Coding  . . . . . . . . . .  46
-       D.4.1.  First Request . . . . . . . . . . . . . . . . . . . .  46
-       D.4.2.  Second Request  . . . . . . . . . . . . . . . . . . .  47
-       D.4.3.  Third Request . . . . . . . . . . . . . . . . . . . .  48
-     D.5.  Response Examples without Huffman Coding  . . . . . . . .  50
-       D.5.1.  First Response  . . . . . . . . . . . . . . . . . . .  50
-       D.5.2.  Second Response . . . . . . . . . . . . . . . . . . .  52
-       D.5.3.  Third Response  . . . . . . . . . . . . . . . . . . .  53
-     D.6.  Response Examples with Huffman Coding . . . . . . . . . .  55
-       D.6.1.  First Response  . . . . . . . . . . . . . . . . . . .  55
-       D.6.2.  Second Response . . . . . . . . . . . . . . . . . . .  57
-       D.6.3.  Third Response  . . . . . . . . . . . . . . . . . . .  58
+                publication) . . . . . . . . . . . . . . . . . . . .  23
+     A.1.  Since draft-ietf-httpbis-header-compression-08  . . . . .  23
+     A.2.  Since draft-ietf-httpbis-header-compression-07  . . . . .  23
+     A.3.  Since draft-ietf-httpbis-header-compression-06  . . . . .  23
+     A.4.  Since draft-ietf-httpbis-header-compression-05  . . . . .  23
+     A.5.  Since draft-ietf-httpbis-header-compression-04  . . . . .  24
+     A.6.  Since draft-ietf-httpbis-header-compression-03  . . . . .  24
+     A.7.  Since draft-ietf-httpbis-header-compression-02  . . . . .  24
+     A.8.  Since draft-ietf-httpbis-header-compression-01  . . . . .  24
+     A.9.  Since draft-ietf-httpbis-header-compression-00  . . . . .  25
+   Appendix B.  Static Table . . . . . . . . . . . . . . . . . . . .  25
+   Appendix C.  Huffman Code . . . . . . . . . . . . . . . . . . . .  27
+   Appendix D.  Examples . . . . . . . . . . . . . . . . . . . . . .  33
+     D.1.  Integer Representation Examples . . . . . . . . . . . . .  33
+       D.1.1.  Example 1: Encoding 10 Using a 5-bit Prefix . . . . .  34
+       D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix . . . .  34
+       D.1.3.  Example 3: Encoding 42 Starting at an Octet Boundary   35
+     D.2.  Header Field Representation Examples  . . . . . . . . . .  35
+       D.2.1.  Literal Header Field with Indexing  . . . . . . . . .  35
+       D.2.2.  Literal Header Field without Indexing . . . . . . . .  36
+       D.2.3.  Literal Header Field never Indexed  . . . . . . . . .  37
+       D.2.4.  Indexed Header Field  . . . . . . . . . . . . . . . .  37
+       D.2.5.  Indexed Header Field from Static Table  . . . . . . .  38
+     D.3.  Request Examples without Huffman Coding . . . . . . . . .  39
+       D.3.1.  First Request . . . . . . . . . . . . . . . . . . . .  39
+       D.3.2.  Second Request  . . . . . . . . . . . . . . . . . . .  40
+       D.3.3.  Third Request . . . . . . . . . . . . . . . . . . . .  41
+     D.4.  Request Examples with Huffman Coding  . . . . . . . . . .  43
+       D.4.1.  First Request . . . . . . . . . . . . . . . . . . . .  43
+       D.4.2.  Second Request  . . . . . . . . . . . . . . . . . . .  44
+       D.4.3.  Third Request . . . . . . . . . . . . . . . . . . . .  45
+     D.5.  Response Examples without Huffman Coding  . . . . . . . .  47
+       D.5.1.  First Response  . . . . . . . . . . . . . . . . . . .  47
+       D.5.2.  Second Response . . . . . . . . . . . . . . . . . . .  49
+       D.5.3.  Third Response  . . . . . . . . . . . . . . . . . . .  50
+     D.6.  Response Examples with Huffman Coding . . . . . . . . . .  52
+       D.6.1.  First Response  . . . . . . . . . . . . . . . . . . .  52
+       D.6.2.  Second Response . . . . . . . . . . . . . . . . . . .  54
+       D.6.3.  Third Response  . . . . . . . . . . . . . . . . . . .  55
 
 
 
 
 
 
-Peon & Ruellan          Expires January 25, 2015                [Page 3]
+
+
+Peon & Ruellan          Expires January 29, 2015                [Page 3]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -212,30 +212,19 @@ Internet-Draft                    HPACK                        July 2014
    header fields can therefore be encoded using a mixture of references
    and literal values.
 
-   As two consecutive sets of header fields often have header fields in
-   common, each set is coded as a difference from the previous set.  The
-   goal is to only encode the changes between the two sets of header
-   fields (that is, header fields that are present in only one of the
-   sets) and eliminate redundancy (header fields present in both sets).
+   The encoder is responsible for deciding which header fields to insert
+   as new entries in the header table.  The decoder executes the
+   modifications to the header table prescribed by the encoder,
+   reconstructing the set of header fields in the process.  This enables
+   decoders to remain simple and understand a wide variety of encoders.
 
 
 
 
-Peon & Ruellan          Expires January 25, 2015                [Page 4]
+Peon & Ruellan          Expires January 29, 2015                [Page 4]
 
 Internet-Draft                    HPACK                        July 2014
 
-
-   A subset of the header fields that are encoded as references to the
-   header table are maintained in a reference set that is used as the
-   initial set of header fields for the next encoding.
-
-   The encoder is responsible for deciding which header fields to insert
-   as new entries in the header table.  The decoder executes the
-   modifications to the header table and reference set prescribed by the
-   encoder, reconstructing the set of header fields in the process.
-   This enables decoders to remain simple and understand a wide variety
-   of encoders.
 
    Examples illustrating the use of these different mechanisms to
    represent header fields are available in Appendix D.
@@ -271,45 +260,35 @@ Internet-Draft                    HPACK                        July 2014
       complete set of key-value pairs contained in a HTTP request or
       response is a header set.
 
-   Reference Set:  The reference set (see Section 3.3) is a component
-      containing an unordered set of references to entries in the header
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015                [Page 5]
-
-Internet-Draft                    HPACK                        July 2014
-
-
-      table.  It doesn't contain duplicate references.  The reference
-      set is used for the differential encoding of a new header set.
-
    Header Field Representation:  A header field can be represented in
-      encoded form either as a literal or as an index (see Section 3.4).
+      encoded form either as a literal or as an index (see Section 3.3).
 
    Header Block:  The entire set of encoded header field representations
       which, when decoded, yield a complete header set.
 
-   Header Field Emission:  When decoding a set of header field
-      representations, some operations emit a header field (see
-      Section 3.5).  Emitted header fields are added to the output
-      header set and cannot be removed.
+   Header Field Emission:  Each header field representation results in
+      the emission of a header field (see Section 3.4).
 
 3.  Decoding Process Overview
 
    This specification does not describe a specific algorithm for an
    encoder.  Instead, it defines precisely how a decoder is expected to
+
+
+
+
+Peon & Ruellan          Expires January 29, 2015                [Page 5]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    operate, allowing encoders to produce any encoding that this
    definition permits.
 
 3.1.  Encoding and Decoding Contexts
 
-   HPACK requires that a decoder maintains both a header table and a
-   reference set.  No other state information is needed to decode
-   messages.  An encoder that wishes to reference entries in the header
-   table, reference set, or static table needs to maintain a copy of the
-   information a decoder holds.
+   HPACK requires that a decoder maintains a header table.  No other
+   state information is needed to decode messages.
 
    When used for bidirectional communication, such as in HTTP, the
    encoding and decoding contexts maintained by an endpoint are
@@ -317,9 +296,10 @@ Internet-Draft                    HPACK                        July 2014
    reference to the local decoding state; and header fields are decoded
    without reference to the encoding state.
 
-   Each endpoint maintains a header table and a reference set in order
-   to decode header blocks, and optionally a copy of the information
-   maintained by their peer.
+   Each endpoint maintains a header table in order to decode header
+   blocks.  An encoder that wishes to reference entries in the header
+   table needs to maintain a copy of the header table used by its peer
+   for decoding.
 
 3.2.  Header Table
 
@@ -330,13 +310,6 @@ Internet-Draft                    HPACK                        July 2014
    table.
 
    The header table is initially empty.
-
-
-
-Peon & Ruellan          Expires January 25, 2015                [Page 6]
-
-Internet-Draft                    HPACK                        July 2014
-
 
    The header table can contain duplicate entries.  Therefore, duplicate
    entries MUST NOT be treated as an error by a decoder.
@@ -349,50 +322,26 @@ Internet-Draft                    HPACK                        July 2014
    The header table is updated during the processing of a set of header
    field representations (see Section 4.1).
 
-3.3.  Reference Set
-
-   A reference set is an unordered set of references to entries of the
-   header table.  It never contains duplicate references.
-
-   The reference set is initially empty.
-
-   The reference set is updated during the processing of a set of header
-   field representations (see Section 4.1).
-
-   The reference set enables differential encoding, where only
-   differences between the previous header set and the current header
-   set need to be encoded.  The use of differential encoding is optional
-   for any header set.
-
-   When an entry is evicted from the header table, if it was referenced
-   from the reference set, its reference is removed from the reference
-   set.
-
-   To limit the memory requirements on the decoder side for handling the
-   reference set, only entries within the header table can be contained
-   in the reference set.  To still allow entries from the static table
-   to take advantage of the differential encoding, when a header field
-   is represented as a reference to an entry of the static table, this
-   entry is inserted into the header table (see Section 4.1).
-
-3.4.  Header Field Representation
+3.3.  Header Field Representation
 
    An encoded header field can be represented either as a literal or as
    an index.
 
    A literal representation defines a new header field.  The header
    field name can be represented literally or as a reference to an entry
+
+
+
+
+Peon & Ruellan          Expires January 29, 2015                [Page 6]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    of the header table.  The header field value is represented
    literally.
 
    Three different literal representations are provided:
-
-
-
-Peon & Ruellan          Expires January 25, 2015                [Page 7]
-
-Internet-Draft                    HPACK                        July 2014
-
 
    o  A literal representation that does not add the header field to the
       header table (see Section 7.2.2).
@@ -405,26 +354,21 @@ Internet-Draft                    HPACK                        July 2014
    o  A literal representation that adds the header field as a new entry
       at the beginning of the header table (see Section 7.2.1).
 
+   [[CREF1: Keep ordering of header table and static table? ]]
+
    An indexed representation defines a header field as a reference to an
    entry in either the header table or the static table (see
    Section 7.1).
 
    Indices between 1 and the length of the header table (inclusive)
-   refer to elements in the header table, with index 1 referring to the
-   beginning of the header table.
+   refer to elements in the header table (Section 3.2).
 
    Indices strictly greater than the length of the header table refer to
-   elements in the static table.  The length of the header table is
-   subtracted to find the index into the static table.
+   elements in the static table (Appendix B).  The length of the header
+   table is subtracted to find the index into the static table.
 
    Indices strictly greater than the sum of the lengths of both tables
    MUST be treated as a decoding error.
-
-   An indexed representation using an entry of the static table induces
-   a copy of this entry into the header table (see Section 4.1) for
-   bounding memory requirements on the decoder side (see Section 5.1).
-   For this reason, the header table is accessed more frequently than
-   the static table and has the lower indices.
 
    For a header table size of k and a static table size of s, the
    following diagram shows the entire valid index address space.
@@ -445,12 +389,12 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015                [Page 8]
+Peon & Ruellan          Expires January 29, 2015                [Page 7]
 
 Internet-Draft                    HPACK                        July 2014
 
 
-3.5.  Header Field Emission
+3.4.  Header Field Emission
 
    A decoder processes an encoded header block sequentially.  As
    different instructions are processed, some might specify that a
@@ -465,10 +409,10 @@ Internet-Draft                    HPACK                        July 2014
    emitted header fields to the upper processing layer in any order.
 
    By emitting header fields instead of emitting header sets, a decoder
-   can be implemented with minimal memory commitment in addition to the
-   header table and the reference set.  The management of memory for
-   handling very large sets of header fields can therefore be deferred
-   to the upper processing layers.
+   can be implemented with minimal transitory memory commitment in
+   addition to the header table.  The management of memory for handling
+   very large sets of header fields can therefore be deferred to the
+   upper processing layers.
 
 4.  Header Block Decoding
 
@@ -484,42 +428,10 @@ Internet-Draft                    HPACK                        July 2014
    representations, and some additional processing instructions are
    found in Section 7.
 
-   An _indexed representation_ corresponding to an entry _present_ in
-   the reference set entails the following actions:
+   An _indexed representation_ entails the following actions:
 
-   o  The entry is removed from the reference set.
-
-   An _indexed representation_ corresponding to an entry _not present_
-   in the reference set entails the following actions:
-
-   o  If referencing an element of the static table:
-
-      *  The header field corresponding to the referenced entry is
-         emitted.
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015                [Page 9]
-
-Internet-Draft                    HPACK                        July 2014
-
-
-      *  The referenced static entry is inserted at the beginning of the
-         header table.
-
-      *  A reference to this new header table entry is added to the
-         reference set, unless this new entry didn't fit in the header
-         table.
-
-   o  If referencing an element of the header table:
-
-      *  The header field corresponding to the referenced entry is
-         emitted.
-
-      *  The referenced header table entry is added to the reference
-         set.
+   o  The header field corresponding to the referenced entry in either
+      the header table or static table is emitted.
 
    A _literal representation_ that is _not added_ to the header table
    entails the following action:
@@ -531,46 +443,25 @@ Internet-Draft                    HPACK                        July 2014
 
    o  The header field is emitted.
 
+
+
+Peon & Ruellan          Expires January 29, 2015                [Page 8]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    o  The header field is inserted at the beginning of the header table.
-
-   o  A reference to the new entry is added to the reference set, unless
-      this new entry didn't fit in the header table.
-
-4.2.  Reference Set Emission
-
-   Once all the representations contained in a header block have been
-   processed, any header fields included in the reference set that have
-   not previously been emitted during the processing of this header
-   block are emitted.
-
-   After the emission of these remaining header fields, the header set
-   is complete.
 
 5.  Header Table Management
 
 5.1.  Maximum Table Size
 
-   To limit the memory requirements on the decoder side, the mutable
-   structures used in an encoding context are constrained in size.
-   These mutable structures are the header table and the reference set.
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 10]
-
-Internet-Draft                    HPACK                        July 2014
-
+   To limit the memory requirements on the decoder side, the header
+   table is constrained in size.
 
    The size of the header table is bounded by a maximum size defined by
    the decoder.  The size of the header table MUST always be lower than
    or equal to this maximum size.
-
-   The reference set can only contain references to entries of the
-   header table, and can't contain references to entries of the static
-   table.  In addition, it can't contain duplicate references.
-   Therefore, its maximum size is bounded by the size of the header
-   table.
 
    By default, the maximum size of the header table is equal to the
    value of the HTTP/2 setting SETTINGS_HEADER_TABLE_SIZE defined by the
@@ -607,19 +498,13 @@ Internet-Draft                    HPACK                        July 2014
    are evicted from the end of the header table until the size of the
    header table is less than or equal to the maximum size.
 
-   Whenever an entry is evicted from the header table, any reference to
-   that entry from the reference set is removed.
 
 
 
-
-Peon & Ruellan          Expires January 25, 2015               [Page 11]
+Peon & Ruellan          Expires January 29, 2015                [Page 9]
 
 Internet-Draft                    HPACK                        July 2014
 
-
-   The eviction of an entry from the header table causes the index of
-   the entries in the static table to be reduced by one.
 
 5.3.  Entry Eviction when Adding New Entries
 
@@ -669,7 +554,10 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 12]
+
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 10]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -725,7 +613,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 13]
+Peon & Ruellan          Expires January 29, 2015               [Page 11]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -781,7 +669,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 14]
+Peon & Ruellan          Expires January 29, 2015               [Page 12]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -797,9 +685,8 @@ Internet-Draft                    HPACK                        July 2014
    An indexed header field representation identifies an entry in either
    the header table or the static table.
 
-   An indexed header field representation can either causes a header
-   field to be emitted or to be removed from the reference set, as
-   described in Section 4.1.
+   An indexed header field representation causes a header field to be
+   emitted, as described in Section 4.1.
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
@@ -810,7 +697,7 @@ Internet-Draft                    HPACK                        July 2014
 
    An indexed header field starts with the '1' 1-bit pattern, followed
    by the index of the matching pair, represented as an integer with a
-   7-bit prefix.
+   7-bit prefix (see Section 6.1).
 
    The index value of 0 is not used.  It MUST be treated as a decoding
    error if found in an indexed header field representation.
@@ -822,8 +709,7 @@ Internet-Draft                    HPACK                        July 2014
    reference to an existing table entry, either from the header table or
    the static table.
 
-   A literal representation always result in the emission of a header
-   field when decoded.
+   A literal representation causes a header field to be emitted.
 
 7.2.1.  Literal Header Field with Incremental Indexing
 
@@ -837,7 +723,9 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 15]
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 13]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -893,7 +781,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 16]
+Peon & Ruellan          Expires January 29, 2015               [Page 14]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -949,7 +837,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 17]
+Peon & Ruellan          Expires January 29, 2015               [Page 15]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1005,66 +893,33 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 18]
+Peon & Ruellan          Expires January 29, 2015               [Page 16]
 
 Internet-Draft                    HPACK                        July 2014
 
 
-7.3.  Encoding Context Update
+7.3.  Header Table Size Update
 
-   An encoding context update causes the immediate application of a
-   change to the encoding context.
-
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 1 | F |      ...      |
-   +---+---------------------------+
-
-                              Context Update
-
-   An encoding context update starts with the '001' 3-bit pattern.
-
-   It is followed by a flag specifying the type of the change, and by
-   any data necessary to describe the change itself.
+   An header table size update signals a change to the size of the
+   header table.
 
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 1 | 1 |       0       |
-   +---+---------------------------+
-
-                          Reference Set Emptying
-
-   The flag bit being set to '1' signals that the reference set is
-   emptied.  The remaining bits MUST be set to '0', non-zero values MUST
-   be treated as a decoding error.
-
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 1 | 0 | Max size (4+) |
+   | 0 | 0 | 1 |   Max size (5+)   |
    +---+---------------------------+
 
                      Maximum Header Table Size Change
 
-   The flag bit being set to '0' signals that a change to the maximum
-   size of the header table.  This new maximum size MUST be lower than
-   or equal to the maximum set by the decoder.  That is, the value of
-   the HTTP/2 setting SETTINGS_HEADER_TABLE_SIZE, defined in
-   Section 6.5.2 of [HTTP2].
+   An header table size update starts with the '001' 3-bit pattern,
+   followed by the new maximum size, represented as an integer with a
+   5-bit prefix (see Section 6.1).
 
-   The new maximum size is encoded as an integer with a 4-bit prefix
-   (see Section 6.1).
+   The new maximum size MUST be lower than or equal to the maximum set
+   by the decoder.  That is, the value of the HTTP/2 setting
+   SETTINGS_HEADER_TABLE_SIZE, defined in Section 6.5.2 of [HTTP2].
 
    Reducing the maximum size of the header table causes entries to be
    evicted (see Section 5.2).
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 19]
-
-Internet-Draft                    HPACK                        July 2014
-
 
 8.  Security Considerations
 
@@ -1091,6 +946,14 @@ Internet-Draft                    HPACK                        July 2014
    those fields once they are encoded.  This allows an attacker to
    adaptively modify requests in order to confirm guesses about the
    header table state.  If a guess is compressed into a shorter length,
+
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 17]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    the attacker can observe the encoded length and infer that the guess
    was correct.
 
@@ -1109,18 +972,6 @@ Internet-Draft                    HPACK                        July 2014
    [DEFLATE] removes redundancy based on prefix matching.  This
    permitted the attacker to confirm guesses a character at a time,
    reducing an exponential-time attack into a constant time attack.
-
-
-
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 20]
-
-Internet-Draft                    HPACK                        July 2014
-
 
 8.1.1.  Applicability to HPACK and HTTP
 
@@ -1150,6 +1001,15 @@ Internet-Draft                    HPACK                        July 2014
    o  takes responses from multiple origin servers and places them on a
       shared connection toward a client.
 
+
+
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 18]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    Web browsers also need to assume that requests made on the same
    connection by different web origins [ORIGIN] are made by mutually
    distrustful entities.
@@ -1170,13 +1030,6 @@ Internet-Draft                    HPACK                        July 2014
    entity that is constructing header fields.  Header field values that
    are added to the table are attributed to an entity, and only the
    entity that created an particular value can extract that value.
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 21]
-
-Internet-Draft                    HPACK                        July 2014
-
 
    To improve compression performance of this option, certain entries
    might be tagged as being public.  For example, a web browser might
@@ -1206,6 +1059,13 @@ Internet-Draft                    HPACK                        July 2014
    that are known to be highly valued, such as the Authorization or
    Cookie header fields, by disabling or further limiting compression.
 
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 19]
+
+Internet-Draft                    HPACK                        July 2014
+
+
 8.1.3.  Never Indexed Literals
 
    Refusing to generate an indexed representation for a header field is
@@ -1223,16 +1083,6 @@ Internet-Draft                    HPACK                        July 2014
    study concluded that an attacker could not take advantage of this
    information leakage to recover any meaningful amount of information
    (see [PETAL]).
-
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 22]
-
-Internet-Draft                    HPACK                        July 2014
-
 
 8.3.  Memory Consumption
 
@@ -1265,6 +1115,13 @@ Internet-Draft                    HPACK                        July 2014
    integers, long encoding for integers, or long string literals do not
    create security weaknesses.
 
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 20]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    An implementation has to set a limit for the values it accepts for
    integers, as well as for the encoded length (see Section 6.1).  In
    the same way, it has to set a limit to the length it accepts for
@@ -1279,16 +1136,6 @@ Internet-Draft                    HPACK                        July 2014
       (substantial editorial contributions).
 
    o  Johnny Graettinger (Huffman code statistics).
-
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 23]
-
-Internet-Draft                    HPACK                        July 2014
-
 
 10.  References
 
@@ -1321,6 +1168,16 @@ Internet-Draft                    HPACK                        July 2014
    [DEFLATE]  Deutsch, P., "DEFLATE Compressed Data Format Specification
               version 1.3", RFC 1951, May 1996.
 
+
+
+
+
+
+Peon & Ruellan          Expires January 29, 2015               [Page 21]
+
+Internet-Draft                    HPACK                        July 2014
+
+
    [HUFFMAN]  Huffman, D., "A Method for the Construction of Minimum
               Redundancy Codes", Proceedings of the Institute of Radio
               Engineers Volume 40, Number 9, pp. 1098-1101, September
@@ -1337,14 +1194,6 @@ Internet-Draft                    HPACK                        July 2014
 
    [SPDY]     Belshe, M. and R. Peon, "SPDY Protocol", draft-mbelshe-
               httpbis-spdy-00 (work in progress), February 2012.
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 24]
-
-Internet-Draft                    HPACK                        July 2014
-
 
    [SPDY-DESC-1]
               Belshe, M., "IETF83: SPDY and What to Consider for
@@ -1380,24 +1229,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 25]
+Peon & Ruellan          Expires January 29, 2015               [Page 22]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1406,7 +1238,7 @@ Appendix A.  Change Log (to be removed by RFC Editor before publication)
 
 A.1.  Since draft-ietf-httpbis-header-compression-08
 
-   o
+   o  Removed the reference set.
 
 A.2.  Since draft-ietf-httpbis-header-compression-07
 
@@ -1453,7 +1285,7 @@ A.4.  Since draft-ietf-httpbis-header-compression-05
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 26]
+Peon & Ruellan          Expires January 29, 2015               [Page 23]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1509,7 +1341,7 @@ A.8.  Since draft-ietf-httpbis-header-compression-01
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 27]
+Peon & Ruellan          Expires January 29, 2015               [Page 24]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1565,7 +1397,7 @@ Appendix B.  Static Table
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 28]
+Peon & Ruellan          Expires January 29, 2015               [Page 25]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1621,7 +1453,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 29]
+Peon & Ruellan          Expires January 29, 2015               [Page 26]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1677,7 +1509,7 @@ Appendix C.  Huffman Code
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 30]
+Peon & Ruellan          Expires January 29, 2015               [Page 27]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1733,7 +1565,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 31]
+Peon & Ruellan          Expires January 29, 2015               [Page 28]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1789,7 +1621,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 32]
+Peon & Ruellan          Expires January 29, 2015               [Page 29]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1845,7 +1677,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 33]
+Peon & Ruellan          Expires January 29, 2015               [Page 30]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1901,7 +1733,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 34]
+Peon & Ruellan          Expires January 29, 2015               [Page 31]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1957,7 +1789,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 35]
+Peon & Ruellan          Expires January 29, 2015               [Page 32]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -1996,6 +1828,9 @@ Internet-Draft                    HPACK                        July 2014
 
 Appendix D.  Examples
 
+   [[CREF2: Need to be updated to reflect the removal of the reference
+   set.  In addition, lengths for Huffman-encoded strings are wrong.  ]]
+
    A number of examples are worked through here, covering integer
    encoding, header field representation, and the encoding of whole sets
    of header fields, for both requests and responses, and with and
@@ -2010,10 +1845,7 @@ D.1.  Integer Representation Examples
 
 
 
-
-
-
-Peon & Ruellan          Expires January 25, 2015               [Page 36]
+Peon & Ruellan          Expires January 29, 2015               [Page 33]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2069,7 +1901,7 @@ D.1.2.  Example 2: Encoding 1337 Using a 5-bit Prefix
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 37]
+Peon & Ruellan          Expires January 29, 2015               [Page 34]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2125,7 +1957,7 @@ D.2.1.  Literal Header Field with Indexing
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 38]
+Peon & Ruellan          Expires January 29, 2015               [Page 35]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2181,7 +2013,7 @@ D.2.2.  Literal Header Field without Indexing
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 39]
+Peon & Ruellan          Expires January 29, 2015               [Page 36]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2237,7 +2069,7 @@ D.2.4.  Indexed Header Field
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 40]
+Peon & Ruellan          Expires January 29, 2015               [Page 37]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2293,7 +2125,7 @@ D.2.5.  Indexed Header Field from Static Table
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 41]
+Peon & Ruellan          Expires January 29, 2015               [Page 38]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2349,7 +2181,7 @@ D.3.1.  First Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 42]
+Peon & Ruellan          Expires January 29, 2015               [Page 39]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2405,7 +2237,7 @@ D.3.2.  Second Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 43]
+Peon & Ruellan          Expires January 29, 2015               [Page 40]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2461,7 +2293,7 @@ D.3.3.  Third Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 44]
+Peon & Ruellan          Expires January 29, 2015               [Page 41]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2517,7 +2349,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 45]
+Peon & Ruellan          Expires January 29, 2015               [Page 42]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2573,7 +2405,7 @@ D.4.1.  First Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 46]
+Peon & Ruellan          Expires January 29, 2015               [Page 43]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2629,7 +2461,7 @@ D.4.2.  Second Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 47]
+Peon & Ruellan          Expires January 29, 2015               [Page 44]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2685,7 +2517,7 @@ D.4.3.  Third Request
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 48]
+Peon & Ruellan          Expires January 29, 2015               [Page 45]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2741,7 +2573,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 49]
+Peon & Ruellan          Expires January 29, 2015               [Page 46]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2797,7 +2629,7 @@ D.5.1.  First Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 50]
+Peon & Ruellan          Expires January 29, 2015               [Page 47]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2853,7 +2685,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 51]
+Peon & Ruellan          Expires January 29, 2015               [Page 48]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2909,7 +2741,7 @@ D.5.2.  Second Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 52]
+Peon & Ruellan          Expires January 29, 2015               [Page 49]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -2965,7 +2797,7 @@ D.5.3.  Third Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 53]
+Peon & Ruellan          Expires January 29, 2015               [Page 50]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3021,7 +2853,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 54]
+Peon & Ruellan          Expires January 29, 2015               [Page 51]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3077,7 +2909,7 @@ D.6.1.  First Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 55]
+Peon & Ruellan          Expires January 29, 2015               [Page 52]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3133,7 +2965,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 56]
+Peon & Ruellan          Expires January 29, 2015               [Page 53]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3189,7 +3021,7 @@ D.6.2.  Second Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 57]
+Peon & Ruellan          Expires January 29, 2015               [Page 54]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3245,7 +3077,7 @@ D.6.3.  Third Response
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 58]
+Peon & Ruellan          Expires January 29, 2015               [Page 55]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3301,7 +3133,7 @@ Internet-Draft                    HPACK                        July 2014
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 59]
+Peon & Ruellan          Expires January 29, 2015               [Page 56]
 
 Internet-Draft                    HPACK                        July 2014
 
@@ -3357,4 +3189,4 @@ Authors' Addresses
 
 
 
-Peon & Ruellan          Expires January 25, 2015               [Page 60]
+Peon & Ruellan          Expires January 29, 2015               [Page 57]
