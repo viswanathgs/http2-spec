@@ -185,22 +185,22 @@ Internet-Draft                   HTTP/2                        July 2014
      13.2.  Informative References . . . . . . . . . . . . . . . . .  77
      13.3.  URIs . . . . . . . . . . . . . . . . . . . . . . . . . .  78
    Appendix A.  Change Log (to be removed by RFC Editor before
-                publication) . . . . . . . . . . . . . . . . . . . .  79
-     A.1.  Since draft-ietf-httpbis-http2-13 . . . . . . . . . . . .  79
-     A.2.  Since draft-ietf-httpbis-http2-12 . . . . . . . . . . . .  79
-     A.3.  Since draft-ietf-httpbis-http2-11 . . . . . . . . . . . .  79
-     A.4.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  79
-     A.5.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  80
-     A.6.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  80
-     A.7.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  80
-     A.8.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  81
-     A.9.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  81
-     A.10. Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  81
-     A.11. Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  82
-     A.12. Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  82
-     A.13. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  82
-     A.14. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  83
-     A.15. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  83
+                publication) . . . . . . . . . . . . . . . . . . . .  80
+     A.1.  Since draft-ietf-httpbis-http2-13 . . . . . . . . . . . .  80
+     A.2.  Since draft-ietf-httpbis-http2-12 . . . . . . . . . . . .  80
+     A.3.  Since draft-ietf-httpbis-http2-11 . . . . . . . . . . . .  80
+     A.4.  Since draft-ietf-httpbis-http2-10 . . . . . . . . . . . .  80
+     A.5.  Since draft-ietf-httpbis-http2-09 . . . . . . . . . . . .  81
+     A.6.  Since draft-ietf-httpbis-http2-08 . . . . . . . . . . . .  81
+     A.7.  Since draft-ietf-httpbis-http2-07 . . . . . . . . . . . .  81
+     A.8.  Since draft-ietf-httpbis-http2-06 . . . . . . . . . . . .  82
+     A.9.  Since draft-ietf-httpbis-http2-05 . . . . . . . . . . . .  82
+     A.10. Since draft-ietf-httpbis-http2-04 . . . . . . . . . . . .  82
+     A.11. Since draft-ietf-httpbis-http2-03 . . . . . . . . . . . .  83
+     A.12. Since draft-ietf-httpbis-http2-02 . . . . . . . . . . . .  83
+     A.13. Since draft-ietf-httpbis-http2-01 . . . . . . . . . . . .  83
+     A.14. Since draft-ietf-httpbis-http2-00 . . . . . . . . . . . .  84
+     A.15. Since draft-mbelshe-httpbis-spdy-00 . . . . . . . . . . .  84
 
 1.  Introduction
 
@@ -400,7 +400,7 @@ Internet-Draft                   HTTP/2                        July 2014
 
    o  The string "h2" identifies the protocol where HTTP/2 uses TLS
       [TLS12].  This identifier is used in the TLS application layer
-      protocol negotiation extension (ALPN) [TLSALPN] field and any
+      protocol negotiation extension (ALPN) [TLS-ALPN] field and any
       place that HTTP/2 over TLS is identified.
 
       The "h2" string is serialized into an ALPN protocol identifier as
@@ -566,7 +566,7 @@ Internet-Draft                   HTTP/2                        July 2014
 
    A client that makes a request to an "https" URI without prior
    knowledge about support for HTTP/2 uses TLS [TLS12] with the
-   application layer protocol negotiation extension [TLSALPN].
+   application layer protocol negotiation extension [TLS-ALPN].
 
    HTTP/2 over TLS uses the "h2" application token.  The "h2c" token
    MUST NOT be sent by a client or selected by a server.
@@ -585,7 +585,7 @@ Internet-Draft                   HTTP/2                        July 2014
    server can identify such a connection by the use of the "PRI" method
    in the connection preface.  This only affects the establishment of
    HTTP/2 connections over cleartext TCP; implementations that support
-   HTTP/2 over TLS MUST use protocol negotiation in TLS [TLSALPN].
+   HTTP/2 over TLS MUST use protocol negotiation in TLS [TLS-ALPN].
 
    Prior support for HTTP/2 is not a strong signal that a given server
    will support HTTP/2 for future connections.  It is possible for
@@ -3655,10 +3655,18 @@ Internet-Draft                   HTTP/2                        July 2014
    Additional Data (AEAD) modes, such as the Galois Counter Model (GCM)
    mode for AES [RFC5288] are acceptable.
 
-   Clients MAY advertise support of other cipher suites in order to
-   allow for connection to servers that do not support HTTP/2 to
-   complete without the additional latency imposed by using a separate
-   connection for fallback.
+   The effect of these restrictions is that TLS 1.2 implementations
+   could have non-intersecting sets of available cipher suites, since
+   these prevent the use of the cipher suite that TLS 1.2 makes
+   mandatory.  To avoid this problem, implementations of HTTP/2 that use
+   TLS 1.2 MUST support TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+   [TLS-ECDHE] with P256 [FIPS186].
+
+   Clients MAY advertise support of cipher suites that are prohibited by
+   the above restrictions in order to allow for connection to servers
+   that do not support HTTP/2.  This enables a fallback to protocols
+   without these constraints without the additional latency imposed by
+   using a separate connection for fallback.
 
    An implementation SHOULD NOT negotiate a TLS connection for HTTP/2
    without also negotiating a cipher suite that meets these
@@ -3683,20 +3691,15 @@ Internet-Draft                   HTTP/2                        July 2014
    "http" URI scheme, and the authenticated server identity for the
    "https" scheme (see [RFC2818], Section 3).
 
-   A client MUST discard responses provided by a server that is not
-   authoritative for those resources.
-
-
-
-
-
-
 
 
 Belshe, et al.          Expires January 29, 2015               [Page 66]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   A client MUST discard responses provided by a server that is not
+   authoritative for those resources.
 
 10.2.  Cross-Protocol Attacks
 
@@ -3743,9 +3746,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    Translation from HTTP/1.x to HTTP/2 does not produce the same
    opportunity to an attacker.  Intermediaries that perform translation
-   to HTTP/2 MUST remove any instances of the "obs-fold" production from
-   header field values.
-
 
 
 
@@ -3753,6 +3753,9 @@ Belshe, et al.          Expires January 29, 2015               [Page 67]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   to HTTP/2 MUST remove any instances of the "obs-fold" production from
+   header field values.
 
 10.4.  Cacheability of Pushed Responses
 
@@ -3799,9 +3802,6 @@ Internet-Draft                   HTTP/2                        July 2014
    PRIORITY frames can be abused to cause an unnecessary waste of
    resources.
 
-   Large numbers of small or empty frames can be abused to cause a peer
-   to expend time processing frame headers.  Note however that some uses
-
 
 
 
@@ -3810,6 +3810,8 @@ Belshe, et al.          Expires January 29, 2015               [Page 68]
 Internet-Draft                   HTTP/2                        July 2014
 
 
+   Large numbers of small or empty frames can be abused to cause a peer
+   to expend time processing frame headers.  Note however that some uses
    are entirely legitimate, such as the sending of an empty DATA frame
    to end a stream.
 
@@ -3856,8 +3858,6 @@ Internet-Draft                   HTTP/2                        July 2014
    unknown limit.  An intermediary can attempt to avoid this problem by
    passing on values presented by different peers, but they are not
    obligated to do so.
-
-
 
 
 
@@ -3949,7 +3949,7 @@ Internet-Draft                   HTTP/2                        July 2014
 
    A string for identifying HTTP/2 is entered into the "Application
    Layer Protocol Negotiation (ALPN) Protocol IDs" registry established
-   in [TLSALPN].
+   in [TLS-ALPN].
 
    This document establishes a registry for frame types, settings, and
    error codes.  These new registries are entered into a new "Hypertext
@@ -3965,7 +3965,7 @@ Internet-Draft                   HTTP/2                        July 2014
 
    This document creates two registrations for the identification of
    HTTP/2 in the "Application Layer Protocol Negotiation (ALPN) Protocol
-   IDs" registry established in [TLSALPN].
+   IDs" registry established in [TLS-ALPN].
 
    The "h2" string identifies HTTP/2 when used over TLS:
 
@@ -4229,6 +4229,9 @@ Internet-Draft                   HTTP/2                        July 2014
    [COOKIE]   Barth, A., "HTTP State Management Mechanism", RFC 6265,
               April 2011.
 
+   [FIPS186]  NIST, "Digital Signature Standard (DSS)", FIPS PUB 186-4,
+              July 2013.
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
 
@@ -4247,9 +4250,6 @@ Internet-Draft                   HTTP/2                        July 2014
 
    [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234, January 2008.
-
-
-
 
 
 
@@ -4284,27 +4284,27 @@ Internet-Draft                   HTTP/2                        July 2014
    [TCP]      Postel, J., "Transmission Control Protocol", STD 7, RFC
               793, September 1981.
 
+   [TLS-ALPN]
+              Friedl, S., Popov, A., Langley, A., and E. Stephan,
+              "Transport Layer Security (TLS) Application-Layer Protocol
+              Negotiation Extension", RFC 7301, July 2014.
+
+   [TLS-ECDHE]
+              Rescorla, E., "TLS Elliptic Curve Cipher Suites with SHA-
+              256/384 and AES Galois Counter Mode (GCM)", RFC 5289,
+              August 2008.
+
    [TLS-EXT]  Eastlake, D., "Transport Layer Security (TLS) Extensions:
               Extension Definitions", RFC 6066, January 2011.
 
    [TLS12]    Dierks, T. and E. Rescorla, "The Transport Layer Security
               (TLS) Protocol Version 1.2", RFC 5246, August 2008.
 
-   [TLSALPN]  Friedl, S., Popov, A., Langley, A., and E. Stephan,
-              "Transport Layer Security (TLS) Application-Layer Protocol
-              Negotiation Extension", RFC 7301, July 2014.
-
 13.2.  Informative References
 
    [ALT-SVC]  Nottingham, M., McManus, P., and J. Reschke, "HTTP
               Alternative Services", draft-ietf-httpbis-alt-svc-01 (work
               in progress), April 2014.
-
-   [BCP90]    Klyne, G., Nottingham, M., and J. Mogul, "Registration
-              Procedures for Message Header Fields", BCP 90, RFC 3864,
-              September 2004.
-
-
 
 
 
@@ -4313,6 +4313,10 @@ Belshe, et al.          Expires January 29, 2015               [Page 77]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   [BCP90]    Klyne, G., Nottingham, M., and J. Mogul, "Registration
+              Procedures for Message Header Fields", BCP 90, RFC 3864,
+              September 2004.
 
    [BREACH]   Gluck, Y., Harris, N., and A. Prado, "BREACH: Reviving the
               CRIME Attack", July 2013,
@@ -4358,6 +4362,14 @@ Internet-Draft                   HTTP/2                        July 2014
    [2] https://groups.google.com/forum/?fromgroups#!topic/spdy-dev/
        cfUef2gL3iU
 
+
+
+
+Belshe, et al.          Expires January 29, 2015               [Page 78]
+
+Internet-Draft                   HTTP/2                        July 2014
+
+
    [3] https://tools.ietf.org/html/draft-montenegro-httpbis-http2-fc-
        principles-01
 
@@ -4365,7 +4377,51 @@ Internet-Draft                   HTTP/2                        July 2014
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 78]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Belshe, et al.          Expires January 29, 2015               [Page 79]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4421,7 +4477,7 @@ A.4.  Since draft-ietf-httpbis-http2-10
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 79]
+Belshe, et al.          Expires January 29, 2015               [Page 80]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4477,7 +4533,7 @@ A.7.  Since draft-ietf-httpbis-http2-07
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 80]
+Belshe, et al.          Expires January 29, 2015               [Page 81]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4533,7 +4589,7 @@ A.10.  Since draft-ietf-httpbis-http2-04
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 81]
+Belshe, et al.          Expires January 29, 2015               [Page 82]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4589,7 +4645,7 @@ A.13.  Since draft-ietf-httpbis-http2-01
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 82]
+Belshe, et al.          Expires January 29, 2015               [Page 83]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4645,7 +4701,7 @@ Authors' Addresses
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 83]
+Belshe, et al.          Expires January 29, 2015               [Page 84]
 
 Internet-Draft                   HTTP/2                        July 2014
 
@@ -4701,4 +4757,4 @@ Internet-Draft                   HTTP/2                        July 2014
 
 
 
-Belshe, et al.          Expires January 29, 2015               [Page 84]
+Belshe, et al.          Expires January 29, 2015               [Page 85]
