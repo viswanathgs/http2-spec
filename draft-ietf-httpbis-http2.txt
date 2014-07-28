@@ -3546,6 +3546,13 @@ Internet-Draft                   HTTP/2                        July 2014
    followed, with some additional restrictions that are specific to
    HTTP/2.
 
+   An implementation of HTTP/2 over TLS MUST use TLS 1.2 or higher with
+   the restrictions on feature set and cipher suite described in this
+   section.  Due to implementation limitations, it might not be possible
+   to fail TLS negotiation.  An endpoint MUST immediately terminate an
+   HTTP/2 connection that does not meet these minimum requirements with
+   a connection error (Section 5.4.1) of type INADEQUATE_SECURITY.
+
 9.2.1.  TLS Features
 
    The TLS implementation MUST support the Server Name Indication (SNI)
@@ -3571,13 +3578,6 @@ Internet-Draft                   HTTP/2                        July 2014
    server SHOULD request a client certificate if it sees a renegotiation
    request immediately after establishing a connection.
 
-   This effectively prevents the use of renegotiation in response to a
-   request for a specific protected resource.  A future specification
-   might provide a way to support this use case.
-
-
-
-
 
 
 
@@ -3585,6 +3585,10 @@ Belshe, et al.          Expires January 29, 2015               [Page 64]
 
 Internet-Draft                   HTTP/2                        July 2014
 
+
+   This effectively prevents the use of renegotiation in response to a
+   request for a specific protected resource.  A future specification
+   might provide a way to support this use case.
 
 9.2.2.  TLS Cipher Suites
 
@@ -3612,14 +3616,6 @@ Internet-Draft                   HTTP/2                        July 2014
    without these constraints without the additional latency imposed by
    using a separate connection for fallback.
 
-   An implementation SHOULD NOT negotiate a TLS connection for HTTP/2
-   without also negotiating a cipher suite that meets these
-   requirements.  Due to implementation limitations, it might not be
-   possible to fail TLS negotiation.  An endpoint MUST immediately
-   terminate an HTTP/2 connection that does not meet these minimum
-   requirements with a connection error (Section 5.4.1) of type
-   INADEQUATE_SECURITY.
-
 10.  Security Considerations
 
 10.1.  Server Authority
@@ -3635,15 +3631,16 @@ Internet-Draft                   HTTP/2                        July 2014
    "http" URI scheme, and the authenticated server identity for the
    "https" scheme (see [RFC2818], Section 3).
 
+   A client MUST discard responses provided by a server that is not
+   authoritative for those resources.
+
+
 
 
 Belshe, et al.          Expires January 29, 2015               [Page 65]
 
 Internet-Draft                   HTTP/2                        July 2014
 
-
-   A client MUST discard responses provided by a server that is not
-   authoritative for those resources.
 
 10.2.  Cross-Protocol Attacks
 
@@ -3690,6 +3687,9 @@ Internet-Draft                   HTTP/2                        July 2014
 
    Translation from HTTP/1.x to HTTP/2 does not produce the same
    opportunity to an attacker.  Intermediaries that perform translation
+   to HTTP/2 MUST remove any instances of the "obs-fold" production from
+   header field values.
+
 
 
 
@@ -3697,9 +3697,6 @@ Belshe, et al.          Expires January 29, 2015               [Page 66]
 
 Internet-Draft                   HTTP/2                        July 2014
 
-
-   to HTTP/2 MUST remove any instances of the "obs-fold" production from
-   header field values.
 
 10.4.  Cacheability of Pushed Responses
 
@@ -3746,6 +3743,9 @@ Internet-Draft                   HTTP/2                        July 2014
    PRIORITY frames can be abused to cause an unnecessary waste of
    resources.
 
+   Large numbers of small or empty frames can be abused to cause a peer
+   to expend time processing frame headers.  Note however that some uses
+
 
 
 
@@ -3754,8 +3754,6 @@ Belshe, et al.          Expires January 29, 2015               [Page 67]
 Internet-Draft                   HTTP/2                        July 2014
 
 
-   Large numbers of small or empty frames can be abused to cause a peer
-   to expend time processing frame headers.  Note however that some uses
    are entirely legitimate, such as the sending of an empty DATA frame
    to end a stream.
 
@@ -3802,6 +3800,8 @@ Internet-Draft                   HTTP/2                        July 2014
    unknown limit.  An intermediary can attempt to avoid this problem by
    passing on values presented by different peers, but they are not
    obligated to do so.
+
+
 
 
 
