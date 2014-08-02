@@ -2935,20 +2935,18 @@ Upgrade: h2c
             </p>
             <div id="MaxHeaderBlock">
                <h3 id="rfc.section.10.5.1"><a href="#rfc.section.10.5.1">10.5.1</a>&nbsp;<a href="#MaxHeaderBlock">Limits on Header Block Size</a></h3>
-               <p id="rfc.section.10.5.1.p.1">A large header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) can cause an implementation to commit a large amount of state. In servers and intermediaries, header fields that are critical
-                  to routing, such as <samp>:authority</samp>, <samp>:path</samp>, and <samp>:scheme</samp> are not guaranteed to be present early in the header block. In particular, values that are in the reference set cannot be
-                  emitted until the header block ends.
+               <p id="rfc.section.10.5.1.p.1">A large header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) can cause an implementation to commit a large amount of state. Header fields that are critical for routing can appear toward
+                  the end of a header block, which prevents streaming of header fields to their ultimate destination. For this an other reasons,
+                  such as ensuring cache correctness, means that an endpoint might need to buffer the entire header block. Since there is no
+                  hard limit to the size of a header block, some endpoints could be forced commit a large amount of available memory for header
+                  fields.
                </p>
-               <p id="rfc.section.10.5.1.p.2">This can prevent streaming of the header fields to their ultimate destination, and forces the endpoint to buffer the entire
-                  header block. Since there is no hard limit to the size of a header block, an endpoint could be forced to exhaust available
-                  memory.
-               </p>
-               <p id="rfc.section.10.5.1.p.3">An endpoint can use the <a href="#SETTINGS_MAX_HEADER_LIST_SIZE" class="smpl">SETTINGS_MAX_HEADER_LIST_SIZE</a> to advise peers of limits that might apply on the size of header blocks. This setting is only advisory, so endpoints MAY choose
+               <p id="rfc.section.10.5.1.p.2">An endpoint can use the <a href="#SETTINGS_MAX_HEADER_LIST_SIZE" class="smpl">SETTINGS_MAX_HEADER_LIST_SIZE</a> to advise peers of limits that might apply on the size of header blocks. This setting is only advisory, so endpoints MAY choose
                   to send header blocks that exceed this limit and risk having the request or response being treated as malformed. This setting
                   is advertised hop-by-hop, so any request or response could encounter a hop with a lower, unknown limit. An intermediary can
                   attempt to avoid this problem by passing on values presented by different peers, but they are not obligated to do so.
                </p>
-               <p id="rfc.section.10.5.1.p.4">A server that receives a larger header block than it is willing to handle can send an HTTP 431 (Request Header Fields Too
+               <p id="rfc.section.10.5.1.p.3">A server that receives a larger header block than it is willing to handle can send an HTTP 431 (Request Header Fields Too
                   Large) status code <a href="#RFC6585"><cite title="Additional HTTP Status Codes">[RFC6585]</cite></a>. A client can discard responses that it cannot process. The header block MUST be processed to ensure a consistent connection
                   state, unless the connection is closed.
                </p>

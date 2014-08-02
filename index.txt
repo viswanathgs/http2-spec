@@ -3780,16 +3780,14 @@ Internet-Draft                   HTTP/2                      August 2014
 10.5.1.  Limits on Header Block Size
 
    A large header block (Section 4.3) can cause an implementation to
-   commit a large amount of state.  In servers and intermediaries,
-   header fields that are critical to routing, such as ":authority",
-   ":path", and ":scheme" are not guaranteed to be present early in the
-   header block.  In particular, values that are in the reference set
-   cannot be emitted until the header block ends.
-
-   This can prevent streaming of the header fields to their ultimate
-   destination, and forces the endpoint to buffer the entire header
-   block.  Since there is no hard limit to the size of a header block,
-   an endpoint could be forced to exhaust available memory.
+   commit a large amount of state.  Header fields that are critical for
+   routing can appear toward the end of a header block, which prevents
+   streaming of header fields to their ultimate destination.  For this
+   an other reasons, such as ensuring cache correctness, means that an
+   endpoint might need to buffer the entire header block.  Since there
+   is no hard limit to the size of a header block, some endpoints could
+   be forced commit a large amount of available memory for header
+   fields.
 
    An endpoint can use the SETTINGS_MAX_HEADER_LIST_SIZE to advise peers
    of limits that might apply on the size of header blocks.  This
@@ -3801,7 +3799,9 @@ Internet-Draft                   HTTP/2                      August 2014
    passing on values presented by different peers, but they are not
    obligated to do so.
 
-
+   A server that receives a larger header block than it is willing to
+   handle can send an HTTP 431 (Request Header Fields Too Large) status
+   code [RFC6585].  A client can discard responses that it cannot
 
 
 
@@ -3810,9 +3810,6 @@ Belshe, et al.          Expires February 3, 2015               [Page 68]
 Internet-Draft                   HTTP/2                      August 2014
 
 
-   A server that receives a larger header block than it is willing to
-   handle can send an HTTP 431 (Request Header Fields Too Large) status
-   code [RFC6585].  A client can discard responses that it cannot
    process.  The header block MUST be processed to ensure a consistent
    connection state, unless the connection is closed.
 
@@ -3858,6 +3855,9 @@ Internet-Draft                   HTTP/2                      August 2014
    for an attacker to infer length information by increasing the number
    of frames an attacker has to observe.  Incorrectly implemented
    padding schemes can be easily defeated.  In particular, randomized
+   padding with a predictable distribution provides very little
+   protection; similarly, padding payloads to a fixed size exposes
+
 
 
 
@@ -3866,8 +3866,6 @@ Belshe, et al.          Expires February 3, 2015               [Page 69]
 Internet-Draft                   HTTP/2                      August 2014
 
 
-   padding with a predictable distribution provides very little
-   protection; similarly, padding payloads to a fixed size exposes
    information as payload sizes cross the fixed size boundary, which
    could be possible if an attacker can control plaintext.
 
@@ -3915,14 +3913,14 @@ Internet-Draft                   HTTP/2                      August 2014
 
    Protocol:  HTTP/2 over TLS
 
+   Identification Sequence:  0x68 0x32 ("h2")
+
 
 
 Belshe, et al.          Expires February 3, 2015               [Page 70]
 
 Internet-Draft                   HTTP/2                      August 2014
 
-
-   Identification Sequence:  0x68 0x32 ("h2")
 
    Specification:  This document
 
@@ -3970,6 +3968,8 @@ Internet-Draft                   HTTP/2                      August 2014
    | WINDOW_UPDATE | 0x8  | Section 6.9  |
    | CONTINUATION  | 0x9  | Section 6.10 |
    +---------------+------+--------------+
+
+
 
 
 
