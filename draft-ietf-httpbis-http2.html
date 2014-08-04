@@ -1173,9 +1173,9 @@ Upgrade: h2c
                <li>a <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame with the END_HEADERS flag cleared and one or more <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, where the last <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frame has the END_HEADERS flag set.
                </li>
             </ul>
-            <p id="rfc.section.4.3.p.6">Header compression is stateful, using a single compression context for the entire connection. Each header block is processed
-               as a discrete unit. Header blocks MUST be transmitted as a contiguous sequence of frames, with no interleaved frames of any
-               other type or from any other stream. The last frame in a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. The last frame in a sequence of <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. This allows a header block to be logically equivalent to a single frame.
+            <p id="rfc.section.4.3.p.6">Header compression is stateful. One compression context and one decompression context is used for the entire connection. Each
+               header block is processed as a discrete unit. Header blocks MUST be transmitted as a contiguous sequence of frames, with no
+               interleaved frames of any other type or from any other stream. The last frame in a sequence of <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. The last frame in a sequence of <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST have the END_HEADERS flag set. This allows a header block to be logically equivalent to a single frame.
             </p>
             <p id="rfc.section.4.3.p.7">Header block fragments can only be sent as the payload of <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames, because these frames carry data that can modify the compression context maintained by a receiver. An endpoint receiving <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> or <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST reassemble header blocks and perform decompression even if the frames are to be discarded. A receiver MUST terminate
                the connection with a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#COMPRESSION_ERROR" class="smpl">COMPRESSION_ERROR</a> if it does not decompress a header block.
@@ -1237,7 +1237,8 @@ Upgrade: h2c
 
           </pre></div>
             <p class="figure">Figure 1: Stream States</p>
-            <p id="rfc.section.5.1.p.2">Note that this diagram shows stream state transitions and frames that affect those transitions only. In this regard, <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames do not result in state transitions and are effectively part of the <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that they follow.
+            <p id="rfc.section.5.1.p.2">Note that this diagram shows stream state transitions and the frames and flags that affect those transitions only. In this
+               regard, <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames do not result in state transitions; they are effectively part of the <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that they follow. For this purpose, the END_STREAM flag is processed as a separate event to the frame that bears it; a <a href="#HEADERS" class="smpl">HEADERS</a> frame with the END_STREAM flag set can cause two state transitions.
             </p>
             <p id="rfc.section.5.1.p.3">Both endpoints have a subjective view of the state of a stream that could be different when frames are in transit. Endpoints
                do not coordinate the creation of streams; they are created unilaterally by either endpoint. The negative consequences of
@@ -1258,6 +1259,8 @@ Upgrade: h2c
                      <li>Receiving a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame marks the associated stream as reserved by the remote peer. The state of the stream becomes "reserved (remote)".
                      </li>
                   </ul>
+                  <p>Receiving any frames other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  </p>
                </dd>
                <dt>reserved (local):</dt>
                <dd>
@@ -1272,7 +1275,7 @@ Upgrade: h2c
                   </ul>
                   <p>An endpoint MUST NOT send frames other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> in this state.
                   </p>
-                  <p>A <a href="#PRIORITY" class="smpl">PRIORITY</a> frame MAY be received in this state. Receiving any frames other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>A <a href="#PRIORITY" class="smpl">PRIORITY</a> frame MAY be received in this state. Receiving any frames other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>reserved (remote):</dt>
@@ -2050,9 +2053,11 @@ Upgrade: h2c
                either "open" or "half closed (remote)"; the sender MUST ensure that the promised stream is a valid choice for a new stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>) (that is, the promised stream MUST be in the "idle" state).
             </p>
             <p id="rfc.section.6.6.p.9">Since PUSH_PROMISE reserves a stream, ignoring a PUSH_PROMISE frame causes the stream state to become indeterminate. A receiver
-               MUST treat the receipt of a PUSH_PROMISE on a stream that is neither "open" nor "half closed (local)" as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. Similarly, a receiver MUST treat the receipt of a PUSH_PROMISE that promises an illegal stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>) (that is, an identifier for a stream that is not currently in the "idle" state) as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               MUST treat the receipt of a PUSH_PROMISE on a stream that is neither "open" nor "half closed (local)" as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. However, an endpoint that has sent <a href="#RST_STREAM" class="smpl">RST_STREAM</a> on the associated stream MUST handle PUSH_PROMISE frames that might have been created before the <a href="#RST_STREAM" class="smpl">RST_STREAM</a> frame is received and processed.
             </p>
-            <p id="rfc.section.6.6.p.10">The PUSH_PROMISE frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
+            <p id="rfc.section.6.6.p.10">A receiver MUST treat the receipt of a PUSH_PROMISE that promises an illegal stream identifier (<a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>) (that is, an identifier for a stream that is not currently in the "idle" state) as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+            </p>
+            <p id="rfc.section.6.6.p.11">The PUSH_PROMISE frame includes optional padding. Padding fields and flags are identical to those defined for DATA frames (<a href="#DATA" title="DATA">Section&nbsp;6.1</a>).
             </p>
          </div>
          <div id="PING">
@@ -2467,7 +2472,7 @@ Upgrade: h2c
                         <p>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>). The authority MUST NOT include the deprecated <samp>userinfo</samp> subcomponent for <samp>http</samp> or <samp>https</samp> schemed URIs.
                         </p>
                         <p>To ensure that the HTTP/1.1 request line can be reproduced accurately, this header field MUST be omitted when translating
-                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2 requests directly SHOULD instead omit the <samp>Host</samp> header field. An intermediary that converts an HTTP/2 request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
+                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2 requests directly SHOULD use the <em>:authority</em> psuedo-header field instead of the <samp>Host</samp> header field. An intermediary that converts an HTTP/2 request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
                         </p>
                      </li>
                      <li>
