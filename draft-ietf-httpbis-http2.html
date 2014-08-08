@@ -447,7 +447,7 @@ samp, tt, code, pre {
        content: "Belshe, et al.";
   }
   @bottom-center {
-       content: "Expires February 6, 2015";
+       content: "Expires February 9, 2015";
   }
   @bottom-right {
        content: "[Page " counter(page) "]";
@@ -568,9 +568,9 @@ ul.toc a:first-child {
       <meta name="dct.creator" content="Peon, R.">
       <meta name="dct.creator" content="Thomson, M.">
       <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-httpbis-http2-latest">
-      <meta name="dct.issued" scheme="ISO8601" content="2014-08-05">
-      <meta name="dct.abstract" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
-      <meta name="description" content="This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
+      <meta name="dct.issued" scheme="ISO8601" content="2014-08-08">
+      <meta name="dct.abstract" content="This specification describes an optimized expression of the semantics of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
+      <meta name="description" content="This specification describes an optimized expression of the semantics of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables a more efficient use of network resources and a reduced perception of latency by introducing header field compression and allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from servers to clients. This specification is an alternative to, but does not obsolete, the HTTP/1.1 message syntax. HTTP's existing semantics remain unchanged.">
    </head>
    <body onload="initFeedback();">
       <table class="header" id="rfc.headerblock">
@@ -588,7 +588,7 @@ ul.toc a:first-child {
                <td class="right">R. Peon</td>
             </tr>
             <tr>
-               <td class="left">Expires: February 6, 2015</td>
+               <td class="left">Expires: February 9, 2015</td>
                <td class="right">Google, Inc</td>
             </tr>
             <tr>
@@ -601,13 +601,13 @@ ul.toc a:first-child {
             </tr>
             <tr>
                <td class="left"></td>
-               <td class="right">August 5, 2014</td>
+               <td class="right">August 8, 2014</td>
             </tr>
          </tbody>
       </table>
       <p class="title" id="rfc.title">Hypertext Transfer Protocol version 2<br><span class="filename">draft-ietf-httpbis-http2-latest</span></p>
       <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
-      <p>This specification describes an optimized expression of the syntax of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables
+      <p>This specification describes an optimized expression of the semantics of the Hypertext Transfer Protocol (HTTP). HTTP/2 enables
          a more efficient use of network resources and a reduced perception of latency by introducing header field compression and
          allowing multiple concurrent messages on the same connection. It also introduces unsolicited push of representations from
          servers to clients.
@@ -632,7 +632,7 @@ ul.toc a:first-child {
             documents at any time. It is inappropriate to use Internet-Drafts as reference material or to cite them other than as “work
             in progress”.
          </p>
-         <p>This Internet-Draft will expire on February 6, 2015.</p>
+         <p>This Internet-Draft will expire on February 9, 2015.</p>
       </div>
       <div id="rfc.copyrightnotice">
          <h1><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
@@ -826,27 +826,26 @@ ul.toc a:first-child {
       </ul>
       <div id="intro">
          <h1 id="rfc.section.1" class="np"><a href="#rfc.section.1">1.</a>&nbsp;<a href="#intro">Introduction</a></h1>
-         <p id="rfc.section.1.p.1">The Hypertext Transfer Protocol (HTTP) is a wildly successful protocol. However, the HTTP/1.1 message format (<a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#http.message" title="Message Format">Section 3</a>) was designed to be implemented with the tools at hand in the 1990s, not modern Web application performance. As such it has
-            several characteristics that have a negative overall effect on application performance today.
+         <p id="rfc.section.1.p.1">The Hypertext Transfer Protocol (HTTP) is a wildly successful protocol. However, the HTTP/1.1 message format (<a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#http.message" title="Message Format">Section 3</a>) has several characteristics that have a negative overall effect on application performance today.
          </p>
-         <p id="rfc.section.1.p.2">In particular, HTTP/1.0 only allows one request to be outstanding at a time on a given connection. HTTP/1.1 pipelining only
-            partially addressed request concurrency and suffers from head-of-line blocking. Therefore, clients that need to make many
-            requests typically use multiple connections to a server in order to reduce latency.
+         <p id="rfc.section.1.p.2">In particular, HTTP/1.0 allowed only one request to be outstanding at a time on a given TCP connection. HTTP/1.1 added request
+            pipelining, but this only partially addressed request concurrency and still suffers from head-of-line blocking. Therefore,
+            HTTP/1.1 clients that need to make many requests typically use multiple connections to a server in order to achieve concurrency
+            and thereby reduce latency.
          </p>
-         <p id="rfc.section.1.p.3">Furthermore, HTTP/1.1 header fields are often repetitive and verbose, which, in addition to generating more or larger network
-            packets, can cause the small initial <a href="#TCP">TCP</a> <cite title="Transmission Control Protocol">[TCP]</cite> congestion window to quickly fill. This can result in excessive latency when multiple requests are made on a single new TCP
-            connection.
+         <p id="rfc.section.1.p.3">Furthermore, HTTP header fields are often repetitive and verbose, causing unnecessary network traffic, as well as causing
+            the initial <a href="#TCP">TCP</a> <cite title="Transmission Control Protocol">[TCP]</cite> congestion window to quickly fill. This can result in excessive latency when multiple requests are made on a new TCP connection.
          </p>
-         <p id="rfc.section.1.p.4">This specification addresses these issues by defining an optimized mapping of HTTP's semantics to an underlying connection.
-            Specifically, it allows interleaving of request and response messages on the same connection and uses an efficient coding
-            for HTTP header fields. It also allows prioritization of requests, letting more important requests complete more quickly,
-            further improving performance.
+         <p id="rfc.section.1.p.4">HTTP/2 addresses these issues by defining an optimized mapping of HTTP's semantics to an underlying connection. Specifically,
+            it allows interleaving of request and response messages on the same connection and uses an efficient coding for HTTP header
+            fields. It also allows prioritization of requests, letting more important requests complete more quickly, further improving
+            performance.
          </p>
-         <p id="rfc.section.1.p.5">The resulting protocol is designed to be more friendly to the network, because fewer TCP connections can be used in comparison
-            to HTTP/1.x. This means less competition with other flows, and longer-lived connections, which in turn leads to better utilization
-            of available network capacity.
+         <p id="rfc.section.1.p.5">The resulting protocol is more friendly to the network, because fewer TCP connections can be used in comparison to HTTP/1.x.
+            This means less competition with other flows, and longer-lived connections, which in turn leads to better utilization of available
+            network capacity.
          </p>
-         <p id="rfc.section.1.p.6">Finally, this encapsulation also enables more efficient processing of messages through use of binary message framing.</p>
+         <p id="rfc.section.1.p.6">Finally, HTTP/2 also enables more efficient processing of messages through use of binary message framing.</p>
       </div>
       <div id="Overview">
          <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a>&nbsp;<a href="#Overview">HTTP/2 Protocol Overview</a></h1>
@@ -855,9 +854,10 @@ ul.toc a:first-child {
          </p>
          <p id="rfc.section.2.p.2">The basic protocol unit in HTTP/2 is a frame (<a href="#FrameHeader" title="Frame Format">Section&nbsp;4.1</a>). Each frame type serves a different purpose. For example, <a href="#HEADERS" class="smpl">HEADERS</a> and <a href="#DATA" class="smpl">DATA</a> frames form the basis of HTTP requests and responses (<a href="#HttpSequence" title="HTTP Request/Response Exchange">Section&nbsp;8.1</a>); other frame types like <a href="#SETTINGS" class="smpl">SETTINGS</a>, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, and <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> are used in support of other HTTP/2 features.
          </p>
-         <p id="rfc.section.2.p.3">Multiplexing of requests is achieved by having each HTTP request-response exchanged assigned to a single stream (<a href="#StreamsLayer" title="Streams and Multiplexing">Section&nbsp;5</a>). Streams are largely independent of each other, so a blocked or stalled request does not prevent progress on other requests.
+         <p id="rfc.section.2.p.3">Multiplexing of requests is achieved by having each HTTP request-response exchange associated with its own stream (<a href="#StreamsLayer" title="Streams and Multiplexing">Section&nbsp;5</a>). Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on
+            other streams.
          </p>
-         <p id="rfc.section.2.p.4">Flow control and prioritization ensure that it is possible to properly use multiplexed streams. Flow control (<a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a>) helps to ensure that only data that can be used by a receiver is transmitted. Prioritization (<a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>) ensures that limited resources can be directed to the most important requests first.
+         <p id="rfc.section.2.p.4">Flow control and prioritization ensure that it is possible to efficiently use multiplexed streams. Flow control (<a href="#FlowControl" title="Flow Control">Section&nbsp;5.2</a>) helps to ensure that only data that can be used by a receiver is transmitted. Prioritization (<a href="#StreamPriority" title="Stream priority">Section&nbsp;5.3</a>) ensures that limited resources can be directed to the most important streams first.
          </p>
          <p id="rfc.section.2.p.5">HTTP/2 adds a new interaction mode, whereby a server can push responses to a client (<a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>). Server push allows a server to speculatively send a client data that the server anticipates the client will need, trading
             off some network usage against a potential latency gain. The server does this by synthesizing a request, which it sends as
@@ -879,8 +879,8 @@ ul.toc a:first-child {
                <li>HTTP mappings (<a href="#HTTPLayer" title="HTTP Message Exchanges">Section&nbsp;8</a>) and additional requirements (<a href="#HttpExtra" title="Additional HTTP Requirements/Considerations">Section&nbsp;9</a>) describe how HTTP semantics are expressed using frames and streams.
                </li>
             </ul>
-            <p id="rfc.section.2.1.p.2">While some of the frame and stream layer concepts are isolated from HTTP, the intent is not to define a completely generic
-               framing layer. The framing and streams layers are tailored to the needs of the HTTP protocol and server push.
+            <p id="rfc.section.2.1.p.2">While some of the frame and stream layer concepts are isolated from HTTP, this specification does not define a completely
+               generic framing layer. The framing and streams layers are tailored to the needs of the HTTP protocol and server push.
             </p>
          </div>
          <div>
@@ -897,13 +897,13 @@ ul.toc a:first-child {
                <dt>client:</dt>
                <dd>The endpoint initiating the HTTP/2 connection.</dd>
                <dt>connection:</dt>
-               <dd>A transport-level connection between two endpoints.</dd>
+               <dd>A transport-layer connection between two endpoints.</dd>
                <dt>connection error:</dt>
                <dd>An error that affects the entire HTTP/2 connection.</dd>
                <dt>endpoint:</dt>
                <dd>Either the client or server of the connection.</dd>
                <dt>frame:</dt>
-               <dd>The smallest unit of communication within an HTTP/2 connection, consisting of a header and a variable-length sequence of bytes
+               <dd>The smallest unit of communication within an HTTP/2 connection, consisting of a header and a variable-length sequence of octets
                   structured according to the frame type.
                </dd>
                <dt>peer:</dt>
@@ -927,7 +927,7 @@ ul.toc a:first-child {
       </div>
       <div id="starting">
          <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a>&nbsp;<a href="#starting">Starting HTTP/2</a></h1>
-         <p id="rfc.section.3.p.1">An HTTP/2 connection is an application level protocol running on top of a TCP connection (<a href="#TCP"><cite title="Transmission Control Protocol">[TCP]</cite></a>). The client is the TCP connection initiator.
+         <p id="rfc.section.3.p.1">An HTTP/2 connection is an application layer protocol running on top of a TCP connection (<a href="#TCP"><cite title="Transmission Control Protocol">[TCP]</cite></a>). The client is the TCP connection initiator.
          </p>
          <p id="rfc.section.3.p.2">HTTP/2 uses the same "http" and "https" URI schemes used by HTTP/1.1. HTTP/2 shares the same default port numbers: 80 for
             "http" URIs and 443 for "https" URIs. As a result, implementations processing requests for target resource URIs like <samp>http://example.org/foo</samp> or <samp>https://example.com/bar</samp> are required to first discover whether the upstream server (the immediate peer to which the client wishes to establish a connection)
@@ -970,7 +970,7 @@ ul.toc a:first-child {
          </div>
          <div id="discover-http">
             <h2 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2</a>&nbsp;<a href="#discover-http">Starting HTTP/2 for "http" URIs</a></h2>
-            <p id="rfc.section.3.2.p.1">A client that makes a request to an "http" URI without prior knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
+            <p id="rfc.section.3.2.p.1">A client that makes a request for an "http" URI without prior knowledge about support for HTTP/2 uses the HTTP Upgrade mechanism
                (<a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#header.upgrade" title="Upgrade">Section 6.7</a> of <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>). The client makes an HTTP/1.1 request that includes an Upgrade header field identifying HTTP/2 with the "h2c" token. The
                HTTP/1.1 request MUST include exactly one HTTP2-Settings (<a href="#Http2SettingsHeader" title="HTTP2-Settings Header Field">Section&nbsp;3.2.1</a>) header field.
             </p>
@@ -1008,7 +1008,7 @@ Upgrade: h2c
 
 [ HTTP/2 connection ...
 </pre></div>
-            <p id="rfc.section.3.2.p.7">The first HTTP/2 frame sent by the server is a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a>). Upon receiving the 101 response, the client sends a connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>), which includes a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame.
+            <p id="rfc.section.3.2.p.7">The first HTTP/2 frame sent by the server is a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a>) as the server connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>). Upon receiving the 101 response, the client sends a connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>), which includes a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame.
             </p>
             <p id="rfc.section.3.2.p.8">The HTTP/1.1 request that is sent prior to upgrade is assigned stream identifier 1 and is assigned default priority values (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>). Stream 1 is implicitly half closed from the client toward the server, since the request is completed as an HTTP/1.1 request.
                After commencing the HTTP/2 connection, stream 1 is used for the response.
@@ -1020,10 +1020,12 @@ Upgrade: h2c
                </p>
                <div id="rfc.figure.u.4"><pre class="inline">HTTP2-Settings    = token68
 </pre></div>
-               <p id="rfc.section.3.2.1.p.2">A server MUST reject an attempt to upgrade if this header field is not present. A server MUST NOT send this header field.</p>
+               <p id="rfc.section.3.2.1.p.2">A server MUST NOT upgrade the connection to HTTP/2 if this header field is not present, or if more than one is present. A
+                  server MUST NOT send this header field.
+               </p>
                <p id="rfc.section.3.2.1.p.3">The content of the <samp>HTTP2-Settings</samp> header field is the payload of a <a href="#SETTINGS" class="smpl">SETTINGS</a> frame (<a href="#SETTINGS" title="SETTINGS">Section&nbsp;6.5</a>), encoded as a base64url string (that is, the URL- and filename-safe Base64 encoding described in <a href="https://tools.ietf.org/html/rfc4648#section-5">Section 5</a> of <a href="#RFC4648"><cite title="The Base16, Base32, and Base64 Data Encodings">[RFC4648]</cite></a>, with any trailing '=' characters omitted). The <a href="#RFC5234">ABNF</a> <cite title="Augmented BNF for Syntax Specifications: ABNF">[RFC5234]</cite> production for <samp>token68</samp> is defined in <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7235.html#challenge.and.response" title="Challenge and Response">Section 2.1</a> of <a href="#RFC7235"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Authentication">[RFC7235]</cite></a>.
                </p>
-               <p id="rfc.section.3.2.1.p.4">As a hop-by-hop header field, the <samp>Connection</samp> header field MUST include a value of <samp>HTTP2-Settings</samp> in addition to <samp>Upgrade</samp> when upgrading to HTTP/2.
+               <p id="rfc.section.3.2.1.p.4">The <samp>Connection</samp> header field MUST include a value of <samp>HTTP2-Settings</samp> in addition to <samp>Upgrade</samp> when upgrading to HTTP/2.
                </p>
                <p id="rfc.section.3.2.1.p.5">A server decodes and interprets these values as it would any other <a href="#SETTINGS" class="smpl">SETTINGS</a> frame. Acknowledgement of the SETTINGS parameters (<a href="#SettingsSync" title="Settings Synchronization">Section&nbsp;6.5.3</a>) is not necessary, since a 101 response serves as implicit acknowledgment. Providing these values in the Upgrade request ensures
                   that the protocol does not require default values for the above SETTINGS parameters, and gives a client an opportunity to
@@ -1043,12 +1045,12 @@ Upgrade: h2c
             <h2 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4</a>&nbsp;<a href="#known-http">Starting HTTP/2 with Prior Knowledge</a></h2>
             <p id="rfc.section.3.4.p.1">A client can learn that a particular server supports HTTP/2 by other means. For example, <a href="#ALT-SVC"><cite title="HTTP Alternative Services">[ALT-SVC]</cite></a> describes a mechanism for advertising this capability.
             </p>
-            <p id="rfc.section.3.4.p.2">A client MAY immediately send HTTP/2 frames to a server that is known to support HTTP/2, after the connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>). A server can identify such a connection by the use of the "PRI" method in the connection preface. This only affects the
-               establishment of HTTP/2 connections over cleartext TCP; implementations that support HTTP/2 over TLS MUST use <a href="#TLS-ALPN">protocol negotiation in TLS</a> <cite title="Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension">[TLS-ALPN]</cite>.
+            <p id="rfc.section.3.4.p.2">A client MAY immediately send HTTP/2 frames to a server that is known to support HTTP/2, after the connection preface (<a href="#ConnectionHeader" title="HTTP/2 Connection Preface">Section&nbsp;3.5</a>); a server can identify such a connection by the presence of the connection preface. This only affects the establishment of
+               HTTP/2 connections over cleartext TCP; implementations that support HTTP/2 over TLS MUST use <a href="#TLS-ALPN">protocol negotiation in TLS</a> <cite title="Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension">[TLS-ALPN]</cite>.
             </p>
-            <p id="rfc.section.3.4.p.3">Prior support for HTTP/2 is not a strong signal that a given server will support HTTP/2 for future connections. It is possible
-               for server configurations to change; for configurations to differ between instances in clustered server; or network conditions
-               to change.
+            <p id="rfc.section.3.4.p.3">Without additional information, prior support for HTTP/2 is not a strong signal that a given server will support HTTP/2 for
+               future connections. For example, it is possible for server configurations to change, for configurations to differ between
+               instances in clustered servers, or for network conditions to change.
             </p>
          </div>
          <div id="ConnectionHeader">
@@ -1149,13 +1151,13 @@ Upgrade: h2c
             <p id="rfc.section.4.2.p.3">If a frame size exceeds any defined limit, or is too small to contain mandatory frame data, the endpoint MUST send a <a href="#FRAME_SIZE_ERROR" class="smpl">FRAME_SIZE_ERROR</a> error. A frame size error in a frame that could alter the state of the entire connection MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>); this includes any frame carrying a header block (<a href="#HeaderBlock" title="Header Compression and Decompression">Section&nbsp;4.3</a>) (that is, <a href="#HEADERS" class="smpl">HEADERS</a>, <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a>, and <a href="#CONTINUATION" class="smpl">CONTINUATION</a>), <a href="#SETTINGS" class="smpl">SETTINGS</a>, and any <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a> frame with a stream identifier of 0.
             </p>
             <p id="rfc.section.4.2.p.4">Endpoints are not obligated to use all available space in a frame. Responsiveness can be improved by using frames that are
-               smaller than the permitted maximum size. Sending large frames can result in delays in sending maintenance frames, such <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, or <a href="#PRIORITY" class="smpl">PRIORITY</a>, which if blocked by the transmission of a large frame, could affect performance.
+               smaller than the permitted maximum size. Sending large frames can result in delays in sending time-sensitive frames (such <a href="#RST_STREAM" class="smpl">RST_STREAM</a>, <a href="#WINDOW_UPDATE" class="smpl">WINDOW_UPDATE</a>, or <a href="#PRIORITY" class="smpl">PRIORITY</a>) which if blocked by the transmission of a large frame, could affect performance.
             </p>
          </div>
          <div id="HeaderBlock">
             <h2 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3</a>&nbsp;<a href="#HeaderBlock">Header Compression and Decompression</a></h2>
-            <p id="rfc.section.4.3.p.1">A header field in HTTP/2 is a name with one or more associated values. They are used within HTTP request and response messages
-               as well as server push operations (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
+            <p id="rfc.section.4.3.p.1">Just as in HTTP/1, a header field in HTTP/2 is a name with one or more associated values. They are used within HTTP request
+               and response messages as well as server push operations (see <a href="#PushResources" title="Server Push">Section&nbsp;8.2</a>).
             </p>
             <p id="rfc.section.4.3.p.2">Header lists are collections of zero or more header fields. When transmitted over a connection, a header list is serialized
                into a header block using <a href="#COMPRESSION">HTTP Header Compression</a> <cite title="HPACK - Header Compression for HTTP/2">[COMPRESSION]</cite>. The serialized header block is then divided into one or more octet sequences, called header block fragments, and transmitted
@@ -1259,7 +1261,7 @@ Upgrade: h2c
                      <li>Receiving a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame marks the associated stream as reserved by the remote peer. The state of the stream becomes "reserved (remote)".
                      </li>
                   </ul>
-                  <p>Receiving any frames other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>Receiving any frames other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> on a stream in this state MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>reserved (local):</dt>
@@ -1275,7 +1277,7 @@ Upgrade: h2c
                   </ul>
                   <p>An endpoint MUST NOT send frames other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> in this state.
                   </p>
-                  <p>A <a href="#PRIORITY" class="smpl">PRIORITY</a> frame MAY be received in this state. Receiving any frames other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>A <a href="#PRIORITY" class="smpl">PRIORITY</a> frame MAY be received in this state. Receiving any frames other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a> on a stream in this state MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>reserved (remote):</dt>
@@ -1291,7 +1293,7 @@ Upgrade: h2c
                   </ul>
                   <p>An endpoint MAY send a <a href="#PRIORITY" class="smpl">PRIORITY</a> frame in this state to reprioritize the reserved stream. An endpoint MUST NOT send any other type of frame other than <a href="#RST_STREAM" class="smpl">RST_STREAM</a> or <a href="#PRIORITY" class="smpl">PRIORITY</a>.
                   </p>
-                  <p>Receiving any other type of frame other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+                  <p>Receiving any other type of frame other than <a href="#HEADERS" class="smpl">HEADERS</a> or <a href="#RST_STREAM" class="smpl">RST_STREAM</a> on a stream in this state MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                   </p>
                </dd>
                <dt>open:</dt>
@@ -1405,12 +1407,12 @@ Upgrade: h2c
             </p>
             <div id="fc-principles">
                <h3 id="rfc.section.5.2.1"><a href="#rfc.section.5.2.1">5.2.1</a>&nbsp;<a href="#fc-principles">Flow Control Principles</a></h3>
-               <p id="rfc.section.5.2.1.p.1">HTTP/2 stream flow control aims to allow for future improvements to flow control algorithms without requiring protocol changes.
+               <p id="rfc.section.5.2.1.p.1">HTTP/2 stream flow control aims to allow a variety of flow control algorithms to be used without requiring protocol changes.
                   Flow control in HTTP/2 has the following characteristics: 
                </p>
                <ol>
-                  <li>Flow control is hop-by-hop, not end-to-end.</li>
-                  <li>Flow control is based on window update frames. Receivers advertise how many bytes they are prepared to receive on a stream
+                  <li>Flow control is specific to a connection; i.e., it is "hop-by-hop", not "end-to-end".</li>
+                  <li>Flow control is based on window update frames. Receivers advertise how many octets they are prepared to receive on a stream
                      and for the entire connection. This is a credit-based scheme.
                   </li>
                   <li>Flow control is directional with overall control provided by the receiver. A receiver MAY choose to set any window size that
@@ -1418,7 +1420,7 @@ Upgrade: h2c
                      Clients, servers and intermediaries all independently advertise their flow control window as a receiver and abide by the flow
                      control limits set by their peer when sending.
                   </li>
-                  <li>The initial value for the flow control window is 65,535 bytes for both new streams and the overall connection.</li>
+                  <li>The initial value for the flow control window is 65,535 octets for both new streams and the overall connection.</li>
                   <li>The frame type determines whether flow control applies to a frame. Of the frames specified in this document, only <a href="#DATA" class="smpl">DATA</a> frames are subject to flow control; all other frame types do not consume space in the advertised flow control window. This
                      ensures that important control frames are not blocked by flow control.
                   </li>
@@ -1479,7 +1481,7 @@ Upgrade: h2c
                   0 forms the root of the tree.
                </p>
                <p id="rfc.section.5.3.1.p.3">A stream that depends on another stream is a dependent stream. The stream upon which a stream is dependent is a parent stream.
-                  A dependency on a stream that is not currently in the tree - such as a stream in the "idle" state - results in the stream
+                  A dependency on a stream that is not currently in the tree - such as a stream in the "idle" state - results in that stream
                   being given a default priority (<a href="#pri-default" title="Default Priorities">Section&nbsp;5.3.5</a>).
                </p>
                <p id="rfc.section.5.3.1.p.4">When assigning a dependency on another stream, the stream is added as a new dependency of the parent stream. Dependent streams
@@ -1493,9 +1495,9 @@ Upgrade: h2c
 </pre></div>
                <p class="figure">Example of Default Dependency Creation</p>
                <p id="rfc.section.5.3.1.p.5">An exclusive flag allows for the insertion of a new level of dependencies. The exclusive flag causes the stream to become
-                  the sole dependency of its parent stream, causing other dependencies to become dependent on the prioritized stream. In the
-                  previous example, if stream D is created with an exclusive dependency on stream A, this results in D becoming the dependency
-                  parent of B and C.
+                  the sole dependency of its parent stream, causing other dependencies to become dependent on the exclusive stream. In the previous
+                  example, if stream D is created with an exclusive dependency on stream A, this results in D becoming the dependency parent
+                  of B and C.
                </p>
                <div id="rfc.figure.u.8"><pre class="inline">                      A
     A                 |
@@ -1711,18 +1713,19 @@ Upgrade: h2c
                is received whose stream is not in "open" or "half closed (local)" state, the recipient MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#STREAM_CLOSED" class="smpl">STREAM_CLOSED</a>.
             </p>
             <p id="rfc.section.6.1.p.7">The total number of padding octets is determined by the value of the Pad Length field. If the length of the padding is greater
-               than the length of the remainder of the frame payload, the recipient MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. 
+               than the length of the frame payload, the recipient MUST treat this as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. 
             </p>
             <dl>
                <dt>Note:</dt>
                <dd>A frame can be increased in size by one octet by including a Pad Length field with a value of zero.</dd>
             </dl>
-            <p id="rfc.section.6.1.p.8">Use of padding is a security feature; as such, its use demands some care, see <a href="#padding" title="Use of Padding">Section&nbsp;10.7</a>.
+            <p id="rfc.section.6.1.p.8">Padding is a security feature; see <a href="#padding" title="Use of Padding">Section&nbsp;10.7</a>.
             </p>
          </div>
          <div id="HEADERS">
             <h2 id="rfc.section.6.2"><a href="#rfc.section.6.2">6.2</a>&nbsp;<a href="#HEADERS">HEADERS</a></h2>
-            <p id="rfc.section.6.2.p.1">The HEADERS frame (type=0x1) carries name-value pairs. It is used to open a stream (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>). HEADERS frames can be sent on a stream in the "open" or "half closed (remote)" states.
+            <p id="rfc.section.6.2.p.1">The HEADERS frame (type=0x1) is used to open a stream (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>), and additionally carries header block fragments. HEADERS frames can be sent on a stream in the "open" or "half closed (remote)"
+               states.
             </p>
             <div id="rfc.figure.u.11"><pre class="inline">  0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1919,8 +1922,8 @@ Upgrade: h2c
                   <dt id="SETTINGS_HEADER_TABLE_SIZE">SETTINGS_HEADER_TABLE_SIZE (0x1):</dt>
                   <dd>
                      <p>Allows the sender to inform the remote endpoint of the maximum size of the header compression table used to decode header
-                        blocks. The encoder can select any size equal to or less than this value by using signaling specific to the header compression
-                        format inside a header block. The initial value is 4,096 bytes.
+                        blocks, in octets. The encoder can select any size equal to or less than this value by using signaling specific to the header
+                        compression format inside a header block. The initial value is 4,096 octets.
                      </p>
                   </dd>
                   <dt id="SETTINGS_ENABLE_PUSH">SETTINGS_ENABLE_PUSH (0x2):</dt>
@@ -1944,7 +1947,7 @@ Upgrade: h2c
                   </dd>
                   <dt id="SETTINGS_INITIAL_WINDOW_SIZE">SETTINGS_INITIAL_WINDOW_SIZE (0x4):</dt>
                   <dd>
-                     <p>Indicates the sender's initial window size (in bytes) for stream level flow control. The initial value is 2<sup>16</sup>-1 (65,535) octets.
+                     <p>Indicates the sender's initial window size (in octets) for stream level flow control. The initial value is 2<sup>16</sup>-1 (65,535) octets.
                      </p>
                      <p>This setting affects the window size of all streams, including existing streams, see <a href="#InitialWindowSize" title="Initial Flow Control Window Size">Section&nbsp;6.9.2</a>.
                      </p>
@@ -1953,16 +1956,16 @@ Upgrade: h2c
                   </dd>
                   <dt id="SETTINGS_MAX_FRAME_SIZE">SETTINGS_MAX_FRAME_SIZE (0x5):</dt>
                   <dd>
-                     <p>Indicates the size of the largest frame payload that the sender is willing to receive.</p>
+                     <p>Indicates the size of the largest frame payload that the sender is willing to receive, in octets.</p>
                      <p>The initial value is 2<sup>14</sup> (16,384) octets. The value advertised by an endpoint MUST be between this initial value and the maximum allowed frame size
                         (2<sup>24</sup>-1 or 16,777,215 octets), inclusive. Values outside this range MUST be treated as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                      </p>
                   </dd>
                   <dt id="SETTINGS_MAX_HEADER_LIST_SIZE">SETTINGS_MAX_HEADER_LIST_SIZE (0x6):</dt>
                   <dd>
-                     <p>This advisory setting informs a peer of the maximum size of header list that the sender is prepared to accept. The value is
-                        based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of
-                        32 octets for each header field.
+                     <p>This advisory setting informs a peer of the maximum size of header list that the sender is prepared to accept, in octets.
+                        The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an
+                        overhead of 32 octets for each header field.
                      </p>
                      <p>For any given request, a lower limit than what is advertised MAY be enforced. The initial value of this setting is unlimited.</p>
                   </dd>
@@ -2193,9 +2196,9 @@ Upgrade: h2c
  +-+-------------------------------------------------------------+
 </pre></div>
             <p class="figure">WINDOW_UPDATE Payload Format</p>
-            <p id="rfc.section.6.9.p.5">The payload of a WINDOW_UPDATE frame is one reserved bit, plus an unsigned 31-bit integer indicating the number of bytes that
-               the sender can transmit in addition to the existing flow control window. The legal range for the increment to the flow control
-               window is 1 to 2<sup>31</sup>-1 (0x7fffffff) bytes.
+            <p id="rfc.section.6.9.p.5">The payload of a WINDOW_UPDATE frame is one reserved bit, plus an unsigned 31-bit integer indicating the number of octets
+               that the sender can transmit in addition to the existing flow control window. The legal range for the increment to the flow
+               control window is 1 to 2<sup>31</sup>-1 (0x7fffffff) octets.
             </p>
             <p id="rfc.section.6.9.p.6">The WINDOW_UPDATE frame does not define any flags.</p>
             <p id="rfc.section.6.9.p.7">The WINDOW_UPDATE frame can be specific to a stream or to the entire connection. In the former case, the frame's stream identifier
@@ -2214,14 +2217,14 @@ Upgrade: h2c
                <h3 id="rfc.section.6.9.1"><a href="#rfc.section.6.9.1">6.9.1</a>&nbsp;The Flow Control Window
                </h3>
                <p id="rfc.section.6.9.1.p.1">Flow control in HTTP/2 is implemented using a window kept by each sender on every stream. The flow control window is a simple
-                  integer value that indicates how many bytes of data the sender is permitted to transmit; as such, its size is a measure of
+                  integer value that indicates how many octets of data the sender is permitted to transmit; as such, its size is a measure of
                   the buffering capacity of the receiver.
                </p>
                <p id="rfc.section.6.9.1.p.2">Two flow control windows are applicable: the stream flow control window and the connection flow control window. The sender
                   MUST NOT send a flow controlled frame with a length that exceeds the space available in either of the flow control windows
                   advertised by the receiver. Frames with zero length with the END_STREAM flag set (that is, an empty <a href="#DATA" class="smpl">DATA</a> frame) MAY be sent if there is no available space in either flow control window.
                </p>
-               <p id="rfc.section.6.9.1.p.3">For flow control calculations, the 9 byte frame header is not counted.</p>
+               <p id="rfc.section.6.9.1.p.3">For flow control calculations, the 9 octet frame header is not counted.</p>
                <p id="rfc.section.6.9.1.p.4">After sending a flow controlled frame, the sender reduces the space available in both windows by the length of the transmitted
                   frame.
                </p>
@@ -2229,7 +2232,7 @@ Upgrade: h2c
                   WINDOW_UPDATE frames are sent for the stream and connection level flow control windows.
                </p>
                <p id="rfc.section.6.9.1.p.6">A sender that receives a WINDOW_UPDATE frame updates the corresponding window by the amount specified in the frame.</p>
-               <p id="rfc.section.6.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup>-1 bytes. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
+               <p id="rfc.section.6.9.1.p.7">A sender MUST NOT allow a flow control window to exceed 2<sup>31</sup>-1 octets. If a sender receives a WINDOW_UPDATE that causes a flow control window to exceed this maximum it MUST terminate
                   either the stream or the connection, as appropriate. For streams, the sender sends a <a href="#RST_STREAM" class="smpl">RST_STREAM</a> with the error code of <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> code; for the connection, a <a href="#GOAWAY" class="smpl">GOAWAY</a> frame with a <a href="#FLOW_CONTROL_ERROR" class="smpl">FLOW_CONTROL_ERROR</a> code.
                </p>
                <p id="rfc.section.6.9.1.p.8">Flow controlled frames from the sender and WINDOW_UPDATE frames from the receiver are completely asynchronous with respect
@@ -2240,7 +2243,7 @@ Upgrade: h2c
             <div id="InitialWindowSize">
                <h3 id="rfc.section.6.9.2"><a href="#rfc.section.6.9.2">6.9.2</a>&nbsp;<a href="#InitialWindowSize">Initial Flow Control Window Size</a></h3>
                <p id="rfc.section.6.9.2.p.1">When an HTTP/2 connection is first established, new streams are created with an initial flow control window size of 65,535
-                  bytes. The connection flow control window is 65,535 bytes. Both endpoints can adjust the initial window size for new streams
+                  octets. The connection flow control window is 65,535 octets. Both endpoints can adjust the initial window size for new streams
                   by including a value for <a href="#SETTINGS_INITIAL_WINDOW_SIZE" class="smpl">SETTINGS_INITIAL_WINDOW_SIZE</a> in the <a href="#SETTINGS" class="smpl">SETTINGS</a> frame that forms part of the connection preface. The connection flow control window can only be changed using WINDOW_UPDATE
                   frames.
                </p>
@@ -2415,8 +2418,8 @@ Upgrade: h2c
                   <p id="rfc.section.8.1.2.1.p.1">While HTTP/1.x used the message start-line (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#start.line" title="Start Line">Section 3.1</a>) to convey the target URI and method of the request, and the status code for the response, HTTP/2 uses special pseudo-header
                      fields beginning with ':' character (ASCII 0x3a) for this purpose.
                   </p>
-                  <p id="rfc.section.8.1.2.1.p.2">Pseudo-header fields are only valid in the HTTP/2 context. These are not HTTP header fields. Endpoints MUST NOT generate pseudo-header
-                     fields other than those defined in this document.
+                  <p id="rfc.section.8.1.2.1.p.2">Pseudo-header fields are not HTTP header fields. Endpoints MUST NOT generate pseudo-header fields other than those defined
+                     in this document.
                   </p>
                   <p id="rfc.section.8.1.2.1.p.3">Pseudo-header fields are only valid in the context in which they are defined. Pseudo-header fields defined for requests MUST
                      NOT appear in responses; pseudo-header fields defined for responses MUST NOT appear in requests. Pseudo-header fields MUST
@@ -2436,7 +2439,7 @@ Upgrade: h2c
                   </h4>
                   <p id="rfc.section.8.1.2.2.p.1">HTTP/2 does not use the Connection header field to indicate "hop-by-hop" header fields; in this protocol, connection-specific
                      metadata is conveyed by other means. An endpoint MUST NOT generate a HTTP/2 message containing connection-specific header
-                     fields; any request containing connection-specific header fields MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
+                     fields; any message containing connection-specific header fields MUST be treated as malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
                   </p>
                   <p id="rfc.section.8.1.2.2.p.2">This means that an intermediary transforming an HTTP/1.x message to HTTP/2 will need to remove any header fields nominated
                      by the Connection header field, along with the Connection header field itself. Such intermediaries SHOULD also remove other
@@ -2453,44 +2456,42 @@ Upgrade: h2c
                   </dl>
                </div>
                <div id="HttpRequest">
-                  <h4 id="rfc.section.8.1.2.3"><a href="#rfc.section.8.1.2.3">8.1.2.3</a>&nbsp;<a href="#HttpRequest">Request Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.3.p.1">HTTP/2 defines a number of pseudo header fields starting with a colon ':' character that carry information about the request
-                     target: 
-                  </p>
+                  <h4 id="rfc.section.8.1.2.3"><a href="#rfc.section.8.1.2.3">8.1.2.3</a>&nbsp;<a href="#HttpRequest">Request Pseudo-Header Fields</a></h4>
+                  <p id="rfc.section.8.1.2.3.p.1">The following pseudo-header fields are defined for HTTP/2 requests: </p>
                   <ul>
                      <li>
-                        <p>The <samp>:method</samp> header field includes the HTTP method (<a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#methods" title="Request Methods">Section 4</a>).
+                        <p>The <samp>:method</samp> pseudo-header field includes the HTTP method (<a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#methods" title="Request Methods">Section 4</a>).
                         </p>
                      </li>
                      <li>
-                        <p>The <samp>:scheme</samp> header field includes the scheme portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.1">Section 3.1</a>).
+                        <p>The <samp>:scheme</samp> pseudo-header field includes the scheme portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.1">Section 3.1</a>).
                         </p>
                         <p><samp>:scheme</samp> is not restricted to <samp>http</samp> and <samp>https</samp> schemed URIs. A proxy or gateway can translate requests for non-HTTP schemes, enabling the use of HTTP to interact with non-HTTP
                            services.
                         </p>
                      </li>
                      <li>
-                        <p>The <samp>:authority</samp> header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>). The authority MUST NOT include the deprecated <samp>userinfo</samp> subcomponent for <samp>http</samp> or <samp>https</samp> schemed URIs.
+                        <p>The <samp>:authority</samp> pseudo-header field includes the authority portion of the target URI (<a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.2">Section 3.2</a>). The authority MUST NOT include the deprecated <samp>userinfo</samp> subcomponent for <samp>http</samp> or <samp>https</samp> schemed URIs.
                         </p>
-                        <p>To ensure that the HTTP/1.1 request line can be reproduced accurately, this header field MUST be omitted when translating
-                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2 requests directly SHOULD use the <em>:authority</em> psuedo-header field instead of the <samp>Host</samp> header field. An intermediary that converts an HTTP/2 request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> header field.
+                        <p>To ensure that the HTTP/1.1 request line can be reproduced accurately, this pseudo-header field MUST be omitted when translating
+                           from an HTTP/1.1 request that has a request target in origin or asterisk form (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#request-target" title="Request Target">Section 5.3</a>). Clients that generate HTTP/2 requests directly SHOULD use the <em>:authority</em> psuedo-header field instead of the <samp>Host</samp> header field. An intermediary that converts an HTTP/2 request to HTTP/1.1 MUST create a <samp>Host</samp> header field if one is not present in a request by copying the value of the <samp>:authority</samp> pseudo-header field.
                         </p>
                      </li>
                      <li>
-                        <p>The <samp>:path</samp> header field includes the path and query parts of the target URI (the <samp>path-absolute</samp> production from <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a> and optionally a '?' character followed by the <samp>query</samp> production, see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.3">Section 3.3</a> and <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.4">Section 3.4</a>). A request in asterisk form includes the value '*' for the <samp>:path</samp> header field.
+                        <p>The <samp>:path</samp> pseudo-header field includes the path and query parts of the target URI (the <samp>path-absolute</samp> production from <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a> and optionally a '?' character followed by the <samp>query</samp> production, see <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.3">Section 3.3</a> and <a href="#RFC3986"><cite title="Uniform Resource Identifier (URI): Generic Syntax">[RFC3986]</cite></a>, <a href="https://tools.ietf.org/html/rfc3986#section-3.4">Section 3.4</a>). A request in asterisk form includes the value '*' for the <samp>:path</samp> pseudo-header field.
                         </p>
-                        <p>This field MUST NOT be empty for <samp>http</samp> or <samp>https</samp> URIs; <samp>http</samp> or <samp>https</samp> URIs that do not contain a path component MUST include a value of '/'. The exception to this rule is an OPTIONS request for
-                           an <samp>http</samp> or <samp>https</samp> URI that does not include a path component; these MUST include a <samp>:path</samp> header field with a value of '*' (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#asterisk-form" title="asterisk-form">Section 5.3.4</a>).
+                        <p>This pseudo-header field MUST NOT be empty for <samp>http</samp> or <samp>https</samp> URIs; <samp>http</samp> or <samp>https</samp> URIs that do not contain a path component MUST include a value of '/'. The exception to this rule is an OPTIONS request for
+                           an <samp>http</samp> or <samp>https</samp> URI that does not include a path component; these MUST include a <samp>:path</samp> pseudo-header field with a value of '*' (see <a href="#RFC7230"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing">[RFC7230]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7230.html#asterisk-form" title="asterisk-form">Section 5.3.4</a>).
                         </p>
                      </li>
                   </ul>
-                  <p id="rfc.section.8.1.2.3.p.2">All HTTP/2 requests MUST include exactly one valid value for the <samp>:method</samp>, <samp>:scheme</samp>, and <samp>:path</samp> header fields, unless this is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory header fields is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
+                  <p id="rfc.section.8.1.2.3.p.2">All HTTP/2 requests MUST include exactly one valid value for the <samp>:method</samp>, <samp>:scheme</samp>, and <samp>:path</samp> pseudo-header fields, unless it is a CONNECT request (<a href="#CONNECT" title="The CONNECT Method">Section&nbsp;8.3</a>). An HTTP request that omits mandatory pseudo-header fields is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
                   </p>
                   <p id="rfc.section.8.1.2.3.p.3">HTTP/2 does not define a way to carry the version identifier that is included in the HTTP/1.1 request line.</p>
                </div>
                <div id="HttpResponse">
-                  <h4 id="rfc.section.8.1.2.4"><a href="#rfc.section.8.1.2.4">8.1.2.4</a>&nbsp;<a href="#HttpResponse">Response Header Fields</a></h4>
-                  <p id="rfc.section.8.1.2.4.p.1">A single <samp>:status</samp> header field is defined that carries the HTTP status code field (see <a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.codes" title="Response Status Codes">Section 6</a>). This header field MUST be included in all responses, otherwise the response is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
+                  <h4 id="rfc.section.8.1.2.4"><a href="#rfc.section.8.1.2.4">8.1.2.4</a>&nbsp;<a href="#HttpResponse">Response Pseudo-Header Fields</a></h4>
+                  <p id="rfc.section.8.1.2.4.p.1">For HTTP/2 responses, a single <samp>:status</samp> pseudo-header field is defined that carries the HTTP status code field (see <a href="#RFC7231"><cite title="Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content">[RFC7231]</cite></a>, <a href="https://svn.tools.ietf.org/svn/wg/httpbis/specs/rfc7231.html#status.codes" title="Response Status Codes">Section 6</a>). This pseudo-header field MUST be included in all responses, otherwise the response is malformed (<a href="#malformed" title="Malformed Requests and Responses">Section&nbsp;8.1.2.6</a>).
                   </p>
                   <p id="rfc.section.8.1.2.4.p.2">HTTP/2 does not define a way to carry the version or reason phrase that is included in an HTTP/1.1 status line.</p>
                </div>
@@ -2647,15 +2648,15 @@ Upgrade: h2c
          </div>
          <div id="PushResources">
             <h2 id="rfc.section.8.2"><a href="#rfc.section.8.2">8.2</a>&nbsp;<a href="#PushResources">Server Push</a></h2>
-            <p id="rfc.section.8.2.p.1">HTTP/2 enables a server to pre-emptively send (or "push") one or more associated responses to a client in response to a single
-               request. This feature becomes particularly helpful when the server knows the client will need to have those responses available
-               in order to fully process the response to the original request.
+            <p id="rfc.section.8.2.p.1">HTTP/2 allows a server to pre-emptively send (or "push") responses (along with corresponding requests) to a client in association
+               with a previous client-initiated request. This can be useful when the server knows the client will need to have those responses
+               available in order to fully process the response to the original request.
             </p>
-            <p id="rfc.section.8.2.p.2">Pushing additional responses is optional, and is negotiated between individual endpoints. The <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting can be set to 0 to indicate that server push is disabled.
+            <p id="rfc.section.8.2.p.2">Pushing additional message exchanges in this fashion is optional, and is negotiated between individual endpoints. The <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting can be set to 0 to indicate that server push is disabled.
             </p>
-            <p id="rfc.section.8.2.p.3">Because pushing responses is effectively hop-by-hop, an intermediary could receive pushed responses from the server and choose
-               not to forward those on to the client. In other words, how to make use of the pushed responses is up to that intermediary.
-               Equally, the intermediary might choose to push additional responses to the client, without any action taken by the server.
+            <p id="rfc.section.8.2.p.3">Because server push is effectively hop-by-hop, an intermediary could receive pushes from the server and choose not to forward
+               them on to the client. In other words, how to make use of the pushed information is up to that intermediary. Equally, the
+               intermediary might choose to make additional pushes to the client, without any action taken by the server.
             </p>
             <p id="rfc.section.8.2.p.4">A client cannot push. Thus, servers MUST treat the receipt of a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>. Clients MUST reject any attempt to change the <a href="#SETTINGS_ENABLE_PUSH" class="smpl">SETTINGS_ENABLE_PUSH</a> setting to a value other than 0 by treating the message as a connection error (<a href="#ConnectionErrorHandler" title="Connection Error Handling">Section&nbsp;5.4.1</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
             </p>
@@ -2671,7 +2672,7 @@ Upgrade: h2c
                </p>
                <p id="rfc.section.8.2.1.p.3">Pushed responses are always associated with an explicit request from the client. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames sent by the server are sent on that explicit request's stream. The <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame also includes a promised stream identifier, chosen from the stream identifiers available to the server (see <a href="#StreamIdentifiers" title="Stream Identifiers">Section&nbsp;5.1.1</a>).
                </p>
-               <p id="rfc.section.8.2.1.p.4">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request header fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.3</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe and cacheable. If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
+               <p id="rfc.section.8.2.1.p.4">The header fields in <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> and any subsequent <a href="#CONTINUATION" class="smpl">CONTINUATION</a> frames MUST be a valid and complete set of request header fields (<a href="#HttpRequest" title="Request Pseudo-Header Fields">Section&nbsp;8.1.2.3</a>). The server MUST include a method in the <samp>:method</samp> header field that is safe and cacheable. If a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> that does not include a complete and valid set of header fields, or the <samp>:method</samp> header field identifies a method that is not safe, it MUST respond with a stream error (<a href="#StreamErrorHandler" title="Stream Error Handling">Section&nbsp;5.4.2</a>) of type <a href="#PROTOCOL_ERROR" class="smpl">PROTOCOL_ERROR</a>.
                </p>
                <p id="rfc.section.8.2.1.p.5">The server SHOULD send <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> (<a href="#PUSH_PROMISE" title="PUSH_PROMISE">Section&nbsp;6.6</a>) frames prior to sending any frames that reference the promised responses. This avoids a race where clients issue requests
                   prior to receiving any <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frames.
@@ -2692,7 +2693,7 @@ Upgrade: h2c
             </div>
             <div id="PushResponses">
                <h3 id="rfc.section.8.2.2"><a href="#rfc.section.8.2.2">8.2.2</a>&nbsp;<a href="#PushResponses">Push Responses</a></h3>
-               <p id="rfc.section.8.2.2.p.1">After sending the <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, the server can begin delivering the pushed response as a response (<a href="#HttpResponse" title="Response Header Fields">Section&nbsp;8.1.2.4</a>) on a server-initiated stream that uses the promised stream identifier. The server uses this stream to transmit an HTTP response,
+               <p id="rfc.section.8.2.2.p.1">After sending the <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame, the server can begin delivering the pushed response as a response (<a href="#HttpResponse" title="Response Pseudo-Header Fields">Section&nbsp;8.1.2.4</a>) on a server-initiated stream that uses the promised stream identifier. The server uses this stream to transmit an HTTP response,
                   using the same sequence of frames as defined in <a href="#HttpSequence" title="HTTP Request/Response Exchange">Section&nbsp;8.1</a>. This stream becomes "half closed" to the client (<a href="#StreamStates" title="Stream States">Section&nbsp;5.1</a>) after the initial <a href="#HEADERS" class="smpl">HEADERS</a> frame is sent.
                </p>
                <p id="rfc.section.8.2.2.p.2">Once a client receives a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> frame and chooses to accept the pushed response, the client SHOULD NOT issue any requests for the promised response until
@@ -2704,7 +2705,7 @@ Upgrade: h2c
                <p id="rfc.section.8.2.2.p.4">A client can use the <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> setting to limit the number of responses that can be concurrently pushed by a server. Advertising a <a href="#SETTINGS_MAX_CONCURRENT_STREAMS" class="smpl">SETTINGS_MAX_CONCURRENT_STREAMS</a> value of zero disables server push by preventing the server from creating the necessary streams. This does not prohibit a
                   server from sending PUSH_PROMISE frames; clients need to reset any promised streams that are not wanted.
                </p>
-               <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authorized to provide the response, see <a href="#authority" title="Server Authority">Section&nbsp;10.1</a>. For example, a server that offers a certificate for only the <samp>example.com</samp> DNS-ID or Common Name is not permitted to push a response for <samp>https://www.example.org/doc</samp>.
+               <p id="rfc.section.8.2.2.p.5">Clients receiving a pushed response MUST validate that the server is authoritative for it; see <a href="#authority" title="Server Authority">Section&nbsp;10.1</a>. For example, a server that offers a certificate for only the <samp>example.com</samp> DNS-ID or Common Name is not permitted to push a response for <samp>https://www.example.org/doc</samp>.
                </p>
                <p id="rfc.section.8.2.2.p.6">The response for a <a href="#PUSH_PROMISE" class="smpl">PUSH_PROMISE</a> stream begins with a <a href="#HEADERS" class="smpl">HEADERS</a> frame, which immediately puts the stream into the “half closed (remote)” state for the server and “half closed (local)” state
                   for the client, and ends with a frame bearing END_STREAM, which places the stream in the "closed" state. 
@@ -2721,7 +2722,7 @@ Upgrade: h2c
                a TLS session with an origin server for the purposes of interacting with <samp>https</samp> resources.
             </p>
             <p id="rfc.section.8.3.p.2">In HTTP/2, the CONNECT method is used to establish a tunnel over a single HTTP/2 stream to a remote host, for similar purposes.
-               The HTTP header field mapping works as mostly as defined in Request Header Fields (<a href="#HttpRequest" title="Request Header Fields">Section&nbsp;8.1.2.3</a>), with a few differences. Specifically: 
+               The HTTP header field mapping works as mostly as defined in Request Header Fields (<a href="#HttpRequest" title="Request Pseudo-Header Fields">Section&nbsp;8.1.2.3</a>), with a few differences. Specifically: 
             </p>
             <ul>
                <li>The <samp>:method</samp> header field is set to <samp>CONNECT</samp>.
@@ -2765,7 +2766,7 @@ Upgrade: h2c
             <p id="rfc.section.9.1.p.4">A client MAY open multiple connections to the same IP address and TCP port using different <a href="#TLS-EXT">Server Name Indication</a> <cite title="Transport Layer Security (TLS) Extensions: Extension Definitions">[TLS-EXT]</cite> values or to provide different TLS client certificates, but SHOULD avoid creating multiple connections with the same configuration.
             </p>
             <p id="rfc.section.9.1.p.5">Servers are encouraged to maintain open connections for as long as possible, but are permitted to terminate idle connections
-               if necessary. When either endpoint chooses to close the transport-level TCP connection, the terminating endpoint SHOULD first
+               if necessary. When either endpoint chooses to close the transport-layer TCP connection, the terminating endpoint SHOULD first
                send a <a href="#GOAWAY" class="smpl">GOAWAY</a> (<a href="#GOAWAY" title="GOAWAY">Section&nbsp;6.8</a>) frame so that both endpoints can reliably determine whether previously sent frames have been processed and gracefully complete
                or terminate any necessary remaining tasks.
             </p>
