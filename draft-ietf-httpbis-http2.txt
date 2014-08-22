@@ -1473,11 +1473,11 @@ Internet-Draft                   HTTP/2                      August 2014
 
    It is possible for a stream to become closed while prioritization
    information that creates a dependency on that stream is in transit.
-   If a stream identified in a dependency has had any associated
-   priority information destroyed, then the dependent stream is instead
-   assigned a default priority.  This potentially creates suboptimal
+   If a stream identified in a dependency has no associated priority
+   information, then the dependent stream is instead assigned a default
+   priority (Section 5.3.5).  This potentially creates suboptimal
    prioritization, since the stream could be given a priority that is
-   higher than intended.
+   different to what is intended.
 
    To avoid these problems, an endpoint SHOULD retain stream
    prioritization state for a period after streams become closed.  The
@@ -1829,18 +1829,18 @@ Internet-Draft                   HTTP/2                      August 2014
    The HEADERS frame includes optional padding.  Padding fields and
    flags are identical to those defined for DATA frames (Section 6.1).
 
+   Prioritization information in a HEADERS frame is logically equivalent
+   to a separate PRIORITY frame, but inclusion in HEADERS avoids the
+   potential for churn in stream prioritization when new streams are
+   created.  Priorization fields in HEADERS frames subsequent to the
+   first on a stream reprioritize the stream (Section 5.3.3).
+
 6.3.  PRIORITY
 
    The PRIORITY frame (type=0x2) specifies the sender-advised priority
    of a stream (Section 5.3).  It can be sent at any time for an
    existing stream, including closed streams.  This enables
    reprioritization of existing streams.
-
-
-
-
-
-
 
 
 
